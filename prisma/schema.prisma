@@ -1,0 +1,313 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  AGENT
+  USER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  PAID
+  PROCESSING
+  COMPLETED
+  CANCELED
+  REFUNDED
+}
+
+enum ShipmentStatus {
+  PENDING
+  PICKED
+  IN_TRANSIT
+  DELIVERED
+  RETURNED
+  CANCELLED
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  name             String?
+  password         String?
+  role             Role     @default(USER)
+  locale           String?
+  stripeCustomerId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // relations (explicit names to avoid ambiguity)
+  subscriptions  Subscription[]
+  payments       Payment[]
+  orders         Order[]        @relation("UserOrders") // orders where user is the buyer
+  assignedOrders Order[]        @relation("AgentAssignedOrders") // orders where user is assigned as agent
+  agentProfile   AgentProfile?  @relation("AgentProfileUser") // if user is an agent
+}
+
+model Plan {
+  id            Int     @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  interval      String
+  stripePriceId String?
+  active        Boolean @default(true)
+  features      Json?
+
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Subscription {
+  id                   Int                @id @default(autoincrement())
+  user                 User               @relation(fields: [userId], references: [id])
+  userId               Int
+  plan                 Plan               @relation(fields: [planId], references: [id])
+  planId               Int
+  stripeSubscriptionId String?
+  status               SubscriptionStatus @default(TRIALING)
+  startsAt             DateTime?
+  endsAt               DateTime?
+  trialEndsAt          DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  Payment              Payment[]
+}
+
+model Payment {
+  id                    Int           @id @default(autoincrement())
+  user                  User          @relation(fields: [userId], references: [id])
+  userId                Int
+  subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId        Int?
+  stripePaymentIntentId String?
+  amountCents           Int
+  currency              String
+  status                PaymentStatus @default(PENDING)
+  paidAt                DateTime?
+  metadata              Json?
+  createdAt             DateTime      @default(now())
+}
+
+model Category {
+  id           Int                   @id @default(autoincrement())
+  key          String                @unique
+  translations CategoryTranslation[]
+  products     Product[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+}
+
+model CategoryTranslation {
+  id          Int      @id @default(autoincrement())
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  locale      String
+  title       String
+  description String?
+
+  @@unique([categoryId, locale])
+}
+
+model Product {
+  id                 Int     @id @default(autoincrement())
+  sku                String? @unique
+  defaultTitle       String?
+  defaultDescription String?
+  suggestedPrice     Float?
+  currency           String?
+  popularityScore    Int     @default(0)
+  shopifyId          String?
+  shopifyImported    Boolean @default(false)
+
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+
+  translations ProductTranslation[]
+  media        Media[]
+  suppliers    ProductSupplier[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  isActive     Boolean              @default(true)
+  metadata     Json?
+  views        Int                  @default(0)
+  likes        Int                  @default(0)
+  OrderItem    OrderItem[]
+}
+
+model ProductTranslation {
+  id          Int     @id @default(autoincrement())
+  product     Product @relation(fields: [productId], references: [id])
+  productId   Int
+  locale      String
+  title       String
+  description String  @db.Text
+  slug        String?
+
+  @@unique([productId, locale])
+}
+
+model Media {
+  id        Int       @id @default(autoincrement())
+  product   Product?  @relation(fields: [productId], references: [id])
+  productId Int?
+  url       String
+  provider  String?
+  type      MediaType
+  alt       String?
+  sortOrder Int       @default(0)
+  metadata  Json?
+  createdAt DateTime  @default(now())
+}
+
+model Supplier {
+  id           Int               @id @default(autoincrement())
+  name         String
+  marketplace  String?
+  baseUrl      String?
+  contactInfo  String?
+  notes        String?
+  productLinks ProductSupplier[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @default(now())
+}
+
+model ProductSupplier {
+  id          Int      @id @default(autoincrement())
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   Int
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  supplierId  Int
+  url         String
+  marketplace String?
+  price       Float?
+  currency    String?
+  isPrimary   Boolean  @default(false)
+  notes       String?
+
+  @@index([productId])
+  @@index([supplierId])
+}
+
+model Order {
+  id          Int    @id @default(autoincrement())
+  orderNumber String @unique
+
+  // relation to buyer (explicit relation name)
+  user   User @relation("UserOrders", fields: [userId], references: [id])
+  userId Int
+
+  // relation to agent (explicit relation name)
+  agent   User? @relation("AgentAssignedOrders", fields: [agentId], references: [id])
+  agentId Int?
+
+  items      OrderItem[]
+  totalCents Int
+  currency   String
+  status     OrderStatus @default(PENDING)
+  shipment   Shipment?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model OrderItem {
+  id             Int     @id @default(autoincrement())
+  order          Order   @relation(fields: [orderId], references: [id])
+  orderId        Int
+  product        Product @relation(fields: [productId], references: [id])
+  productId      Int
+  title          String
+  unitPriceCents Int
+  quantity       Int
+  metadata       Json?
+}
+
+model Shipment {
+  id             Int            @id @default(autoincrement())
+  order          Order          @relation(fields: [orderId], references: [id])
+  orderId        Int            @unique
+  method         ShipmentMethod @relation(fields: [methodId], references: [id])
+  methodId       Int
+  trackingNumber String?
+  status         ShipmentStatus @default(PENDING)
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  costCents      Int?
+  metadata       Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model ShipmentMethod {
+  id             Int           @id @default(autoincrement())
+  title          String
+  country        String?
+  minPrice       Float?
+  maxPrice       Float?
+  costCents      Int
+  currency       String
+  provider       String?
+  active         Boolean       @default(true)
+  agent          AgentProfile? @relation(fields: [agentProfileId], references: [id])
+  agentProfileId Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  Shipment       Shipment[]
+
+  @@index([country])
+}
+
+model AgentProfile {
+  id Int @id @default(autoincrement())
+
+  // explicit relation name between AgentProfile and User
+  user   User @relation("AgentProfileUser", fields: [userId], references: [id])
+  userId Int  @unique
+
+  companyName     String?
+  contactNumber   String?
+  details         Json?
+  shipmentMethods ShipmentMethod[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now())
+}
