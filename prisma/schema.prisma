@@ -63,22 +63,27 @@ enum ShipmentStatus {
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
-  email            String   @unique
-  name             String?
-  password         String?
-  role             Role     @default(USER)
-  locale           String?
-  stripeCustomerId String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  name         String?
+  passwordHash String?
 
-  // relations (explicit names to avoid ambiguity)
+  role             Role    @default(USER)
+  stripeCustomerId String?
+
+  // password reset
+  resetToken        String?
+  resetTokenExpires DateTime?
+
+  // relations
   subscriptions  Subscription[]
   payments       Payment[]
-  orders         Order[]        @relation("UserOrders") // orders where user is the buyer
-  assignedOrders Order[]        @relation("AgentAssignedOrders") // orders where user is assigned as agent
-  agentProfile   AgentProfile?  @relation("AgentProfileUser") // if user is an agent
+  orders         Order[]        @relation("UserOrders")
+  assignedOrders Order[]        @relation("AgentAssignedOrders")
+  agentProfile   AgentProfile?  @relation("AgentProfileUser")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Plan {
