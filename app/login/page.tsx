@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import Image from "next/image";
 
 // Zod schema for form validation
 const signInSchema = z.object({
@@ -54,20 +55,13 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-[0_0_5px_rgba(0,0,0,0.2)] dark:bg-muted-background">
         <div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="feather feather-zap mx-auto h-12 w-12 text-primary-500"
-          >
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-          </svg>
+          <Image
+            src="/logo.svg"
+            alt="Logo"
+            width={48}
+            height={48}
+            className="mx-auto text-primary-500"
+          />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             Sign in to your account
           </h2>
