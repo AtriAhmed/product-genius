@@ -5,16 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
 import Image from "next/image";
-
-// Zod schema for form validation
-const signInSchema = z.object({
-  email: z.email("Please enter a valid email address"),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(6, "Password must be at least 6 characters"),
-  remember: z.boolean().default(false),
-});
+import { useTranslations } from "next-intl";
+import { changeLocale } from "@/actions/server";
 
 type SignInFormData = {
   email: string;
@@ -23,6 +15,18 @@ type SignInFormData = {
 };
 
 export default function SignIn() {
+  const t = useTranslations("login");
+
+  // Zod schema for form validation with translations
+  const signInSchema = z.object({
+    email: z.email(t("please enter a valid email address")),
+    password: z
+      .string()
+      .min(1, t("password is required"))
+      .min(6, t("password must be at least 6 characters")),
+    remember: z.boolean().default(false),
+  });
+
   const {
     register,
     handleSubmit,
@@ -63,15 +67,15 @@ export default function SignIn() {
             className="mx-auto text-primary-500"
           />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
-            Sign in to your account
+            {t("sign in to your account")}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
+            {t("or")}{" "}
             <Link
               href="/signup"
               className="font-medium text-primary-500 hover:text-primary-600 duration-150"
             >
-              start your 7-day free trial
+              {t("start your 7-day free trial")}
             </Link>
           </p>
         </div>
@@ -80,7 +84,7 @@ export default function SignIn() {
           <div className="rounded-md space-y-4">
             <div>
               <label htmlFor="email" className="sr-only">
-                Email address
+                {t("email address")}
               </label>
               <input
                 {...register("email")}
@@ -92,7 +96,7 @@ export default function SignIn() {
                     ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                     : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
                 }`}
-                placeholder="Email address"
+                placeholder={t("email address")}
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">
@@ -103,7 +107,7 @@ export default function SignIn() {
 
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                {t("password")}
               </label>
               <input
                 {...register("password")}
@@ -115,7 +119,7 @@ export default function SignIn() {
                     ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                     : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
                 }`}
-                placeholder="Password"
+                placeholder={t("password")}
               />
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">
@@ -137,7 +141,7 @@ export default function SignIn() {
                 htmlFor="remember-me"
                 className="ml-2 block text-sm text-foreground"
               >
-                Remember me
+                {t("remember me")}
               </label>
             </div>
 
@@ -146,7 +150,7 @@ export default function SignIn() {
                 href="/forgot-password"
                 className="font-medium text-primary-500 hover:text-primary-600"
               >
-                Forgot your password?
+                {t("forgot your password?")}
               </Link>
             </div>
           </div>
@@ -157,7 +161,7 @@ export default function SignIn() {
               disabled={isSubmitting}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed duration-150"
             >
-              {isSubmitting ? "Signing in..." : "Sign in"}
+              {isSubmitting ? t("signing in;;;") : t("sign in")}
             </button>
           </div>
         </form>

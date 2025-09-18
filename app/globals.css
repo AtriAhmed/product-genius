@@ -34,3 +34,9 @@
   --color-primary-800: var(--color-orange-800);
   --color-primary-900: var(--color-orange-900);
 }
+
+@layer base {
+  button {
+    @apply cursor-pointer;
+  }
+}
