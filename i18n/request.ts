@@ -6,13 +6,13 @@ export default getRequestConfig(async () => {
   const locale = store.get("locale")?.value || "en";
 
   // Define the message files to import
-  const messageFiles = ["login", "settings", "profile"];
+  const messageFiles = ["login", "register"];
 
   // Import all message files and organize them by namespace
   const messages: Record<string, any> = {};
   for (const file of messageFiles) {
     try {
-      const module = await import(`@/i18n/messages/${locale}/${file}.json`);
+      const module = await import(`./messages/${locale}/${file}.json`);
       messages[file] = module.default;
     } catch (error) {
       // File doesn't exist, skip it silently or log if needed

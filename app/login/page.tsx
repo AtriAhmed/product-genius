@@ -1,12 +1,15 @@
 "use client";
 
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import Link from "next/link";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { changeLocale } from "@/actions/server";
+import Image from "next/image";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 type SignInFormData = {
   email: string;
@@ -16,6 +19,27 @@ type SignInFormData = {
 
 export default function SignIn() {
   const t = useTranslations("login");
+  const searchParams = useSearchParams();
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(
+    null
+  );
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const verified = searchParams.get("verified");
+    const error = searchParams.get("error");
+    const email = searchParams.get("email");
+
+    if (verified === "true" && email) {
+      setVerificationMessage(
+        `Account verified successfully! You can now sign in with ${email}`
+      );
+    } else if (error === "verification_failed") {
+      setVerificationMessage(
+        "Verification failed. Please try registering again."
+      );
+    }
+  }, [searchParams]);
 
   // Zod schema for form validation with translations
   const signInSchema = z.object({
@@ -72,13 +96,33 @@ export default function SignIn() {
           <p className="mt-2 text-center text-sm text-gray-600">
             {t("or")}{" "}
             <Link
-              href="/signup"
+              href="/register"
               className="font-medium text-primary-500 hover:text-primary-600 duration-150"
             >
               {t("start your 7-day free trial")}
             </Link>
           </p>
         </div>
+
+        {verificationMessage && (
+          <div
+            className={`p-4 rounded-md ${
+              verificationMessage.includes("successfully")
+                ? "bg-green-50 border border-green-200"
+                : "bg-red-50 border border-red-200"
+            }`}
+          >
+            <p
+              className={`text-sm ${
+                verificationMessage.includes("successfully")
+                  ? "text-green-800"
+                  : "text-red-800"
+              }`}
+            >
+              {verificationMessage}
+            </p>
+          </div>
+        )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md space-y-4">
@@ -109,18 +153,31 @@ export default function SignIn() {
               <label htmlFor="password" className="sr-only">
                 {t("password")}
               </label>
-              <input
-                {...register("password")}
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className={`appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
-                  errors.password
-                    ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                    : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
-                }`}
-                placeholder={t("password")}
-              />
+              <div className="relative">
+                <input
+                  {...register("password")}
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className={`appearance-none relative block w-full px-3 py-3 pr-10 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                    errors.password
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
+                  }`}
+                  placeholder={t("password")}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">
                   {errors.password.message}

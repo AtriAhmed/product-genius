@@ -62,6 +62,18 @@ enum ShipmentStatus {
   CANCELLED
 }
 
+model TempAccount {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String // store hashed password, same as User
+  token        String   @unique // random string sent in email link
+  expiresAt    DateTime // when the token/otp becomes invalid
+  attempts     Int      @default(0) // optional: number of verification attempts
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model User {
   id           Int     @id @default(autoincrement())
   email        String  @unique
