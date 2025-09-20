@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Roboto } from "next/font/google";
 import "@/app/globals.css";
-import { AppProvider } from "@/contexts/AppProvider";
+import Navbar from "@/components/Navbar";
+import Providers from "@/contexts/Providers";
+import { authOptions } from "@/lib/auth";
+import type { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import { NextIntlClientProvider } from "next-intl";
+import { Geist, Geist_Mono, Roboto } from "next/font/google";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,18 +29,24 @@ export const metadata: Metadata = {
   description: "Find Winning Products For Your Store",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextIntlClientProvider>
-          <AppProvider>{children}</AppProvider>
+          <Providers session={session}>
+            <Toaster />
+            <Navbar />
+            <div className="mt-[55px]">{children}</div>
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

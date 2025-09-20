@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/email";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcrypt";
+import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 
 // Validation schema for the request body
 const createTempAccountSchema = z.object({
+  name: z.string().min(1, "Name is required"),
   email: z.email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
@@ -31,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password } = validation.data;
+    const { name, email, password } = validation.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -71,6 +70,7 @@ export async function POST(request: NextRequest) {
     // Create temp account
     const tempAccount = await prisma.tempAccount.create({
       data: {
+        name,
         email,
         passwordHash,
         token,
@@ -79,18 +79,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Load email template
-    const templatePath = join(
-      process.cwd(),
-      "email-templates",
-      "verification.html"
-    );
-    const emailTemplate = readFileSync(templatePath, "utf-8");
-    console.log("-------------------- emailTemplate --------------------");
-    console.log(emailTemplate);
-
     // Send verification email
-    const emailSent = await sendVerificationEmail(email, token, emailTemplate);
+    const emailSent = await sendVerificationEmail(email, token);
 
     if (!emailSent) {
       // If email fails, delete the temp account and return error

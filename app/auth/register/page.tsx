@@ -9,8 +9,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Eye, EyeOff, Check } from "lucide-react";
+import axios from "axios";
 
 type RegisterFormData = {
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -25,6 +27,7 @@ export default function Register() {
   // Zod schema for form validation with translations
   const registerSchema = z
     .object({
+      name: z.string().min(1, t("name is required")),
       email: z.email(t("please enter a valid email address")),
       password: z
         .string()
@@ -45,6 +48,7 @@ export default function Register() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -55,29 +59,16 @@ export default function Register() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await fetch("/api/users/temp/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+      const response = await axios.post("/api/users/temp/create", {
+        name: data.name,
+        email: data.email,
+        password: data.password,
       });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setEmailSent(data.email);
-      } else {
-        // Handle error - you might want to show a toast or error message
-        console.error("Registration error:", result.error);
-        toast.error(result.error || "Registration failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Registration failed. Please try again.");
+      setEmailSent(data.email);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.error || "Registration failed. Please try again."
+      );
     }
   };
 
@@ -86,22 +77,11 @@ export default function Register() {
 
     setIsResending(true);
     try {
-      const response = await fetch("/api/users/temp/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: emailSent,
-          password: watchedEmail, // Note: This won't work as password is not available
-        }),
+      const response = await axios.post("/api/users/temp/create", {
+        email: emailSent,
+        password: watchedEmail, // Note: This won't work as password is not available
       });
-
-      if (response.ok) {
-        toast.success("Verification email resent successfully!");
-      } else {
-        toast.error("Failed to resend email. Please try again.");
-      }
+      toast.success("Verification email resent successfully!");
     } catch (error) {
       console.error("Resend email error:", error);
       toast.error("Failed to resend email. Please try again.");
@@ -112,68 +92,71 @@ export default function Register() {
 
   // Show success message if email was sent
   if (emailSent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
-        <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-[0_0_5px_rgba(0,0,0,0.2)] dark:bg-muted-background">
-          <div className="text-center">
-            <Image
-              src="/logo.svg"
-              alt="Logo"
-              width={48}
-              height={48}
-              className="mx-auto text-primary-500"
-            />
-            <div className="mt-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <Check className="w-8 h-8 text-green-600" />
+    if (emailSent) {
+      return (
+        <div className="min-h-[calc(100vh-55px)] flex items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-card-1 dark:bg-muted-background">
+            <div className="text-center">
+              {/* Logo */}
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="mx-auto mb-6"
+              />
+
+              {/* Success icon */}
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mb-4">
+                <Check className="w-8 h-8 text-orange-600" />
               </div>
-              <h2 className="text-3xl font-extrabold text-foreground">
+
+              {/* Heading */}
+              <h2 className="text-2xl font-bold text-foreground">
                 {t("verification email sent")}
               </h2>
-              <p className="mt-4 text-gray-600 leading-relaxed">
+
+              {/* Subtext */}
+              <p className="mt-3 text-gray-600 dark:text-gray-400">
                 {t("check your email")}
               </p>
-              <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium">{t("email sent to")}</span>
-                  <br />
-                  <span className="text-primary-600">{emailSent}</span>
-                </p>
+
+              {/* Highlighted email */}
+              <div className="mt-6 px-4 py-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-700">
+                <span className="font-medium">{t("email sent to")}</span>
+                <br />
+                <span className="text-orange-600 font-semibold">
+                  {emailSent}
+                </span>
               </div>
             </div>
-          </div>
 
-          <div className="mt-8 space-y-4">
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                {t("didn't receive email?")}
-              </p>
+            {/* Actions */}
+            <div className="space-y-4">
               <button
                 onClick={handleResendEmail}
                 disabled={isResending}
-                className="mt-2 font-medium text-primary-500 hover:text-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 px-4 rounded-md bg-primary-500 text-white font-medium hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isResending ? "Sending..." : t("resend verification")}
               </button>
-            </div>
 
-            <div className="text-center">
               <Link
-                href="/login"
-                className="font-medium text-primary-500 hover:text-primary-600"
+                href="/auth/login"
+                className="block text-center w-full py-3 px-4 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-muted transition"
               >
-                Back to sign in
+                {t("back to sign in")}
               </Link>
             </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
-      <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-[0_0_5px_rgba(0,0,0,0.2)] dark:bg-muted-background">
+    <div className="min-h-[calc(100vh-55px)] flex items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-card-1 dark:bg-muted-background">
         <div>
           <Image
             src="/logo.svg"
@@ -188,7 +171,7 @@ export default function Register() {
           <p className="mt-2 text-center text-sm text-gray-600">
             {t("or")}{" "}
             <Link
-              href="/login"
+              href="/auth/login"
               className="font-medium text-primary-500 hover:text-primary-600 duration-150"
             >
               {t("already have an account?")} {t("sign in here")}
@@ -198,6 +181,29 @@ export default function Register() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md space-y-4">
+            <div>
+              <label htmlFor="name" className="sr-only">
+                {t("full name")}
+              </label>
+              <input
+                {...register("name")}
+                id="name"
+                type="text"
+                autoComplete="name"
+                className={`appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                  errors.name
+                    ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                    : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
+                }`}
+                placeholder={t("full name")}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
             <div>
               <label htmlFor="email" className="sr-only">
                 {t("email address")}

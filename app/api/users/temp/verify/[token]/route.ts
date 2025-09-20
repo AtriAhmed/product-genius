@@ -64,6 +64,7 @@ export async function GET(
     // Create the user account
     const user = await prisma.user.create({
       data: {
+        name: tempAccount.name,
         email: tempAccount.email,
         passwordHash: tempAccount.passwordHash,
         role: "USER",
@@ -78,7 +79,7 @@ export async function GET(
     // Redirect to a success page or login page
     const successUrl = `${
       process.env.NEXT_PUBLIC_APP_URL
-    }/login?verified=true&email=${encodeURIComponent(user.email)}`;
+    }/auth/login?verified=true&email=${encodeURIComponent(user.email)}`;
 
     return NextResponse.redirect(successUrl);
   } catch (error) {

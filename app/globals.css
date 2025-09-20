@@ -33,10 +33,16 @@
   --color-primary-700: var(--color-orange-700);
   --color-primary-800: var(--color-orange-800);
   --color-primary-900: var(--color-orange-900);
+
+  --shadow-card-1: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
 @layer base {
   button {
     @apply cursor-pointer;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }

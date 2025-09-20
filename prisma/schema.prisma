@@ -65,6 +65,7 @@ enum ShipmentStatus {
 model TempAccount {
   id           Int      @id @default(autoincrement())
   email        String   @unique
+  name         String? // user's name
   passwordHash String // store hashed password, same as User
   token        String   @unique // random string sent in email link
   expiresAt    DateTime // when the token/otp becomes invalid

@@ -3,6 +3,8 @@
   "or": "Ou",
   "already have an account?": "Vous avez déjà un compte ?",
   "sign in here": "connectez-vous ici",
+  "full name": "Nom complet",
+  "name is required": "Le nom est requis",
   "email address": "Adresse e-mail",
   "password": "Mot de passe",
   "confirm password": "Confirmer le mot de passe",

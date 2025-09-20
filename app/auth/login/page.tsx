@@ -8,6 +8,8 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -20,6 +22,7 @@ type SignInFormData = {
 export default function SignIn() {
   const t = useTranslations("login");
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [verificationMessage, setVerificationMessage] = useState<string | null>(
     null
   );
@@ -65,23 +68,28 @@ export default function SignIn() {
   });
 
   const onSubmit = async (data: SignInFormData) => {
-    try {
-      // Handle form submission logic here
-      console.log("Form submitted:", data);
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
 
-      // Example: API call
-      // await signIn(data.email, data.password, data.remember);
-
-      // Simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error("Sign in error:", error);
+    if (result?.error) {
+      if (result.error === "UserNotFound") {
+        toast.error("No account found with this email address.");
+      } else if (result.error === "WrongPassword") {
+        toast.error("Incorrect password.");
+      } else {
+        toast.error(result.error);
+      }
+    } else {
+      router.push("/");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
-      <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-[0_0_5px_rgba(0,0,0,0.2)] dark:bg-muted-background">
+    <div className="min-h-[calc(100vh-55px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background">
+      <div className="max-w-md w-full space-y-8 p-10 rounded-xl shadow-card-1 dark:bg-muted-background">
         <div>
           <Image
             src="/logo.svg"
@@ -96,7 +104,7 @@ export default function SignIn() {
           <p className="mt-2 text-center text-sm text-gray-600">
             {t("or")}{" "}
             <Link
-              href="/register"
+              href="/auth/register"
               className="font-medium text-primary-500 hover:text-primary-600 duration-150"
             >
               {t("start your 7-day free trial")}

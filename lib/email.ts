@@ -1,4 +1,7 @@
+import { readFileSync } from "fs";
+
 import nodemailer from "nodemailer";
+import { join } from "path";
 
 // Email configuration interface
 interface EmailConfig {
@@ -61,10 +64,16 @@ export async function sendEmail(config: EmailConfig): Promise<boolean> {
  */
 export async function sendVerificationEmail(
   email: string,
-  token: string,
-  emailTemplate: string
+  token: string
 ): Promise<boolean> {
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/users/temp/verify/${token}`;
+  const templatePath = join(
+    process.cwd(),
+    "email-templates",
+    "verification.html"
+  );
+  const emailTemplate = readFileSync(templatePath, "utf-8");
+
+  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/users/temp/verify/${token}`;
 
   // Replace placeholder in template with actual verification URL
   const htmlContent = emailTemplate.replaceAll(

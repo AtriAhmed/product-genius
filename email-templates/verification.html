@@ -14,7 +14,7 @@
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, sans-serif;
-        background-color: #f8f9fa;
+        background-color: #f9fafb;
         line-height: 1.6;
         color: #374151;
       }
@@ -23,91 +23,90 @@
         max-width: 600px;
         margin: 40px auto;
         background-color: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         overflow: hidden;
       }
 
       .header {
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        background: linear-gradient(135deg, #f97316, #ea580c);
         padding: 40px 30px;
         text-align: center;
       }
 
       .logo {
-        width: 48px;
-        height: 48px;
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        margin: 0 auto 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        color: white;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+      }
+
+      .logo img {
+        width: 100%;
+        height: auto;
+        display: block;
       }
 
       .header h1 {
         color: white;
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 800;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
 
       .header p {
         color: rgba(255, 255, 255, 0.9);
-        font-size: 16px;
+        font-size: 15px;
       }
 
       .content {
-        padding: 40px 30px;
+        padding: 36px 28px;
       }
 
       .welcome-text {
-        font-size: 18px;
-        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
         color: #111827;
       }
 
       .description {
         font-size: 16px;
-        color: #6b7280;
-        margin-bottom: 30px;
+        color: #4b5563;
+        margin-bottom: 28px;
         line-height: 1.7;
       }
 
       .verify-button {
         display: inline-block;
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        background: linear-gradient(135deg, #f97316, #ea580c);
         color: white;
         text-decoration: none;
         padding: 16px 32px;
-        border-radius: 8px;
+        border-radius: 10px;
         font-weight: 600;
         font-size: 16px;
         text-align: center;
-        transition: all 0.15s ease;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(234, 88, 12, 0.25);
       }
 
       .verify-button:hover {
-        background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        background: linear-gradient(135deg, #ea580c, #c2410c);
         transform: translateY(-1px);
-        box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 6px 10px rgba(234, 88, 12, 0.35);
       }
 
       .button-container {
         text-align: center;
-        margin: 30px 0;
+        margin: 32px 0;
       }
 
       .alternative-link {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #f9fafb;
+        margin-top: 24px;
+        padding: 18px;
+        background-color: #fff7ed;
         border-radius: 8px;
-        border-left: 4px solid #3b82f6;
+        border-left: 4px solid #f97316;
       }
 
       .alternative-link p {
@@ -117,14 +116,14 @@
       }
 
       .alternative-link a {
-        color: #3b82f6;
+        color: #ea580c;
         word-break: break-all;
         text-decoration: none;
       }
 
       .footer {
         background-color: #f9fafb;
-        padding: 30px;
+        padding: 28px;
         border-top: 1px solid #e5e7eb;
         text-align: center;
       }
@@ -132,17 +131,17 @@
       .footer p {
         font-size: 14px;
         color: #6b7280;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
 
       .footer-links {
-        margin-top: 16px;
+        margin-top: 14px;
       }
 
       .footer-links a {
-        color: #3b82f6;
+        color: #ea580c;
         text-decoration: none;
-        margin: 0 12px;
+        margin: 0 10px;
         font-size: 14px;
       }
 
@@ -153,17 +152,17 @@
       @media (max-width: 600px) {
         .container {
           margin: 20px;
-          border-radius: 8px;
+          border-radius: 12px;
         }
 
         .header,
         .content,
         .footer {
-          padding: 30px 20px;
+          padding: 24px 18px;
         }
 
         .header h1 {
-          font-size: 24px;
+          font-size: 22px;
         }
 
         .verify-button {
@@ -176,7 +175,9 @@
   <body>
     <div class="container">
       <div class="header">
-        <div class="logo">PG</div>
+        <div class="logo">
+          <img src="{{NEXT_AUTH_APP_URL}}/logo.png" alt="Product Genius Logo" />
+        </div>
         <h1>Product Genius</h1>
         <p>Welcome to the future of product discovery</p>
       </div>
@@ -185,8 +186,8 @@
         <h2 class="welcome-text">Verify Your Email Address</h2>
 
         <p class="description">
-          Thank you for joining Product Genius! To complete your registration
-          and start your 7-day free trial, please verify your email address by
+          Thanks for joining <strong>Product Genius</strong>! To complete your
+          registration and start exploring, please verify your email address by
           clicking the button below.
         </p>
 
@@ -197,15 +198,14 @@
         </div>
 
         <div class="alternative-link">
-          <p><strong>Button not working?</strong></p>
+          <p><strong>Having trouble?</strong></p>
           <p>Copy and paste this link into your browser:</p>
           <a href="{{VERIFICATION_URL}}">{{VERIFICATION_URL}}</a>
         </div>
 
         <p class="description">
-          This verification link will expire in 24 hours for security reasons.
-          If you didn't create an account with Product Genius, you can safely
-          ignore this email.
+          This link will expire in 24 hours for security reasons. If you didn’t
+          request this, please ignore this email.
         </p>
       </div>
 
