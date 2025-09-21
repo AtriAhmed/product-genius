@@ -1,12 +1,15 @@
+import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
-import { cookies } from "next/headers";
+import { routing } from "./routing";
 
-export default getRequestConfig(async () => {
-  const store = await cookies();
-  const locale = store.get("locale")?.value || "en";
+export default getRequestConfig(async ({ requestLocale }) => {
+  const requested = await requestLocale;
+  const locale = hasLocale(routing.locales, requested)
+    ? requested
+    : routing.defaultLocale;
 
   // Define the message files to import
-  const messageFiles = ["login", "register"];
+  const messageFiles = ["login", "register", "navbar"];
 
   // Import all message files and organize them by namespace
   const messages: Record<string, any> = {};

@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import avatar from "@/assets/images/avatar.png";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session, status } = useSession();
   const user = session?.user;
+  const t = useTranslations("navbar");
 
   const isAuthenticated = status === "authenticated";
 
@@ -44,19 +46,19 @@ export default function Navbar() {
               href="/#features"
               className="hover:text-primary-500 px-3 py-2 text-sm font-medium"
             >
-              Features
+              {t("features")}
             </Link>
             <Link
               href="/#niches"
               className="hover:text-primary-500 px-3 py-2 text-sm font-medium"
             >
-              Niches
+              {t("niches")}
             </Link>
             <Link
               href="/pricing"
               className="hover:text-primary-500 px-3 py-2 text-sm font-medium"
             >
-              Pricing
+              {t("pricing")}
             </Link>
 
             {/* Auth */}
@@ -65,7 +67,7 @@ export default function Navbar() {
                 href="/auth/login"
                 className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
-                Login
+                {t("login")}
               </Link>
             ) : (
               <>
@@ -73,7 +75,7 @@ export default function Navbar() {
                   href="/dashboard"
                   className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
-                  Dashboard
+                  {t("dashboard")}
                 </Link>
 
                 {/* Avatar Dropdown */}
@@ -93,13 +95,13 @@ export default function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="flex items-center">
                         <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
+                        <span>{t("profile")}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
+                      <span>{t("logout")}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -128,19 +130,19 @@ export default function Navbar() {
             href="/#features"
             className="block text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
           >
-            Features
+            {t("features")}
           </Link>
           <Link
             href="/#niches"
             className="block text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
           >
-            Niches
+            {t("niches")}
           </Link>
           <Link
             href="/pricing"
             className="block text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
           >
-            Pricing
+            {t("pricing")}
           </Link>
 
           {!isAuthenticated ? (
@@ -148,7 +150,7 @@ export default function Navbar() {
               href="/auth/login"
               className="block bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-md text-base font-medium"
             >
-              Login
+              {t("login")}
             </Link>
           ) : (
             <>
@@ -156,7 +158,7 @@ export default function Navbar() {
                 href="/dashboard"
                 className="block bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-md text-base font-medium"
               >
-                Dashboard
+                {t("dashboard")}
               </Link>
 
               {/* Avatar in mobile → simpler (just links) */}
@@ -166,14 +168,14 @@ export default function Navbar() {
                   className="flex items-center text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
                 >
                   <User className="mr-2 h-5 w-5" />
-                  Profile
+                  {t("profile")}
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center w-full text-left text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
                 >
                   <LogOut className="mr-2 h-5 w-5" />
-                  Logout
+                  {t("logout")}
                 </button>
               </div>
             </>

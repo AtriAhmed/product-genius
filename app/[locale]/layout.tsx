@@ -1,4 +1,4 @@
-import "@/app/globals.css";
+import "@/app/[locale]/globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/contexts/Providers";
 import { authOptions } from "@/lib/auth";
