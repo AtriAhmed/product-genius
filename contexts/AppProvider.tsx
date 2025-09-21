@@ -1,7 +1,9 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React, { createContext, ReactNode, useContext } from "react";
+import React, { createContext, ReactNode, useContext, useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 interface AppContextProps {}
 
@@ -12,6 +14,16 @@ export default function AppProvider({ children }: { children: ReactNode }) {
 
   console.log("-------------------- session --------------------");
   console.log(session);
+
+  useEffect(() => {
+    AOS.init({
+      duration: 600,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 50,
+      // Add any other global AOS settings you want
+    });
+  }, []);
 
   return <AppContext.Provider value={{}}>{children}</AppContext.Provider>;
 }

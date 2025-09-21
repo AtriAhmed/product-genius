@@ -4,6 +4,7 @@ import AppProvider from "@/contexts/AppProvider";
 import { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import React, { ReactNode } from "react";
+import { ThemeProvider } from "next-themes";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -13,7 +14,9 @@ type ProvidersProps = {
 export default function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session} refetchOnWindowFocus={false}>
-      <AppProvider>{children}</AppProvider>
+      <AppProvider>
+        <ThemeProvider attribute="class">{children}</ThemeProvider>
+      </AppProvider>
     </SessionProvider>
   );
 }

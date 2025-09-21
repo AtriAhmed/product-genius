@@ -168,7 +168,7 @@ export default function Register() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             {t("create your account")}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             {t("or")}{" "}
             <Link
               href="/auth/login"
@@ -190,7 +190,7 @@ export default function Register() {
                 id="name"
                 type="text"
                 autoComplete="name"
-                className={`appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                className={`appearance-none relative block w-full px-3 py-3 border text-muted-foreground rounded-md focus:outline-none focus:z-10 sm:text-sm ${
                   errors.name
                     ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                     : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
@@ -213,7 +213,7 @@ export default function Register() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                className={`appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                className={`appearance-none relative block w-full px-3 py-3 border text-muted-foreground rounded-md focus:outline-none focus:z-10 sm:text-sm ${
                   errors.email
                     ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                     : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
@@ -237,7 +237,7 @@ export default function Register() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  className={`appearance-none relative block w-full px-3 py-3 pr-10 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                  className={`appearance-none relative block w-full px-3 py-3 pr-10 border text-muted-foreground rounded-md focus:outline-none focus:z-10 sm:text-sm ${
                     errors.password
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
@@ -272,7 +272,7 @@ export default function Register() {
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                className={`appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                className={`appearance-none relative block w-full px-3 py-3 border text-muted-foreground rounded-md focus:outline-none focus:z-10 sm:text-sm ${
                   errors.confirmPassword
                     ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                     : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"

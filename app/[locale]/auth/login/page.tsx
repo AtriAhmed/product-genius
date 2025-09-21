@@ -101,7 +101,7 @@ export default function SignIn() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             {t("sign in to your account")}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             {t("or")}{" "}
             <Link
               href="/auth/register"
@@ -143,7 +143,7 @@ export default function SignIn() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                className={`appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                className={`appearance-none relative block w-full px-3 py-3 border text-muted-foreground rounded-md focus:outline-none focus:z-10 sm:text-sm ${
                   errors.email
                     ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                     : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"
@@ -167,7 +167,7 @@ export default function SignIn() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  className={`appearance-none relative block w-full px-3 py-3 pr-10 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:z-10 sm:text-sm ${
+                  className={`appearance-none relative block w-full px-3 py-3 pr-10 border text-muted-foreground rounded-md focus:outline-none focus:z-10 sm:text-sm ${
                     errors.password
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-primary-500 focus:border-primary-500"

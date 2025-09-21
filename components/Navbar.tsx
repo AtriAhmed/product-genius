@@ -1,35 +1,34 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { Menu, Zap, LogOut, User } from "lucide-react";
-import Image from "next/image";
+import avatar from "@/assets/images/avatar.png";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import avatar from "@/assets/images/avatar.png";
+import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session, status } = useSession();
-  const user = session?.user;
   const t = useTranslations("navbar");
 
   const isAuthenticated = status === "authenticated";
 
-  // Example logout handler
   async function handleLogout() {
     await signOut({ redirect: false });
   }
 
   return (
-    <nav className="fixed left-0 right-0 dark:bg-muted-background shadow-sm top-0 z-50">
+    <nav className="fixed left-0 right-0 bg-background dark:bg-muted-background shadow-sm top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-[55px]">
           {/* Logo + Brand */}
@@ -60,53 +59,55 @@ export default function Navbar() {
             >
               {t("pricing")}
             </Link>
-
-            {/* Auth */}
-            {!isAuthenticated ? (
-              <Link
-                href="/auth/login"
-                className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                {t("login")}
-              </Link>
-            ) : (
-              <>
+            <div className="flex items-center gap-2">
+              {/* Auth */}
+              {!isAuthenticated ? (
                 <Link
-                  href="/dashboard"
+                  href="/auth/login"
                   className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
-                  {t("dashboard")}
+                  {t("login")}
                 </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    {t("dashboard")}
+                  </Link>
 
-                {/* Avatar Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="ml-3 focus:outline-none">
-                      <Image
-                        src={avatar} // replace with real avatar
-                        alt="Avatar"
-                        width={36}
-                        height={36}
-                        className="rounded-full border shadow-sm"
-                      />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="flex items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>{t("profile")}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>{t("logout")}</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
+                  {/* Avatar Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="ml-3 focus:outline-none">
+                        <Image
+                          src={avatar} // replace with real avatar if available
+                          alt="Avatar"
+                          width={36}
+                          height={36}
+                          className="rounded-full border shadow-sm"
+                        />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="flex items-center">
+                          <User className="mr-2 h-4 w-4" />
+                          <span>{t("profile")}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>{t("logout")}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+              <ThemeSwitcher />
+            </div>
           </div>
 
           {/* Mobile Hamburger */}
@@ -177,6 +178,8 @@ export default function Navbar() {
                   <LogOut className="mr-2 h-5 w-5" />
                   {t("logout")}
                 </button>
+                {/* Theme Switcher in mobile */}
+                <ThemeSwitcher />
               </div>
             </>
           )}
