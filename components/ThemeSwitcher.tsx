@@ -6,11 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAppProvider } from "@/contexts/AppProvider";
 import { Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function ThemeSwitcher() {
   const { setTheme, theme } = useTheme();
+  const { isMounted } = useAppProvider();
 
   return (
     <DropdownMenu>
@@ -19,7 +21,9 @@ export default function ThemeSwitcher() {
           className="rounded-md p-2 bg-slate-200/75 hover:bg-slate-200 dark:bg-accent/50 dark:hover:bg-accent duration-100"
           aria-label="Toggle theme"
         >
-          {theme === "dark" ? (
+          {!isMounted ? (
+            <Laptop className="h-5 w-5" />
+          ) : theme === "dark" ? (
             <Moon className="h-5 w-5" />
           ) : theme === "light" ? (
             <Sun className="h-5 w-5" />

@@ -1,19 +1,27 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React, { createContext, ReactNode, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-interface AppContextProps {}
+interface AppContextProps {
+  isMounted?: boolean;
+}
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
 
 export default function AppProvider({ children }: { children: ReactNode }) {
-  const session = useSession();
-
-  console.log("-------------------- session --------------------");
-  console.log(session);
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     AOS.init({
@@ -25,7 +33,9 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  return <AppContext.Provider value={{}}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={{ isMounted }}>{children}</AppContext.Provider>
+  );
 }
 
 export const useAppProvider = () => {

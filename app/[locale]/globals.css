@@ -164,24 +164,22 @@
     @apply cursor-pointer;
   }
 
+  * {
+    @apply border-border outline-ring/50 scroll-smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
 
-  button:focus,
-  input:focus,
-  textarea:focus,
-  select:focus,
-  a:focus {
-    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-background;
+  :not([data-radix-popper-content-wrapper])
+    :is(button, input, textarea, select, a):focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-background duration-100;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
+@layer components {
+  .no-ring {
+    @apply ring-0 ring-offset-0;
   }
 }

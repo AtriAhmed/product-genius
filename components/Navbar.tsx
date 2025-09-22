@@ -1,18 +1,10 @@
 "use client";
 
-import avatar from "@/assets/images/avatar.png";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import UserDropdown from "@/components/UserDropdown";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -78,32 +70,7 @@ export default function Navbar() {
                   </Link>
 
                   {/* Avatar Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="ml-3 focus:outline-none">
-                        <Image
-                          src={avatar} // replace with real avatar if available
-                          alt="Avatar"
-                          width={36}
-                          height={36}
-                          className="rounded-full border shadow-sm"
-                        />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem asChild>
-                        <Link href="/profile" className="flex items-center">
-                          <User className="mr-2 h-4 w-4" />
-                          <span>{t("profile")}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>{t("logout")}</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <UserDropdown />
                 </>
               )}
               <ThemeSwitcher />
