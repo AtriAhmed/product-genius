@@ -10,5 +10,7 @@
   "signing in;;;": "Connexion en cours...",
   "please enter a valid email address": "Veuillez saisir une adresse e-mail valide",
   "password is required": "Le mot de passe est requis",
-  "password must be at least 6 characters": "Le mot de passe doit contenir au moins 6 caractères"
+  "password must be at least 6 characters": "Le mot de passe doit contenir au moins 6 caractères",
+  "no account found": "Aucun compte trouvé avec cette adresse e-mail.",
+  "incorrect password": "Mot de passe incorrect."
 }

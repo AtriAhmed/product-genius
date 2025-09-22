@@ -23,5 +23,8 @@
   "didn't receive email?": "Vous n'avez pas reçu l'e-mail ?",
   "resend verification": "Renvoyer l'e-mail de vérification",
   "terms of service": "Conditions d'utilisation",
-  "privacy policy": "Politique de confidentialité"
+  "privacy policy": "Politique de confidentialité",
+  "registration failed": "L'inscription a échoué. Veuillez réessayer.",
+  "verification email resent": "E-mail de vérification renvoyé avec succès !",
+  "failed to resend email": "Impossible de renvoyer l'e-mail. Veuillez réessayer."
 }

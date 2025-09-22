@@ -10,5 +10,7 @@
   "signing in;;;": "Signing in...",
   "please enter a valid email address": "Please enter a valid email address",
   "password is required": "Password is required",
-  "password must be at least 6 characters": "Password must be at least 6 characters"
+  "password must be at least 6 characters": "Password must be at least 6 characters",
+  "no account found": "No account found with this email address.",
+  "incorrect password": "Incorrect password."
 }

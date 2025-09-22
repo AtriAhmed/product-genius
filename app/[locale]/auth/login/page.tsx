@@ -76,9 +76,9 @@ export default function SignIn() {
 
     if (result?.error) {
       if (result.error === "UserNotFound") {
-        toast.error("No account found with this email address.");
+        toast.error(t("no account found"));
       } else if (result.error === "WrongPassword") {
-        toast.error("Incorrect password.");
+        toast.error(t("incorrect password"));
       } else {
         toast.error(result.error);
       }
@@ -176,7 +176,7 @@ export default function SignIn() {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="absolute inset-y-0 right-0 mr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (

@@ -23,5 +23,8 @@
   "didn't receive email?": "Didn't receive the email?",
   "resend verification": "Resend verification email",
   "terms of service": "Terms of Service",
-  "privacy policy": "Privacy Policy"
+  "privacy policy": "Privacy Policy",
+  "registration failed": "Registration failed. Please try again.",
+  "verification email resent": "Verification email resent successfully!",
+  "failed to resend email": "Failed to resend email. Please try again."
 }

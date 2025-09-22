@@ -66,9 +66,7 @@ export default function Register() {
       });
       setEmailSent(data.email);
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.error || "Registration failed. Please try again."
-      );
+      toast.error(error.response?.data?.error || t("registration failed"));
     }
   };
 
@@ -81,10 +79,10 @@ export default function Register() {
         email: emailSent,
         password: watchedEmail, // Note: This won't work as password is not available
       });
-      toast.success("Verification email resent successfully!");
+      toast.success(t("verification email resent"));
     } catch (error) {
       console.error("Resend email error:", error);
-      toast.error("Failed to resend email. Please try again.");
+      toast.error(t("failed to resend email"));
     } finally {
       setIsResending(false);
     }
@@ -246,7 +244,7 @@ export default function Register() {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="absolute inset-y-0 right-0 mr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
