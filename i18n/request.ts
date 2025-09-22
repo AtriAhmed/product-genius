@@ -9,7 +9,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     : routing.defaultLocale;
 
   // Define the message files to import
-  const messageFiles = ["login", "register", "navbar", "home"];
+  const messageFiles = ["login", "register", "navbar", "home", "not-found"];
 
   // Import all message files and organize them by namespace
   const messages: Record<string, any> = {};

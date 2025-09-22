@@ -2,6 +2,7 @@
 
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import UserDropdown from "@/components/UserDropdown";
+import { useAppProvider } from "@/contexts/AppProvider";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -11,7 +12,9 @@ import { useState } from "react";
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session, status } = useSession();
+  const user = session?.user;
   const t = useTranslations("navbar");
+  const { isMounted } = useAppProvider();
 
   const isAuthenticated = status === "authenticated";
 
@@ -63,7 +66,11 @@ export default function Navbar() {
               ) : (
                 <>
                   <Link
-                    href="/dashboard"
+                    href={
+                      isMounted && ["ADMIN", "OWNER"].includes(user?.role || "")
+                        ? "/admin"
+                        : "/dashboard"
+                    }
                     className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
                     {t("dashboard")}
