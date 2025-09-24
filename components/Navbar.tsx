@@ -2,7 +2,7 @@
 
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import UserDropdown from "@/components/UserDropdown";
-import { useAppProvider } from "@/contexts/AppProvider";
+import { useIsMounted } from "@/hooks/use-is-mounted";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -14,7 +14,7 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const user = session?.user;
   const t = useTranslations("navbar");
-  const { isMounted } = useAppProvider();
+  const isMounted = useIsMounted();
 
   const isAuthenticated = status === "authenticated";
 

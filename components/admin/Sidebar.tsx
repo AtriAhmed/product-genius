@@ -47,6 +47,21 @@ import {
 } from "@/components/ui/sidebar";
 import { signOut, useSession } from "next-auth/react";
 
+// Helper function to remove locale prefix from pathname
+function removeLocaleFromPath(pathname: string): string {
+  const locales = ["en", "fr"]; // Should match your i18n configuration
+  const segments = pathname.split("/");
+
+  // Check if the first segment (after empty string) is a locale
+  if (segments.length > 1 && locales.includes(segments[1])) {
+    // Remove the locale segment and rejoin
+    segments.splice(1, 1);
+    return segments.join("/") || "/";
+  }
+
+  return pathname;
+}
+
 // Admin navigation data
 const navigationData = [
   {
@@ -101,6 +116,7 @@ export function AdminSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const pathnameWithoutLocale = removeLocaleFromPath(pathname);
 
   async function handleLogout() {
     await signOut({ redirect: false });
@@ -139,7 +155,10 @@ export function AdminSidebar({
           <SidebarMenu>
             {navigationData.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={pathname === item.url}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathnameWithoutLocale === item.url}
+                >
                   <Link href={item.url} className="no-ring">
                     <item.icon />
                     <span>{item.title}</span>

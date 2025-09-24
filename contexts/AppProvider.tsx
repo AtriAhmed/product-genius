@@ -11,18 +11,11 @@ import React, {
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-interface AppContextProps {
-  isMounted?: boolean;
-}
+interface AppContextProps {}
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
 
 export default function AppProvider({ children }: { children: ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   useEffect(() => {
     AOS.init({
       duration: 600,
@@ -33,9 +26,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  return (
-    <AppContext.Provider value={{ isMounted }}>{children}</AppContext.Provider>
-  );
+  return <AppContext.Provider value={{}}>{children}</AppContext.Provider>;
 }
 
 export const useAppProvider = () => {

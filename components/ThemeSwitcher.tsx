@@ -6,13 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppProvider } from "@/contexts/AppProvider";
+import { useIsMounted } from "@/hooks/use-is-mounted";
 import { Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function ThemeSwitcher() {
   const { setTheme, theme } = useTheme();
-  const { isMounted } = useAppProvider();
+  const isMounted = useIsMounted();
 
   return (
     <DropdownMenu>

@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +8,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useIsMounted } from "@/hooks/use-is-mounted";
+import { usePathname } from "next/navigation";
 
 // Mapping of routes to breadcrumb labels
 const routeLabels: Record<string, string> = {
@@ -62,6 +63,7 @@ const routeLabels: Record<string, string> = {
 
 export function AdminBreadcrumb() {
   const pathname = usePathname();
+  const isMounted = useIsMounted();
 
   // Split the pathname into segments
   const segments = pathname.split("/").filter(Boolean);
@@ -90,7 +92,7 @@ export function AdminBreadcrumb() {
           <div key={item.href} className="flex items-center">
             {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
             <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
-              {item.isLast ? (
+              {!isMounted || item.isLast ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
