@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -52,47 +53,47 @@ import { signOut, useSession } from "next-auth/react";
 // Admin navigation data
 const navigationData = [
   {
-    title: "Overview",
+    title: "overview",
     url: "/admin",
     icon: BarChart3,
   },
   {
-    title: "Products",
+    title: "products",
     url: "/admin/products",
     icon: Package,
   },
   {
-    title: "Categories",
+    title: "categories",
     url: "/admin/categories",
     icon: FolderTree,
   },
   {
-    title: "Orders",
+    title: "orders",
     url: "/admin/orders",
     icon: ShoppingCart,
   },
   {
-    title: "Users",
+    title: "users",
     url: "/admin/users",
     icon: Users,
   },
   {
-    title: "Subscriptions",
+    title: "subscriptions",
     url: "/admin/subscriptions",
     icon: CreditCard,
   },
   {
-    title: "Plans",
+    title: "plans",
     url: "/admin/plans",
     icon: Star,
   },
   {
-    title: "Analytics",
+    title: "analytics",
     url: "/admin/analytics",
     icon: BarChart3,
   },
   {
-    title: "Settings",
+    title: "settings",
     url: "/admin/settings",
     icon: Settings,
   },
@@ -104,6 +105,7 @@ export function AdminSidebar({
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations("sidebar");
 
   async function handleLogout() {
     await signOut({ redirect: false });
@@ -124,9 +126,11 @@ export function AdminSidebar({
                   <Zap className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">ProductGenius</span>
+                  <span className="truncate font-semibold">
+                    {t("product genius")}
+                  </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Admin Panel
+                    {t("admin panel")}
                   </span>
                 </div>
               </Link>
@@ -138,14 +142,14 @@ export function AdminSidebar({
       <SidebarContent>
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("admin panel")}</SidebarGroupLabel>
           <SidebarMenu>
             {navigationData.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={pathname === item.url}>
                   <Link href={item.url} className="no-ring">
                     <item.icon />
-                    <span>{item.title}</span>
+                    <span>{t(item.title)}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -174,7 +178,7 @@ export function AdminSidebar({
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {session?.user?.name || "Admin"}
+                      {session?.user?.name || t("admin")}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
                       {session?.user?.email}
@@ -204,7 +208,7 @@ export function AdminSidebar({
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
-                        {session?.user?.name || "Admin"}
+                        {session?.user?.name || t("admin")}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
                         {session?.user?.email}
@@ -219,19 +223,19 @@ export function AdminSidebar({
                   <DropdownMenuItem asChild>
                     <Link href="/admin/profile" className="no-ring">
                       <Sparkles />
-                      Admin Profile
+                      {t("admin profile")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/admin/settings" className="no-ring">
                       <Settings />
-                      Settings
+                      {t("settings")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/admin/notifications" className="no-ring">
                       <Bell />
-                      Notifications
+                      {t("notifications")}
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -241,7 +245,7 @@ export function AdminSidebar({
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="gap-2">
                     <Languages className="size-4 text-muted-foreground" />
-                    Language
+                    {t("language")}
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     <DropdownMenuItem
@@ -249,14 +253,14 @@ export function AdminSidebar({
                         router.push(pathname, { locale: "en" });
                       }}
                     >
-                      English
+                      {t("english")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => {
                         router.push(pathname, { locale: "fr" });
                       }}
                     >
-                      Français
+                      {t("french")}
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -265,12 +269,12 @@ export function AdminSidebar({
                 <DropdownMenuItem asChild>
                   <Link href="/" className="no-ring">
                     <BadgeCheck />
-                    Back to Site
+                    {t("back to site")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
-                  Log out
+                  {t("log out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
