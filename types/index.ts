@@ -98,7 +98,6 @@ export type Payment = {
 
 export type Category = {
   id: number;
-  key: string;
   createdAt: Date;
   updatedAt: Date;
 };
