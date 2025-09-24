@@ -1,25 +1,25 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   BadgeCheck,
+  BarChart3,
   Bell,
   ChevronsUpDown,
   CreditCard,
+  FolderTree,
+  Globe,
+  Languages,
   LogOut,
-  Sparkles,
   Package,
-  Users,
   Settings,
   ShoppingCart,
-  BarChart3,
-  FolderTree,
-  DollarSign,
+  Sparkles,
   Star,
+  Users,
   Zap,
 } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -29,6 +29,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -41,26 +44,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
-
-// Helper function to remove locale prefix from pathname
-function removeLocaleFromPath(pathname: string): string {
-  const locales = ["en", "fr"]; // Should match your i18n configuration
-  const segments = pathname.split("/");
-
-  // Check if the first segment (after empty string) is a locale
-  if (segments.length > 1 && locales.includes(segments[1])) {
-    // Remove the locale segment and rejoin
-    segments.splice(1, 1);
-    return segments.join("/") || "/";
-  }
-
-  return pathname;
-}
 
 // Admin navigation data
 const navigationData = [
@@ -116,7 +103,7 @@ export function AdminSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const pathnameWithoutLocale = removeLocaleFromPath(pathname);
+  const router = useRouter();
 
   async function handleLogout() {
     await signOut({ redirect: false });
@@ -155,10 +142,7 @@ export function AdminSidebar({
           <SidebarMenu>
             {navigationData.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathnameWithoutLocale === item.url}
-                >
+                <SidebarMenuButton asChild isActive={pathname === item.url}>
                   <Link href={item.url} className="no-ring">
                     <item.icon />
                     <span>{item.title}</span>
@@ -206,6 +190,7 @@ export function AdminSidebar({
                 sideOffset={4}
               >
                 <DropdownMenuLabel className="p-0 font-normal">
+                  {/* User info header */}
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage
@@ -227,7 +212,9 @@ export function AdminSidebar({
                     </div>
                   </div>
                 </DropdownMenuLabel>
+
                 <DropdownMenuSeparator />
+
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link href="/admin/profile" className="no-ring">
@@ -248,6 +235,32 @@ export function AdminSidebar({
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="gap-2">
+                    <Languages className="size-4 text-muted-foreground" />
+                    Language
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        router.push(pathname, { locale: "en" });
+                      }}
+                    >
+                      English
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        router.push(pathname, { locale: "fr" });
+                      }}
+                    >
+                      Français
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/" className="no-ring">
