@@ -38,5 +38,16 @@
   "fill out required fields": "Remplissez les champs requis pour créer votre produit",
   "product created successfully": "Produit créé avec succès !",
   "failed to create product": "Échec de la création du produit",
-  "are you sure you want to leave": "Êtes-vous sûr de vouloir partir ? Vos modifications seront perdues."
+  "are you sure you want to leave": "Êtes-vous sûr de vouloir partir ? Vos modifications seront perdues.",
+  "{language} content": "Contenu {language}",
+  "english": "Anglais",
+  "french": "Français",
+  "spanish": "Espagnol",
+  "german": "Allemand",
+  "italian": "Italien",
+  "portuguese": "Portugais",
+  "russian": "Russe",
+  "japanese": "Japonais",
+  "korean": "Coréen",
+  "chinese": "Chinois"
 }

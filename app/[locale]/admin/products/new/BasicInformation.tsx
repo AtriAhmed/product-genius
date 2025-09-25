@@ -2,25 +2,56 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Package } from "lucide-react";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import { UseFormRegister, FieldErrors, Control } from "react-hook-form";
+import { Controller } from "react-hook-form";
+
+interface Category {
+  id: number;
+  translations: {
+    id: number;
+    locale: string;
+    title: string;
+    description?: string;
+  }[];
+  _count: {
+    products: number;
+  };
+}
 
 interface ProductFormData {
-  defaultTitle?: string;
-  defaultDescription?: string;
   categoryId?: number;
 }
 
 interface BasicInformationProps {
   register: UseFormRegister<any>;
+  control: Control<any>;
   errors: FieldErrors<any>;
+  categories: Category[];
 }
 
 export default function BasicInformation({
   register,
+  control,
   errors,
+  categories,
 }: BasicInformationProps) {
+  // Get category title in the first available language (preferably English)
+  const getCategoryTitle = (category: Category) => {
+    const enTranslation = category.translations.find((t) => t.locale === "en");
+    if (enTranslation) return enTranslation.title;
+
+    // Fallback to first available translation
+    return category.translations[0]?.title || `Category ${category.id}`;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -32,35 +63,36 @@ export default function BasicInformation({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Category</label>
-          <Input
-            type="number"
-            {...register("categoryId", {
-              setValueAs: (value) =>
-                value === "" ? undefined : parseInt(value),
-            })}
-            placeholder="Category ID"
+          <Controller
+            name="categoryId"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value?.toString() || ""}
+                onValueChange={(value) => {
+                  field.onChange(value ? parseInt(value) : undefined);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem
+                      key={category.id}
+                      value={category.id.toString()}
+                    >
+                      {getCategoryTitle(category)} ({category._count.products}{" "}
+                      products)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
           <p className="text-xs text-muted-foreground">
-            Product category (optional)
+            Select the category this product belongs to (optional)
           </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Default Title</label>
-            <Input {...register("defaultTitle")} placeholder="Fallback title" />
-            <p className="text-xs text-muted-foreground">
-              Used when translation is not available
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Default Description</label>
-            <Input
-              {...register("defaultDescription")}
-              placeholder="Fallback description"
-            />
-          </div>
         </div>
       </CardContent>
     </Card>

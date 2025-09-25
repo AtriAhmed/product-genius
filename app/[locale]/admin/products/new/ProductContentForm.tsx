@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import LanguageSelector from "@/components/LanguageSelector";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface Translation {
   locale: string;
@@ -23,28 +23,27 @@ interface MultiLanguageFormProps {
 }
 
 const defaultLanguages = [
-  { code: "en", name: "English", countryCode: "US" },
-  { code: "fr", name: "Français", countryCode: "FR" },
-  { code: "es", name: "Español", countryCode: "ES" },
-  { code: "de", name: "Deutsch", countryCode: "DE" },
-  { code: "it", name: "Italiano", countryCode: "IT" },
-  { code: "pt", name: "Português", countryCode: "PT" },
-  { code: "ru", name: "Русский", countryCode: "RU" },
-  { code: "ja", name: "日本語", countryCode: "JP" },
-  { code: "ko", name: "한국어", countryCode: "KR" },
-  { code: "zh", name: "中文", countryCode: "CN" },
+  { code: "en", name: "english", countryCode: "US" },
+  { code: "fr", name: "french", countryCode: "FR" },
+  { code: "es", name: "spanish", countryCode: "ES" },
+  { code: "de", name: "german", countryCode: "DE" },
+  { code: "it", name: "italian", countryCode: "IT" },
+  { code: "pt", name: "portuguese", countryCode: "PT" },
+  { code: "ru", name: "russian", countryCode: "RU" },
+  { code: "ja", name: "japanese", countryCode: "JP" },
+  { code: "ko", name: "korean", countryCode: "KR" },
+  { code: "zh", name: "chinese", countryCode: "CN" },
 ];
 
 export default function MultiLanguageForm({
   value = [],
   onChange,
   supportedLanguages = defaultLanguages,
-  requiredLanguages = ["en"],
+  requiredLanguages = [],
   className,
 }: MultiLanguageFormProps) {
-  const [activeTab, setActiveTab] = useState<string>(
-    value[0]?.locale || requiredLanguages[0] || "en"
-  );
+  const [activeTab, setActiveTab] = useState<string>(value[0]?.locale || "en");
+  const t = useTranslations("products");
 
   const addLanguage = (languageCode: string) => {
     if (value.some((t) => t.locale === languageCode)) return;
@@ -68,7 +67,7 @@ export default function MultiLanguageForm({
 
     // Switch to first available tab
     if (activeTab === languageCode) {
-      setActiveTab(newTranslations[0]?.locale || requiredLanguages[0] || "en");
+      setActiveTab(newTranslations[0]?.locale || "en");
     }
   };
 
@@ -157,87 +156,87 @@ export default function MultiLanguageForm({
 
       {/* Translation Form */}
       {value.length > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2">
-              <img
-                src={`https://flagsapi.com/${
-                  getLanguageInfo(activeTab).countryCode
-                }/flat/24.png`}
-                alt={`${activeTab} flag`}
-                className="w-4 h-3 object-cover rounded-sm"
-              />
-              <span>{getLanguageInfo(activeTab).name} Content</span>
-              {isRequired(activeTab) && (
-                <Badge variant="secondary">Required</Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
+        <div className="space-y-3 pt-3 border-t border-border">
+          <div className="flex items-center gap-2">
+            <img
+              src={`https://flagsapi.com/${
+                getLanguageInfo(activeTab).countryCode
+              }/flat/24.png`}
+              alt={`${activeTab} flag`}
+              className="w-4 h-3 object-cover rounded-sm"
+            />
+            <span className="font-medium">
+              {t("{language} content", {
+                language: t(getLanguageInfo(activeTab).name),
+              })}
+            </span>
+            {isRequired(activeTab) && (
+              <Badge variant="secondary">Required</Badge>
+            )}
+          </div>
 
-          <CardContent className="space-y-4">
-            {(() => {
-              const currentTranslation = getCurrentTranslation();
+          {(() => {
+            const currentTranslation = getCurrentTranslation();
 
-              return (
-                <>
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Title <span className="text-destructive">*</span>
-                    </label>
-                    <Input
-                      value={currentTranslation.title}
-                      onChange={(e) =>
-                        updateTranslation(activeTab, "title", e.target.value)
-                      }
-                      placeholder={`Enter product title in ${
-                        getLanguageInfo(activeTab).name
-                      }`}
-                      className={cn(
-                        !currentTranslation.title.trim() && "border-destructive"
-                      )}
-                    />
-                    {!currentTranslation.title.trim() && (
-                      <p className="text-sm text-destructive">
-                        Title is required
-                      </p>
+            return (
+              <div className="space-y-4">
+                {/* Title */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Title <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    value={currentTranslation.title}
+                    onChange={(e) =>
+                      updateTranslation(activeTab, "title", e.target.value)
+                    }
+                    placeholder={`Enter product title in ${
+                      getLanguageInfo(activeTab).name
+                    }`}
+                    className={cn(
+                      !currentTranslation.title.trim() && "border-destructive"
                     )}
-                  </div>
+                  />
+                  {!currentTranslation.title.trim() && (
+                    <p className="text-sm text-destructive">
+                      Title is required
+                    </p>
+                  )}
+                </div>
 
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Description <span className="text-destructive">*</span>
-                    </label>
-                    <Textarea
-                      value={currentTranslation.description}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        updateTranslation(
-                          activeTab,
-                          "description",
-                          e.target.value
-                        )
-                      }
-                      placeholder={`Enter product description in ${
-                        getLanguageInfo(activeTab).name
-                      }`}
-                      rows={4}
-                      className={cn(
-                        !currentTranslation.description.trim() &&
-                          "border-destructive"
-                      )}
-                    />
-                    {!currentTranslation.description.trim() && (
-                      <p className="text-sm text-destructive">
-                        Description is required
-                      </p>
+                {/* Description */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Description <span className="text-destructive">*</span>
+                  </label>
+                  <Textarea
+                    value={currentTranslation.description}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      updateTranslation(
+                        activeTab,
+                        "description",
+                        e.target.value
+                      )
+                    }
+                    placeholder={`Enter product description in ${
+                      getLanguageInfo(activeTab).name
+                    }`}
+                    rows={4}
+                    className={cn(
+                      !currentTranslation.description.trim() &&
+                        "border-destructive"
                     )}
-                  </div>
-                </>
-              );
-            })()}
-          </CardContent>
-        </Card>
+                  />
+                  {!currentTranslation.description.trim() && (
+                    <p className="text-sm text-destructive">
+                      Description is required
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
       )}
 
       {/* Summary */}

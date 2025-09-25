@@ -113,8 +113,6 @@ export type CategoryTranslation = {
 export type Product = {
   id: number;
   sku?: string;
-  defaultTitle?: string;
-  defaultDescription?: string;
   suggestedPrice?: number;
   currency?: string;
   popularityScore: number;

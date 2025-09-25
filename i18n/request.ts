@@ -17,6 +17,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     "not-found",
     "sidebar",
     "categories",
+    "products",
   ];
 
   // Import all message files and organize them by namespace

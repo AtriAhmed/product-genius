@@ -60,16 +60,16 @@ const categoryFormSchema = z.object({
 type CategoryFormData = z.infer<typeof categoryFormSchema>;
 
 const languageOptions = [
-  { code: "en", name: "English", countryCode: "US" },
-  { code: "fr", name: "Français", countryCode: "FR" },
-  { code: "es", name: "Español", countryCode: "ES" },
-  { code: "de", name: "Deutsch", countryCode: "DE" },
-  { code: "it", name: "Italiano", countryCode: "IT" },
-  { code: "pt", name: "Português", countryCode: "PT" },
-  { code: "ru", name: "Русский", countryCode: "RU" },
-  { code: "ja", name: "日本語", countryCode: "JP" },
-  { code: "ko", name: "한국어", countryCode: "KR" },
-  { code: "zh", name: "中文", countryCode: "CN" },
+  { code: "en", name: "english", countryCode: "US" },
+  { code: "fr", name: "french", countryCode: "FR" },
+  { code: "es", name: "spanish", countryCode: "ES" },
+  { code: "de", name: "german", countryCode: "DE" },
+  { code: "it", name: "italian", countryCode: "IT" },
+  { code: "pt", name: "portuguese", countryCode: "PT" },
+  { code: "ru", name: "russian", countryCode: "RU" },
+  { code: "ja", name: "japanese", countryCode: "JP" },
+  { code: "ko", name: "korean", countryCode: "KR" },
+  { code: "zh", name: "chinese", countryCode: "CN" },
 ];
 
 export default function CategoryForm({
@@ -311,9 +311,10 @@ export default function CategoryForm({
             />
             <span className="font-medium">
               {t("{language} content", {
-                language:
+                language: t(
                   languageOptions.find((l) => l.code === activeLanguage)
-                    ?.name || activeLanguage.toUpperCase(),
+                    ?.name || activeLanguage.toUpperCase()
+                ),
               })}
             </span>
           </div>
@@ -380,7 +381,37 @@ export default function CategoryForm({
   );
 
   if (isEmbedded) {
-    return <div className="flex flex-col">{formContent}</div>;
+    return (
+      <div className="flex flex-col">
+        {formContent}
+        <div className="mt-2">
+          {category && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelEdit}
+              className="w-full"
+            >
+              {t("cancel")}
+            </Button>
+          )}
+
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={isSubmitting || !isValid || (category && !hasChanges())}
+            className="w-full"
+          >
+            {isSubmitting
+              ? category
+                ? "Updating..."
+                : "Creating..."
+              : category
+              ? t("edit")
+              : t("create")}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

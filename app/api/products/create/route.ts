@@ -3,9 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { uploadProductMedia, getMediaType } from "@/lib/file-upload";
 
 // Validation schemas
 const mediaSchema = z.object({
@@ -24,7 +22,7 @@ const translationSchema = z.object({
 
 const supplierSchema = z.object({
   supplierId: z.number().int().positive(),
-  url: z.string().url(),
+  url: z.url(),
   marketplace: z.string().optional(),
   price: z.number().positive().optional(),
   currency: z.string().length(3).optional(),
@@ -33,8 +31,6 @@ const supplierSchema = z.object({
 });
 
 const createProductSchema = z.object({
-  defaultTitle: z.string().optional(),
-  defaultDescription: z.string().optional(),
   suggestedPrice: z.number().positive().optional(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional(),
@@ -53,36 +49,6 @@ function generateSlug(title: string): string {
     .replace(/[^\w\s-]/g, "")
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-// Helper function to save uploaded files
-async function saveUploadedFile(
-  file: File,
-  productId: number
-): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-
-  // Create uploads directory if it doesn't exist
-  const uploadsDir = join(
-    process.cwd(),
-    "public",
-    "uploads",
-    "products",
-    productId.toString()
-  );
-  if (!existsSync(uploadsDir)) {
-    await mkdir(uploadsDir, { recursive: true });
-  }
-
-  // Generate unique filename
-  const timestamp = Date.now();
-  const extension = file.name.split(".").pop();
-  const filename = `${timestamp}.${extension}`;
-  const filepath = join(uploadsDir, filename);
-
-  await writeFile(filepath, buffer);
-  return `/uploads/products/${productId}/${filename}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -129,8 +95,6 @@ export async function POST(request: NextRequest) {
       // Create the product first
       const product = await prisma.product.create({
         data: {
-          defaultTitle: validatedData.defaultTitle,
-          defaultDescription: validatedData.defaultDescription,
           suggestedPrice: validatedData.suggestedPrice,
           currency: validatedData.currency,
           categoryId: validatedData.categoryId,
@@ -150,7 +114,7 @@ export async function POST(request: NextRequest) {
         if (key.startsWith("media_")) {
           const file = value as File;
           const sortOrder = parseInt(key.split("_")[1]) || 0;
-          const type = file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
+          const type = getMediaType(file);
 
           uploadedFiles.push({ file, sortOrder, type });
         }
@@ -159,10 +123,10 @@ export async function POST(request: NextRequest) {
       // Save uploaded files and create media records
       const mediaRecords = await Promise.all(
         uploadedFiles.map(async ({ file, sortOrder, type }) => {
-          const url = await saveUploadedFile(file, product.id);
+          const uploadResult = await uploadProductMedia(file, product.id);
           return {
             productId: product.id,
-            url,
+            url: uploadResult.url,
             type,
             sortOrder,
             provider: "local",
@@ -245,8 +209,6 @@ export async function POST(request: NextRequest) {
 
       const product = await prisma.product.create({
         data: {
-          defaultTitle: validatedData.defaultTitle,
-          defaultDescription: validatedData.defaultDescription,
           suggestedPrice: validatedData.suggestedPrice,
           currency: validatedData.currency,
           categoryId: validatedData.categoryId,
@@ -349,7 +311,6 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       where.OR = [
-        { defaultTitle: { contains: search, mode: "insensitive" } },
         {
           translations: {
             some: { title: { contains: search, mode: "insensitive" } },

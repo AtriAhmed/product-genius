@@ -2,7 +2,7 @@
   "categories": "Catégories",
   "category": "Catégorie",
   "add category": "Ajouter une catégorie",
-  "create category": "Créer une catégorie",
+  "create": "Créer",
   "edit category": "Modifier la catégorie",
   "category name": "Nom de la catégorie",
   "category description": "Description de la catégorie",
@@ -53,5 +53,15 @@
   "oldest first": "Plus ancien d'abord",
   "clear filters": "Effacer les filtres",
   "showing results": "Affichage {start}-{end} de {total} catégories",
-  "{language} content": "Contenu {language}"
+  "{language} content": "Contenu {language}",
+  "english": "Anglais",
+  "french": "Français",
+  "spanish": "Espagnol",
+  "german": "Allemand",
+  "italian": "Italien",
+  "portuguese": "Portugais",
+  "russian": "Russe",
+  "japanese": "Japonais",
+  "korean": "Coréen",
+  "chinese": "Chinois"
 }

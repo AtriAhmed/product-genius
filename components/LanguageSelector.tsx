@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface LanguageOption {
   code: string;
@@ -31,16 +32,16 @@ interface LanguageSelectorProps {
 }
 
 const defaultLanguages: LanguageOption[] = [
-  { code: "en", name: "English", countryCode: "US" },
-  { code: "fr", name: "Français", countryCode: "FR" },
-  { code: "es", name: "Español", countryCode: "ES" },
-  { code: "de", name: "Deutsch", countryCode: "DE" },
-  { code: "it", name: "Italiano", countryCode: "IT" },
-  { code: "pt", name: "Português", countryCode: "PT" },
-  { code: "ru", name: "Русский", countryCode: "RU" },
-  { code: "ja", name: "日本語", countryCode: "JP" },
-  { code: "ko", name: "한국어", countryCode: "KR" },
-  { code: "zh", name: "中文", countryCode: "CN" },
+  { code: "en", name: "english", countryCode: "US" },
+  { code: "fr", name: "french", countryCode: "FR" },
+  { code: "es", name: "spanish", countryCode: "ES" },
+  { code: "de", name: "german", countryCode: "DE" },
+  { code: "it", name: "italian", countryCode: "IT" },
+  { code: "pt", name: "portuguese", countryCode: "PT" },
+  { code: "ru", name: "russian", countryCode: "RU" },
+  { code: "ja", name: "japanese", countryCode: "JP" },
+  { code: "ko", name: "korean", countryCode: "KR" },
+  { code: "zh", name: "chinese", countryCode: "CN" },
 ];
 
 export default function LanguageSelector({
@@ -54,6 +55,8 @@ export default function LanguageSelector({
   hasErrors,
   className,
 }: LanguageSelectorProps) {
+  const t = useTranslations("categories");
+
   const getLanguageInfo = (code: string) => {
     return (
       availableLanguages.find((lang) => lang.code === code) || {
@@ -109,7 +112,7 @@ export default function LanguageSelector({
                     alt={`${langInfo.name} flag`}
                     className="w-4 h-3 object-cover rounded-sm"
                   />
-                  <span className="text-sm">{langInfo.name}</span>
+                  <span className="text-sm">{t(langInfo.name)}</span>
                   {isRequired(languageCode) && (
                     <Badge variant="secondary" className="h-4 px-1 text-xs">
                       Required
@@ -155,7 +158,7 @@ export default function LanguageSelector({
                       alt={`${language.name} flag`}
                       className="w-4 h-3 object-cover rounded-sm"
                     />
-                    <span>{language.name}</span>
+                    <span>{t(language.name)}</span>
                     <span className="text-muted-foreground">
                       ({language.code})
                     </span>

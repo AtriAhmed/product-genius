@@ -15,7 +15,7 @@ import MediaUpload, {
 } from "@/app/[locale]/admin/products/new/MediaUpload";
 import MultiLanguageForm, {
   Translation,
-} from "@/app/[locale]/admin/products/new/MultiLanguageForm";
+} from "@/app/[locale]/admin/products/new/ProductContentForm";
 import BasicInformation from "./BasicInformation";
 import PricingSection from "./PricingSection";
 import StatusSection from "./StatusSection";
@@ -23,8 +23,6 @@ import SummarySection from "./SummarySection";
 
 // Form validation schema
 const productFormSchema = z.object({
-  defaultTitle: z.string().optional(),
-  defaultDescription: z.string().optional(),
   suggestedPrice: z.number().positive().optional(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional(),
@@ -47,19 +45,37 @@ export default function NewProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [media, setMedia] = useState<MediaItem[]>([]);
-  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [translations, setTranslations] = useState<Translation[]>([
+    { locale: "en", title: "", description: "" },
+  ]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Fetch categories on component mount
+  React.useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch("/api/categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data.categories || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors, isValid },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      defaultTitle: "",
-      defaultDescription: "",
       suggestedPrice: undefined,
       currency: "USD",
       categoryId: undefined,
@@ -191,7 +207,12 @@ export default function NewProductPage() {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Basic Information */}
-              <BasicInformation register={register} errors={errors} />
+              <BasicInformation
+                register={register}
+                control={control}
+                errors={errors}
+                categories={categories}
+              />
 
               {/* Multi-language Content */}
               <Card>
@@ -208,7 +229,7 @@ export default function NewProductPage() {
                   <MultiLanguageForm
                     value={translations}
                     onChange={setTranslations}
-                    requiredLanguages={["en"]}
+                    requiredLanguages={[]}
                   />
                   {errors.translations && (
                     <p className="text-sm text-destructive mt-2">

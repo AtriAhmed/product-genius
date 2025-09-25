@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Translation } from "@/app/[locale]/admin/products/new/MultiLanguageForm";
+import { Translation } from "@/app/[locale]/admin/products/new/ProductContentForm";
 import { MediaItem } from "@/app/[locale]/admin/products/new/MediaUpload";
 
 interface SummarySectionProps {
