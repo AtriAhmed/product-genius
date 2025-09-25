@@ -1,17 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CategoriesDataTable from "@/app/[locale]/admin/categories/CategoriesDataTable";
-import CategoryForm from "@/app/[locale]/admin/categories/CategoryForm";
 import CategoriesFilters from "@/app/[locale]/admin/categories/CategoriesFilters";
+import CategoryForm from "@/app/[locale]/admin/categories/CategoryForm";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 interface CategoryTranslation {
   id: number;

@@ -59,7 +59,7 @@ export default function Register() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await axios.post("/api/users/temp/create", {
+      const response = await axios.post("/api/users/temp", {
         name: data.name,
         email: data.email,
         password: data.password,
@@ -75,7 +75,7 @@ export default function Register() {
 
     setIsResending(true);
     try {
-      const response = await axios.post("/api/users/temp/create", {
+      const response = await axios.post("/api/users/temp", {
         email: emailSent,
         password: watchedEmail, // Note: This won't work as password is not available
       });

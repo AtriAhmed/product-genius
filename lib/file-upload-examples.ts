@@ -150,7 +150,6 @@ export async function handleFormDataUploads(
       try {
         const result = await uploadFile(value, {
           directory: "uploads/form-data",
-          subdirectory: entityId.toString(),
           generateUniqueFilename: true,
           allowedExtensions: ["jpg", "jpeg", "png", "pdf", "doc", "docx"],
           maxFileSize: 10 * 1024 * 1024, // 10MB

@@ -120,7 +120,7 @@ export default function NewProductPage() {
         }
       });
 
-      const response = await fetch("/api/products/create", {
+      const response = await fetch("/api/products", {
         method: "POST",
         body: formData,
       });
