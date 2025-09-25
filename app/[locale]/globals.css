@@ -202,7 +202,7 @@
 .spinner {
   width: 70.4px;
   height: 70.4px;
-  --clr: oklch(70.5% 0.213 47.604);
+  --clr: var(--color-primary-500);
   --clr-alpha: transparrent;
   animation: spinner 1.6s infinite ease;
   transform-style: preserve-3d;

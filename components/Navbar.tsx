@@ -24,7 +24,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed left-0 right-0 bg-background dark:bg-muted-background shadow-sm top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex justify-between h-[55px]">
           {/* Logo + Brand */}
           <div className="flex items-center">
@@ -38,19 +38,19 @@ export default function Navbar() {
           <div className="hidden md:flex md:items-center md:space-x-8">
             <Link
               href="/#features"
-              className="hover:text-primary-500 px-3 py-2 text-sm font-medium"
+              className="hover:text-primary-500 px-1 py-2 text-xs lg:text-sm font-medium"
             >
               {t("features")}
             </Link>
             <Link
               href="/#niches"
-              className="hover:text-primary-500 px-3 py-2 text-sm font-medium"
+              className="hover:text-primary-500 px-1 py-2 text-xs lg:text-sm font-medium"
             >
               {t("niches")}
             </Link>
             <Link
               href="/pricing"
-              className="hover:text-primary-500 px-3 py-2 text-sm font-medium"
+              className="hover:text-primary-500 px-1 py-2 text-xs lg:text-sm font-medium"
             >
               {t("pricing")}
             </Link>
@@ -59,7 +59,7 @@ export default function Navbar() {
               {!isAuthenticated ? (
                 <Link
                   href="/auth/login"
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-xs lg:text-sm font-medium"
                 >
                   {t("login")}
                 </Link>
@@ -71,7 +71,7 @@ export default function Navbar() {
                         ? "/admin"
                         : "/dashboard"
                     }
-                    className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-xs lg:text-sm font-medium"
                   >
                     {t("dashboard")}
                   </Link>

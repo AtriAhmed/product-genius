@@ -313,7 +313,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         {
           translations: {
-            some: { title: { contains: search, mode: "insensitive" } },
+            some: { title: { contains: search } },
           },
         },
       ];

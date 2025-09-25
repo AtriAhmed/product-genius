@@ -221,14 +221,14 @@ export function UserSidebar({
                   <DropdownMenuSubContent>
                     <DropdownMenuItem
                       onClick={() => {
-                        router.push(pathname, { locale: "en" });
+                        router.replace(pathname, { locale: "en" });
                       }}
                     >
                       {t("english")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => {
-                        router.push(pathname, { locale: "fr" });
+                        router.replace(pathname, { locale: "fr" });
                       }}
                     >
                       {t("french")}
