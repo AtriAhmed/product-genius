@@ -259,7 +259,7 @@ export default function ProductsPage() {
   };
 
   const handleEditProduct = (product: Product) => {
-    router.push(`/admin/products/${product.id}/edit`);
+    router.push(`/admin/products/${product.id}`);
   };
 
   const handleDeleteProduct = (product: Product) => {

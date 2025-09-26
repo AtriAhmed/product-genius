@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { notFound, useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
+import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { AllProviders } from "./AllProviders";
 import { ImageGallery } from "./ImageGallery";
 import { ProductInfo } from "./ProductInfo";
-import { ProvidersPreview } from "./ProvidersPreview";
-import { AllProviders } from "./AllProviders";
 import { ProductSkeleton } from "./ProductSkeleton";
-import { Product, ProductTranslation, Supplier, Marketplace } from "./types";
-import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
+import { ProvidersPreview } from "./ProvidersPreview";
+import { Marketplace, Product, ProductTranslation, Supplier } from "./types";
 
 export default function ProductViewPage() {
   const params = useParams();
@@ -25,7 +25,6 @@ export default function ProductViewPage() {
   const [isLiked, setIsLiked] = useState(false);
 
   const productId = params.id as string;
-  const locale = params.locale as string;
 
   // Mock data for suppliers and marketplaces
   const mockSuppliers: Supplier[] = [

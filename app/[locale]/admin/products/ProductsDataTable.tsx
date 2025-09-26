@@ -266,15 +266,6 @@ export default function ProductsDataTable({
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0"
-                      onClick={() => onView(product)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">View product</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
                       onClick={() => onEdit(product)}
                     >
                       <Edit className="h-4 w-4" />

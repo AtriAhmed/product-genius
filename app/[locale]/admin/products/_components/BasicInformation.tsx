@@ -35,6 +35,7 @@ interface BasicInformationProps {
   control: Control<any>;
   errors: FieldErrors<any>;
   categories: Category[];
+  defaultValue?: number;
 }
 
 export default function BasicInformation({
@@ -42,6 +43,7 @@ export default function BasicInformation({
   control,
   errors,
   categories,
+  defaultValue,
 }: BasicInformationProps) {
   // Get category title in the first available language (preferably English)
   const getCategoryTitle = (category: Category) => {
@@ -66,6 +68,7 @@ export default function BasicInformation({
           <Controller
             name="categoryId"
             control={control}
+            defaultValue={defaultValue}
             render={({ field }) => (
               <Select
                 value={field.value?.toString() || ""}
@@ -90,9 +93,6 @@ export default function BasicInformation({
               </Select>
             )}
           />
-          <p className="text-xs text-muted-foreground">
-            Select the category this product belongs to (optional)
-          </p>
         </div>
       </CardContent>
     </Card>

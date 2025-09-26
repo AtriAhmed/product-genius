@@ -1,25 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Globe, ImageIcon } from "lucide-react";
 import MediaUpload, {
   MediaItem,
-} from "@/app/[locale]/admin/products/new/MediaUpload";
+} from "@/app/[locale]/admin/products/_components/MediaUpload";
 import MultiLanguageForm, {
   Translation,
-} from "@/app/[locale]/admin/products/new/ProductContentForm";
-import BasicInformation from "./BasicInformation";
-import PricingSection from "./PricingSection";
-import StatusSection from "./StatusSection";
-import SummarySection from "./SummarySection";
+} from "@/app/[locale]/admin/products/_components/ProductContentForm";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Globe, ImageIcon, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import BasicInformation from "@/app/[locale]/admin/products/_components/BasicInformation";
+import PricingSection from "@/app/[locale]/admin/products/_components/PricingSection";
+import StatusSection from "@/app/[locale]/admin/products/_components/StatusSection";
 
 // Form validation schema
 const productFormSchema = z.object({
@@ -256,13 +255,6 @@ export default function NewProductPage() {
 
               {/* Status */}
               <StatusSection register={register} />
-
-              {/* Summary */}
-              <SummarySection
-                translations={translations}
-                media={media}
-                isValid={isValid}
-              />
             </div>
           </div>
         </form>

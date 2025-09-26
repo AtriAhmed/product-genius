@@ -1,4 +1,4 @@
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import { v4 as uuidv4 } from "uuid";
@@ -217,4 +217,25 @@ export function isImageFile(file: File): boolean {
  */
 export function isVideoFile(file: File): boolean {
   return file.type.startsWith("video/");
+}
+
+/**
+ * Deletes a file from the filesystem
+ */
+export async function deleteFile(filePath: string): Promise<void> {
+  try {
+    const fullPath = join(process.cwd(), filePath.replace(/^\//, ""));
+    await unlink(fullPath);
+  } catch (error) {
+    console.error(`Failed to delete file ${filePath}:`, error);
+    // Don't throw error for file deletion failures in production
+    // as the file might already be deleted or not exist
+  }
+}
+
+/**
+ * Deletes multiple files from the filesystem
+ */
+export async function deleteMultipleFiles(filePaths: string[]): Promise<void> {
+  await Promise.all(filePaths.map(deleteFile));
 }

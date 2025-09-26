@@ -1,152 +1,254 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import MediaUpload, {
+  MediaItem,
+} from "@/app/[locale]/admin/products/_components/MediaUpload";
+import MultiLanguageForm, {
+  Translation,
+} from "@/app/[locale]/admin/products/_components/ProductContentForm";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getMediaUrl } from "@/lib/utils";
-import {
-  ArrowLeft,
-  Edit,
-  Trash2,
-  Package,
-  Tag,
-  DollarSign,
-  Calendar,
-  Globe,
-} from "lucide-react";
-import Image from "next/image";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, Globe, ImageIcon, Save, Trash2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import BasicInformation from "@/app/[locale]/admin/products/_components/BasicInformation";
+import PricingSection from "@/app/[locale]/admin/products/_components/PricingSection";
+import StatusSection from "@/app/[locale]/admin/products/_components/StatusSection";
 
-interface ProductTranslation {
-  id: number;
-  locale: string;
-  title: string;
-  description: string;
-}
+// Form validation schema
+const productFormSchema = z.object({
+  suggestedPrice: z.number().positive().optional(),
+  currency: z.string().length(3).optional(),
+  categoryId: z.number().int().positive().optional(),
+  isActive: z.boolean(),
+  translations: z
+    .array(
+      z.object({
+        locale: z.string().min(1),
+        title: z.string().min(1, "Title is required"),
+        description: z.string().min(1, "Description is required"),
+      })
+    )
+    .min(1, "At least one translation is required"),
+  media: z.array(z.any()),
+});
 
-interface Category {
+type ProductFormData = z.infer<typeof productFormSchema>;
+
+interface Product {
   id: number;
+  suggestedPrice?: number;
+  currency?: string;
+  categoryId?: number;
+  isActive: boolean;
   translations: {
-    id: number;
     locale: string;
     title: string;
     description: string;
   }[];
+  media: {
+    id: number;
+    url: string;
+    type: "IMAGE" | "VIDEO";
+    sortOrder: number;
+  }[];
+  category?: {
+    id: number;
+    translations: {
+      locale: string;
+      title: string;
+    }[];
+  };
 }
 
-interface Media {
-  id: number;
-  url: string;
-  type: "IMAGE" | "VIDEO";
-  sortOrder: number;
-}
-
-interface Product {
-  id: number;
-  sku?: string;
-  suggestedPrice?: number;
-  currency?: string;
-  isActive: boolean;
-  translations: ProductTranslation[];
-  media: Media[];
-  category?: Category;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Helper function to get current locale translation
-const getCurrentTranslation = (
-  translations: ProductTranslation[],
-  locale = "en"
-) => {
-  return (
-    translations.find((t) => t.locale === locale) || translations[0] || null
-  );
-};
-
-const getCurrentCategoryTranslation = (
-  category: Category | undefined,
-  locale = "en"
-) => {
-  if (!category) return null;
-  return (
-    category.translations.find((t) => t.locale === locale) ||
-    category.translations[0] ||
-    null
-  );
-};
-
-export default function ProductDetailsPage() {
-  const params = useParams();
+export default function EditProductPage() {
   const router = useRouter();
-  const t = useTranslations("products");
-  const [product, setProduct] = useState<Product | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const params = useParams<{ id: string }>();
 
-  const productId = params.id as string;
+  const productId = parseInt(params.id);
 
+  // Fetch product data and categories
   useEffect(() => {
-    if (!productId) return;
-
-    const fetchProduct = async () => {
+    async function fetchData() {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/products/${productId}`);
 
-        if (response.ok) {
-          const data = await response.json();
-          setProduct(data.product);
-        } else {
-          const errorData = await response.json();
-          setError(errorData.error || "Failed to fetch product");
+        // Fetch product and categories in parallel
+        const [productResponse, categoriesResponse] = await Promise.all([
+          fetch(`/api/products/${productId}`),
+          fetch("/api/categories"),
+        ]);
+
+        if (!productResponse.ok) {
+          throw new Error("Product not found");
         }
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError("Failed to fetch product");
-        toast.error("Failed to load product");
+
+        const productData = await productResponse.json();
+        const categoriesData = await categoriesResponse.json();
+
+        setProduct(productData.product);
+        setCategories(categoriesData.categories || []);
+
+        // Convert product data to form state
+        const productTranslations = productData.product.translations.map(
+          (t: any) => ({
+            locale: t.locale,
+            title: t.title,
+            description: t.description,
+          })
+        );
+
+        const productMedia = productData.product.media.map((m: any) => ({
+          id: `existing-${m.id}`,
+          url: m.url,
+          type: m.type,
+          sortOrder: m.sortOrder,
+          preview: m.url,
+        }));
+
+        setTranslations(productTranslations);
+        setMedia(productMedia);
+
+        // Set form default values
+        setValue("suggestedPrice", productData.product.suggestedPrice);
+        setValue("currency", productData.product.currency || "USD");
+        setValue("categoryId", productData.product.categoryId);
+        setValue("isActive", productData.product.isActive);
+        setValue("translations", productTranslations);
+        setValue("media", productMedia);
+      } catch (error) {
+        console.error("Failed to fetch product:", error);
+        toast.error("Failed to load product data");
+        router.back();
       } finally {
         setIsLoading(false);
       }
-    };
+    }
 
-    fetchProduct();
-  }, [productId]);
+    if (productId && !isNaN(productId)) {
+      fetchData();
+    }
+  }, [productId, router]);
 
-  const handleEdit = () => {
-    router.push(`/admin/products/${productId}/edit`);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    control,
+    formState: { errors, isValid },
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      suggestedPrice: undefined,
+      currency: "USD",
+      categoryId: undefined,
+      isActive: true,
+      translations: [],
+      media: [],
+    },
+    mode: "onChange",
+  });
+
+  // Update form when translations change
+  useEffect(() => {
+    setValue("translations", translations, { shouldValidate: true });
+  }, [translations, setValue]);
+
+  const onSubmit = async (data: ProductFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      // Prepare form data for multipart upload
+      const formData = new FormData();
+
+      // Add product data as JSON
+      const productData = {
+        ...data,
+        translations,
+        media: media
+          .filter((item) => item.url && !item.file)
+          .map((item) => ({
+            url: item.url,
+            type: item.type,
+            sortOrder: item.sortOrder,
+          })),
+      };
+
+      formData.append("productData", JSON.stringify(productData));
+
+      // Add new media files
+      media.forEach((item) => {
+        if (item.file) {
+          formData.append(`media_${item.sortOrder}`, item.file);
+        }
+      });
+
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update product");
+      }
+
+      toast.success("Product updated successfully!");
+      router.refresh();
+    } catch (error) {
+      console.error("Product update error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update product"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
-    if (!product) return;
-
     if (
-      confirm(
+      !confirm(
         "Are you sure you want to delete this product? This action cannot be undone."
       )
     ) {
-      try {
-        const response = await fetch(`/api/products/${productId}`, {
-          method: "DELETE",
-        });
+      return;
+    }
 
-        if (response.ok) {
-          toast.success("Product deleted successfully");
-          router.push("/admin/products");
-        } else {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to delete product");
-        }
-      } catch (err) {
-        console.error("Error deleting product:", err);
-        toast.error(
-          err instanceof Error ? err.message : "Failed to delete product"
-        );
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || "Failed to delete product");
       }
+
+      toast.success("Product deleted successfully!");
+      router.push("/admin/products");
+    } catch (error) {
+      console.error("Product deletion error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete product"
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -156,283 +258,160 @@ export default function ProductDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 mb-8">
-            <Skeleton className="w-10 h-10 rounded-md" />
-            <Skeleton className="h-8 w-48" />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-6 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-24" />
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <Skeleton key={i} className="aspect-square rounded-md" />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-24" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading product...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="outline" size="sm" onClick={goBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          </div>
-          <div className="text-center py-16">
-            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Package className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              Product not found
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {error || "The product you're looking for doesn't exist."}
-            </p>
-            <Button onClick={() => router.push("/admin/products")}>
-              View All Products
-            </Button>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Product not found</h2>
+          <p className="text-muted-foreground mb-4">
+            The product you're looking for doesn't exist or has been deleted.
+          </p>
+          <Button onClick={goBack}>Go Back</Button>
         </div>
       </div>
     );
   }
-
-  const translation = getCurrentTranslation(product.translations);
-  const categoryTranslation = getCurrentCategoryTranslation(product.category);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={goBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {translation?.title || "Untitled Product"}
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                {product.sku && (
-                  <Badge variant="outline">SKU: {product.sku}</Badge>
-                )}
-                <Badge variant={product.isActive ? "default" : "secondary"}>
-                  {product.isActive ? t("active") : t("inactive")}
-                </Badge>
+      {/* Header */}
+      <div className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={goBack}>
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Edit Product</h1>
+                <p className="text-sm text-muted-foreground">
+                  Modify product details and settings
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleEdit}>
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
+            <div className="flex items-center gap-2">
+              <Badge variant={isValid ? "default" : "secondary"}>
+                {isValid ? "Ready to save" : "Incomplete"}
+              </Badge>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isDeleting}
+                onClick={handleDelete}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+              <Button
+                type="submit"
+                form="product-form"
+                disabled={!isValid || isSubmitting}
+                className="gap-2"
+              >
+                <Save className="w-4 h-4" />
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Product Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  Product Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-medium text-foreground mb-2">
-                    {t("title")}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {translation?.title || "No title available"}
-                  </p>
-                </div>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <form
+          id="product-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-8"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Basic Information */}
+              <BasicInformation
+                register={register}
+                control={control}
+                errors={errors}
+                categories={categories}
+                defaultValue={product.categoryId}
+              />
 
-                <div>
-                  <h3 className="font-medium text-foreground mb-2">
-                    {t("description")}
-                  </h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {translation?.description || "No description available"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Media */}
-            {product.media.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Media</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {product.media.map((media) => (
-                      <div
-                        key={media.id}
-                        className="aspect-square relative overflow-hidden rounded-md border"
-                      >
-                        {media.type === "IMAGE" ? (
-                          <Image
-                            src={getMediaUrl(media.url)}
-                            alt={translation?.title || "Product media"}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <video
-                            src={getMediaUrl(media.url)}
-                            className="w-full h-full object-cover"
-                            controls
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Translations */}
-            {product.translations.length > 1 && (
+              {/* Multi-language Content */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
-                    {t("translations")} ({product.translations.length})
+                    Product Content
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Edit product information in multiple languages
+                  </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {product.translations.map((trans) => (
-                      <div key={trans.id} className="border rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Badge variant="outline">
-                            {trans.locale.toUpperCase()}
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <div>
-                            <h4 className="font-medium">{trans.title}</h4>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">
-                              {trans.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <MultiLanguageForm
+                    value={translations}
+                    onChange={setTranslations}
+                    requiredLanguages={[]}
+                  />
+                  {errors.translations && (
+                    <p className="text-sm text-destructive mt-2">
+                      {errors.translations.message}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
-            )}
+
+              {/* Media Upload */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5" />
+                    Product Media
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage images and videos for your product
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <MediaUpload
+                    value={media}
+                    onChange={setMedia}
+                    maxFiles={10}
+                    maxFileSize={50}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Pricing */}
+              <PricingSection
+                register={register}
+                watch={watch}
+                defaultPrice={product.suggestedPrice}
+                defaultCurrency={product.currency}
+              />
+
+              {/* Status */}
+              <StatusSection
+                register={register}
+                defaultValue={product.isActive}
+              />
+            </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {product.suggestedPrice && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">{t("price")}</span>
-                    </div>
-                    <span className="font-medium">
-                      {product.currency || "USD"}{" "}
-                      {product.suggestedPrice.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-
-                {categoryTranslation && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">
-                        {t("category")}
-                      </span>
-                    </div>
-                    <Badge variant="secondary">
-                      {categoryTranslation.title}
-                    </Badge>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Created</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(product.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Updated</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(product.updatedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        </form>
       </div>
     </div>
   );

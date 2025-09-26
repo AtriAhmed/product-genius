@@ -10,15 +10,8 @@ interface ImageGalleryProps {
 
 export function ImageGallery({ media }: ImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const images = media
-    .filter((m) => m.type === "IMAGE")
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const videos = media
-    .filter((m) => m.type === "VIDEO")
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const allMedia = [...images, ...videos];
 
-  if (allMedia.length === 0) {
+  if (media.length === 0) {
     return (
       <div className="space-y-4">
         <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
@@ -28,7 +21,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
     );
   }
 
-  const selectedMedia = allMedia[selectedIndex];
+  const selectedMedia = media[selectedIndex];
 
   return (
     <div className="space-y-4">
@@ -51,9 +44,9 @@ export function ImageGallery({ media }: ImageGalleryProps) {
       </div>
 
       {/* Thumbnails */}
-      {allMedia.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto">
-          {allMedia.map((item, index) => (
+      {media.length > 1 && (
+        <div className="flex gap-2 flex-wrap">
+          {media.map((item, index) => (
             <button
               key={item.id}
               onClick={() => setSelectedIndex(index)}
