@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -200,11 +200,15 @@ export default function ProductViewPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-0 sm:px-4">
           <div className="mb-6">
-            <Button variant="ghost" onClick={() => router.back()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/dashboard/products")}
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Back to products
             </Button>
           </div>
           <ProductSkeleton />
@@ -214,18 +218,7 @@ export default function ProductViewPage() {
   }
 
   if (!product) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold mb-4">Product not found</h2>
-            <Button onClick={() => router.push("/dashboard/products")}>
-              Back to Products
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    return notFound();
   }
 
   const translation = getCurrentTranslation(product.translations);
@@ -238,9 +231,13 @@ export default function ProductViewPage() {
       <div className="container mx-auto px-0 sm:px-4">
         {/* Header */}
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => router.back()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/dashboard/products")}
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Products
+            Back to products
           </Button>
         </div>
 

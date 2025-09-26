@@ -323,9 +323,9 @@ export async function GET(request: NextRequest) {
       where.categoryId = parseInt(categoryId);
     }
 
-    // if (isActive !== null) {
-    //   where.isActive = isActive === "true";
-    // }
+    if (!["", null, undefined].includes(isActive)) {
+      where.isActive = isActive === "true";
+    }
 
     const [products, total] = await Promise.all([
       prisma.product.findMany({

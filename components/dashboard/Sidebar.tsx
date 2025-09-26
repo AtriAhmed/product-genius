@@ -2,6 +2,7 @@
 
 import {
   BadgeCheck,
+  BarChart3,
   Bell,
   ChevronsUpDown,
   CreditCard,
@@ -48,6 +49,11 @@ import { signOut, useSession } from "next-auth/react";
 
 // User navigation data
 const navigationData = [
+  {
+    title: "overview",
+    url: "/dashboard",
+    icon: BarChart3,
+  },
   {
     title: "products",
     url: "/dashboard/products",

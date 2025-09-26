@@ -242,18 +242,6 @@ function ProductFilters({
         />
       </div>
 
-      {/* Status Filter */}
-      <Select value={filter} onValueChange={onFilterChange}>
-        <SelectTrigger className="w-full lg:w-48">
-          <Filter className="w-4 h-4 mr-2" />
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("all products")}</SelectItem>
-          <SelectItem value="active">{t("active products")}</SelectItem>
-        </SelectContent>
-      </Select>
-
       {/* Sort */}
       <Select
         value={currentSortValue}
@@ -419,8 +407,9 @@ export default function UserProductsPage() {
 
         {/* Products Grid */}
         {isLoading ? (
-          <div className="flex justify-center items-center h-80">
-            <MainLoader className="![--clr:var(--color-slate-500)]" />
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading products...</p>
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-16">
