@@ -77,8 +77,8 @@ export default function PopularCategories() {
   const fallbackCategories = getFallbackCategories();
 
   return (
-    <div
-      id="categories"
+    <section
+      id="niches"
       className="py-12 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -154,6 +154,6 @@ export default function PopularCategories() {
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
