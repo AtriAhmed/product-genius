@@ -250,14 +250,20 @@ export function AdminSidebar({
                   <DropdownMenuSubContent>
                     <DropdownMenuItem
                       onClick={() => {
-                        router.replace(pathname, { locale: "en" });
+                        router.replace(pathname, {
+                          locale: "en",
+                          scroll: false,
+                        });
                       }}
                     >
                       {t("english")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => {
-                        router.replace(pathname, { locale: "fr" });
+                        router.replace(pathname, {
+                          locale: "fr",
+                          scroll: false,
+                        });
                       }}
                     >
                       {t("french")}

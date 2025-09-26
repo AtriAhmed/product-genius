@@ -5,5 +5,8 @@
   "login": "Connexion",
   "dashboard": "Tableau de bord",
   "profile": "Profil",
-  "logout": "Déconnexion"
+  "logout": "Déconnexion",
+  "language": "Langue",
+  "english": "English",
+  "french": "Français"
 }
