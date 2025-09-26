@@ -5,6 +5,7 @@ import CategoriesFilters from "@/app/[locale]/admin/categories/CategoriesFilters
 import CategoryForm from "@/app/[locale]/admin/categories/CategoryForm";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -40,6 +41,7 @@ export default function CategoriesPage() {
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
+  const isMobile = useIsMobile();
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -74,12 +76,16 @@ export default function CategoriesPage() {
 
   const handleAddCategory = () => {
     setSelectedCategory(undefined);
-    setIsFormOpen(true);
+    if (isMobile) {
+      setIsFormOpen(true);
+    }
   };
 
   const handleEditCategory = (category: Category) => {
     setSelectedCategory(category);
-    setIsFormOpen(true);
+    if (isMobile) {
+      setIsFormOpen(true);
+    }
   };
 
   const handleViewCategory = (category: Category) => {

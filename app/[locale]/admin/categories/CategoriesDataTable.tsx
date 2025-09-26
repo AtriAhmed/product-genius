@@ -176,15 +176,6 @@ export default function CategoriesDataTable({
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0"
-                      onClick={() => onView(category)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">View category</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
                       onClick={() => onEdit(category)}
                     >
                       <Edit className="h-4 w-4" />
