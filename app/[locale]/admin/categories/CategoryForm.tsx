@@ -1,6 +1,7 @@
 "use client";
 
 import LanguageSelector from "@/components/LanguageSelector";
+import CategoryTranslationDropdown from "./CategoryTranslationDropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -226,6 +227,36 @@ export default function CategoryForm({
     }
   };
 
+  const handleAutoTranslate = (translationsData: {
+    [key: string]: { title: string; description: string };
+  }) => {
+    const newTranslations = [...translations];
+
+    Object.entries(translationsData).forEach(([locale, translation]) => {
+      const existingIndex = newTranslations.findIndex(
+        (t) => t.locale === locale
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing translation
+        newTranslations[existingIndex] = {
+          ...newTranslations[existingIndex],
+          title: translation.title,
+          description: translation.description,
+        };
+      } else {
+        // Add new translation
+        newTranslations.push({
+          locale,
+          title: translation.title,
+          description: translation.description,
+        });
+      }
+    });
+
+    setTranslations(newTranslations);
+  };
+
   const onSubmit = async (data: CategoryFormData) => {
     setIsSubmitting(true);
 
@@ -286,16 +317,29 @@ export default function CategoryForm({
       className="flex-1 space-y-4"
     >
       {/* Language Selector */}
-      <LanguageSelector
-        selectedLanguages={selectedLanguages}
-        availableLanguages={languageOptions}
-        onLanguageAdd={handleLanguageAdd}
-        onLanguageRemove={handleLanguageRemove}
-        onLanguageSelect={handleLanguageSelect}
-        activeLanguage={activeLanguage}
-        requiredLanguages={[]}
-        hasErrors={hasErrors}
-      />
+      <div className="flex gap-2">
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          availableLanguages={languageOptions}
+          onLanguageAdd={handleLanguageAdd}
+          onLanguageRemove={handleLanguageRemove}
+          onLanguageSelect={handleLanguageSelect}
+          activeLanguage={activeLanguage}
+          requiredLanguages={[]}
+          hasErrors={hasErrors}
+          translationButton={
+            translations.length > 0 && (
+              <CategoryTranslationDropdown
+                availableLanguages={languageOptions}
+                selectedLanguages={selectedLanguages}
+                activeLanguage={activeLanguage}
+                currentTranslation={getCurrentTranslation()}
+                onTranslate={handleAutoTranslate}
+              />
+            )
+          }
+        />
+      </div>
 
       {/* Translation Form */}
       {translations.length > 0 && (

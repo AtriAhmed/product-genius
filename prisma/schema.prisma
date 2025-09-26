@@ -156,7 +156,7 @@ model Category {
 
 model CategoryTranslation {
   id          Int      @id @default(autoincrement())
-  category    Category @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId  Int
   locale      String
   title       String
@@ -191,7 +191,7 @@ model Product {
 
 model ProductTranslation {
   id          Int     @id @default(autoincrement())
-  product     Product @relation(fields: [productId], references: [id])
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId   Int
   locale      String
   title       String
