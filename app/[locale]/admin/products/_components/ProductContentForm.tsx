@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import LanguageSelector from "@/components/LanguageSelector";
+import TranslationDropdown from "./TranslationDropdown";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
@@ -145,11 +146,41 @@ export default function MultiLanguageForm({
     }
   }, [requiredLanguages, value, onChange]);
 
+  const handleAutoTranslate = (translations: {
+    [key: string]: { title: string; description: string };
+  }) => {
+    const newTranslations = [...value];
+
+    Object.entries(translations).forEach(([locale, translation]) => {
+      const existingIndex = newTranslations.findIndex(
+        (t) => t.locale === locale
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing translation
+        newTranslations[existingIndex] = {
+          ...newTranslations[existingIndex],
+          title: translation.title,
+          description: translation.description,
+        };
+      } else {
+        // Add new translation
+        newTranslations.push({
+          locale,
+          title: translation.title,
+          description: translation.description,
+        });
+      }
+    });
+
+    onChange(newTranslations);
+  };
+
   const selectedLanguages = value.map((t) => t.locale);
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Language Selector */}
+      {/* Language Selector with Translation Button */}
       <LanguageSelector
         selectedLanguages={selectedLanguages}
         availableLanguages={supportedLanguages}
@@ -159,6 +190,17 @@ export default function MultiLanguageForm({
         activeLanguage={activeTab}
         requiredLanguages={requiredLanguages}
         hasErrors={hasLanguageErrors}
+        translationButton={
+          value.length > 0 ? (
+            <TranslationDropdown
+              availableLanguages={supportedLanguages}
+              selectedLanguages={selectedLanguages}
+              activeLanguage={activeTab}
+              currentTranslation={getCurrentTranslation()}
+              onTranslate={handleAutoTranslate}
+            />
+          ) : null
+        }
       />
 
       {/* Translation Form */}

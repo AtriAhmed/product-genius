@@ -82,8 +82,6 @@ export default function SignIn() {
       } else {
         toast.error(result.error);
       }
-    } else {
-      router.push("/");
     }
   };
 

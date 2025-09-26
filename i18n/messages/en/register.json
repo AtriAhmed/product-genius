@@ -26,5 +26,6 @@
   "privacy policy": "Privacy Policy",
   "registration failed": "Registration failed. Please try again.",
   "verification email resent": "Verification email resent successfully!",
-  "failed to resend email": "Failed to resend email. Please try again."
+  "failed to resend email": "Failed to resend email. Please try again.",
+  "back to sign in": "Back to sign in"
 }

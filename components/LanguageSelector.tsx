@@ -29,6 +29,8 @@ interface LanguageSelectorProps {
   requiredLanguages?: string[];
   hasErrors?: (languageCode: string) => boolean;
   className?: string;
+  // New prop for translation button
+  translationButton?: React.ReactNode;
 }
 
 const defaultLanguages: LanguageOption[] = [
@@ -54,6 +56,7 @@ export default function LanguageSelector({
   requiredLanguages = [],
   hasErrors,
   className,
+  translationButton,
 }: LanguageSelectorProps) {
   const t = useTranslations("categories");
 
@@ -168,6 +171,9 @@ export default function LanguageSelector({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+
+        {/* Translation Button */}
+        {translationButton}
       </div>
     </div>
   );

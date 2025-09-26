@@ -1,7 +1,7 @@
 "use client";
 
 import { MainLoader } from "@/components/Loaders";
-import { Role } from "@/types";
+import { Role, User } from "@/types";
 import { useSession } from "next-auth/react";
 import { notFound, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -13,14 +13,14 @@ type PrivateProps = {
   /** If true, only unauthenticated users are allowed */
   guestOnly?: boolean;
   /** Where to redirect if unauthorized */
-  redirectTo?: string;
+  getRedirectTo?: (user?: Partial<User>) => Promise<string>;
 };
 
 export default function Private({
   children,
   allowedRoles,
   guestOnly = false,
-  redirectTo = "/",
+  getRedirectTo = () => Promise.resolve("/auth/login"),
 }: Readonly<PrivateProps>) {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -32,14 +32,18 @@ export default function Private({
     // Guest-only pages
     if (guestOnly) {
       if (session) {
-        router.push(redirectTo);
+        getRedirectTo((session?.user as any) || {}).then((redirectTo) => {
+          router.push(redirectTo);
+        });
       }
       return;
     }
 
     // Auth required
     if (!session) {
-      router.push(redirectTo);
+      getRedirectTo().then((redirectTo) => {
+        router.push(redirectTo);
+      });
       return;
     }
 
@@ -51,7 +55,7 @@ export default function Private({
         return notFound();
       }
     }
-  }, [session, status, guestOnly, allowedRoles, redirectTo, router]);
+  }, [session, status, guestOnly, allowedRoles, router]);
 
   // Show loader while checking
   if (status === "loading") {

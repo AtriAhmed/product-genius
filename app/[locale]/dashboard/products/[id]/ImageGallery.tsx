@@ -38,6 +38,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
           <video
             src={getMediaUrl(selectedMedia.url)}
             controls
+            autoPlay
             className="w-full h-full object-cover"
           />
         )}

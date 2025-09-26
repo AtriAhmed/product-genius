@@ -26,5 +26,6 @@
   "privacy policy": "Politique de confidentialité",
   "registration failed": "L'inscription a échoué. Veuillez réessayer.",
   "verification email resent": "E-mail de vérification renvoyé avec succès !",
-  "failed to resend email": "Impossible de renvoyer l'e-mail. Veuillez réessayer."
+  "failed to resend email": "Impossible de renvoyer l'e-mail. Veuillez réessayer.",
+  "back to sign in": "Retour à la connexion"
 }

@@ -286,7 +286,7 @@ export default function EditProductPage() {
       {/* Header */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm" onClick={goBack}>
                 <ArrowLeft className="w-4 h-4" />
@@ -294,16 +294,10 @@ export default function EditProductPage() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Edit Product</h1>
-                <p className="text-sm text-muted-foreground">
-                  Modify product details and settings
-                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Badge variant={isValid ? "default" : "secondary"}>
-                {isValid ? "Ready to save" : "Incomplete"}
-              </Badge>
+            <div className="flex items-center gap-2 ms-auto">
               <Button
                 type="button"
                 variant="destructive"

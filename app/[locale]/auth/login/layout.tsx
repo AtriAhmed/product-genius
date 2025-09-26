@@ -1,5 +1,7 @@
 import "@/app/[locale]/globals.css";
+import Private from "@/components/Private";
 import { authOptions } from "@/lib/auth";
+import { User } from "@/types";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -14,5 +16,15 @@ export default async function Layout({
     redirect("/");
   }
 
-  return children;
+  return (
+    <Private
+      guestOnly
+      getRedirectTo={async (user) => {
+        "use server";
+        return user?.role === "USER" ? "/dashboard" : "/admin";
+      }}
+    >
+      {children}
+    </Private>
+  );
 }
