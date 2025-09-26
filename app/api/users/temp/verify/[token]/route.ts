@@ -7,9 +7,10 @@ interface Params {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  ctx: RouteContext<"/api/users/temp/verify/[token]">
 ) {
   try {
+    const params = await ctx.params;
     const { token } = params;
 
     if (!token) {

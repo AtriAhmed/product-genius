@@ -7,8 +7,9 @@ import path from "path";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/media/[id]">
 ) {
+  const params = await ctx.params;
   try {
     // Check authentication for admin routes
     const session = await getServerSession(authOptions);

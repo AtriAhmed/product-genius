@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, { params }: RouteContext) {
+export async function GET(
+  request: NextRequest,
+  ctx: RouteContext<"/api/categories/[id]">
+) {
   try {
+    const params = await ctx.params;
     const categoryId = parseInt(params.id);
 
     if (isNaN(categoryId)) {
@@ -51,8 +49,12 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  ctx: RouteContext<"/api/categories/[id]">
+) {
   try {
+    const params = await ctx.params;
     const categoryId = parseInt(params.id);
 
     if (isNaN(categoryId)) {
@@ -134,8 +136,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteContext) {
+export async function DELETE(
+  request: NextRequest,
+  ctx: RouteContext<"/api/categories/[id]">
+) {
   try {
+    const params = await ctx.params;
     const categoryId = parseInt(params.id);
 
     if (isNaN(categoryId)) {
