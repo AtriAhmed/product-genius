@@ -144,13 +144,7 @@ export default function NewProductPage() {
   };
 
   const goBack = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to leave? Your changes will be lost."
-      )
-    ) {
-      router.back();
-    }
+    router.back();
   };
 
   return (
@@ -160,13 +154,7 @@ export default function NewProductPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={goBack}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={goBack}>
                 <ArrowLeft className="w-4 h-4" />
                 Back
               </Button>

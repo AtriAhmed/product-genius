@@ -1,19 +1,16 @@
 import "@/app/[locale]/globals.css";
 import Private from "@/components/Private";
-import { AdminSidebar } from "@/components/admin/Sidebar";
-import { AdminBreadcrumb } from "@/components/admin/AdminBreadcrumb";
+import { DashboardBreadcrumb } from "@/components/Breadcrumb";
+import { UserSidebar } from "@/components/dashboard/Sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { authOptions } from "@/lib/auth";
-import { Role } from "@/types";
 import { getServerSession } from "next-auth";
-import { notFound, redirect } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
-import { UserSidebar } from "@/components/dashboard/Sidebar";
-import { DashboardBreadcrumb } from "@/components/dashboard/Breadcumb.tsx";
+import { notFound } from "next/navigation";
 
 export default async function Layout({
   children,

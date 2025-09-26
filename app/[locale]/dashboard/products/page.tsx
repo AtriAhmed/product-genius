@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Search,
@@ -30,6 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
 import { MainLoader } from "@/components/Loaders";
+import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
 
 interface ProductTranslation {
   id: number;
@@ -296,6 +297,8 @@ function ProductFilters({
 export default function UserProductsPage() {
   const t = useTranslations("products");
   const router = useRouter();
+  const params = useParams();
+  const { resetBreadcrumbs, locale } = useBreadcrumb();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -372,7 +375,7 @@ export default function UserProductsPage() {
   }, [search, filter, sortBy, sortOrder, pagination.page]);
 
   const handleViewProduct = (product: Product) => {
-    router.push(`/dashboard/products/${product.id}`);
+    router.push(`/${locale}/dashboard/products/${product.id}`);
   };
 
   const clearFilters = () => {

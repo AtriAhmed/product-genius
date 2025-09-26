@@ -12,16 +12,20 @@ import { ProvidersPreview } from "./ProvidersPreview";
 import { AllProviders } from "./AllProviders";
 import { ProductSkeleton } from "./ProductSkeleton";
 import { Product, ProductTranslation, Supplier, Marketplace } from "./types";
+import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
 
 export default function ProductViewPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("products");
+  const { setBreadcrumbs, resetBreadcrumbs, createProductBreadcrumbs } =
+    useBreadcrumb();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
 
   const productId = params.id as string;
+  const locale = params.locale as string;
 
   // Mock data for suppliers and marketplaces
   const mockSuppliers: Supplier[] = [
@@ -125,6 +129,22 @@ export default function ProductViewPage() {
       if (response.ok) {
         const data = await response.json();
         setProduct(data.product); // The API returns { product: ... }
+
+        // Set up dynamic breadcrumbs
+        const product = data.product;
+        const translation = getCurrentTranslation(product.translations || []);
+        const categoryTranslation = getCurrentTranslation(
+          product.category?.translations || []
+        );
+
+        const breadcrumbs = createProductBreadcrumbs(
+          translation?.title || "Product",
+          categoryTranslation?.title,
+          product.id,
+          product.category?.id
+        );
+
+        setBreadcrumbs(breadcrumbs);
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch product");
@@ -142,6 +162,11 @@ export default function ProductViewPage() {
     if (productId) {
       fetchProduct();
     }
+
+    // Clean up breadcrumbs when component unmounts
+    return () => {
+      resetBreadcrumbs();
+    };
   }, [productId]);
 
   const handleLike = () => {

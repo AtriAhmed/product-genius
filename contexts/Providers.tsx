@@ -5,6 +5,7 @@ import { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import React, { ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
+import { BreadcrumbProvider } from "@/contexts/BreadcrumbProvider";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -15,7 +16,9 @@ export default function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session} refetchOnWindowFocus={false}>
       <AppProvider>
-        <ThemeProvider attribute="class">{children}</ThemeProvider>
+        <BreadcrumbProvider>
+          <ThemeProvider attribute="class">{children}</ThemeProvider>
+        </BreadcrumbProvider>
       </AppProvider>
     </SessionProvider>
   );
