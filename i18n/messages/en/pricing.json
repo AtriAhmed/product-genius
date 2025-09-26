@@ -26,5 +26,20 @@
   "dedicated account manager": "Dedicated account manager",
   "api access": "API access",
 
-  "month": "month"
+  "month": "month",
+
+  "faqs": "FAQs",
+  "frequently asked questions": "Frequently asked questions",
+
+  "is there a free trial?": "Is there a free trial?",
+  "yes! we offer a 7-day free trial for all plans; no credit card required": "Yes! We offer a 7-day free trial for all plans. No credit card required.",
+
+  "can i change plans later?": "Can I change plans later?",
+  "absolutely; you can upgrade, downgrade, or cancel anytime": "Absolutely. You can upgrade, downgrade, or cancel anytime.",
+
+  "do you offer discounts?": "Do you offer discounts?",
+  "yes! we offer 20% off for annual subscriptions": "Yes! We offer 20% off for annual subscriptions.",
+
+  "what payment methods do you accept?": "What payment methods do you accept?",
+  "we accept all major credit cards and paypal": "We accept all major credit cards and PayPal."
 }

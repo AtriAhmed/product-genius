@@ -26,5 +26,20 @@
   "dedicated account manager": "Gestionnaire de compte dédié",
   "api access": "Accès API",
 
-  "month": "mois"
+  "month": "mois",
+
+  "faqs": "FAQs",
+  "frequently asked questions": "Questions fréquemment posées",
+
+  "is there a free trial?": "Y a-t-il un essai gratuit ?",
+  "yes! we offer a 7-day free trial for all plans; no credit card required": "Oui ! Nous offrons un essai gratuit de 7 jours pour tous les plans. Aucune carte de crédit n'est requise.",
+
+  "can i change plans later?": "Puis-je changer de plan plus tard ?",
+  "absolutely; you can upgrade, downgrade, or cancel anytime": "Absolument. Vous pouvez passer à un niveau supérieur, inférieur ou annuler à tout moment.",
+
+  "do you offer discounts?": "Offrez-vous des réductions ?",
+  "yes! we offer 20% off for annual subscriptions": "Oui ! Nous offrons 20 % de réduction pour les abonnements annuels.",
+
+  "what payment methods do you accept?": "Quels modes de paiement acceptez-vous ?",
+  "we accept all major credit cards and paypal": "Nous acceptons toutes les principales cartes de crédit et PayPal."
 }
