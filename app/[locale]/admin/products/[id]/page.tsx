@@ -381,8 +381,8 @@ export default function EditProductPage() {
                   <MediaUpload
                     value={media}
                     onChange={setMedia}
-                    maxFiles={10}
-                    maxFileSize={50}
+                    maxFiles={100}
+                    maxFileSize={500}
                   />
                 </CardContent>
               </Card>

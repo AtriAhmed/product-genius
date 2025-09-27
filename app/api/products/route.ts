@@ -158,7 +158,6 @@ export async function POST(request: NextRequest) {
           locale: translation.locale,
           title: translation.title,
           description: translation.description,
-          slug: generateSlug(translation.title),
         })),
       });
 
@@ -219,7 +218,6 @@ export async function POST(request: NextRequest) {
               locale: translation.locale,
               title: translation.title,
               description: translation.description,
-              slug: generateSlug(translation.title),
             })),
           },
           media: {
