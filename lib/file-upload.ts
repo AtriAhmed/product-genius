@@ -158,7 +158,6 @@ export async function uploadProductMedia(
     subdirectory: productId.toString(),
     generateUniqueFilename: true,
     allowedExtensions,
-    maxFileSize: 10 * 1024 * 1024, // 10MB
   });
 }
 
@@ -176,7 +175,6 @@ export async function uploadCategoryImage(
     subdirectory: categoryId.toString(),
     generateUniqueFilename: true,
     allowedExtensions,
-    maxFileSize: 5 * 1024 * 1024, // 5MB
   });
 }
 

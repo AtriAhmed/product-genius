@@ -9,6 +9,7 @@ import MultiLanguageForm, {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Globe, ImageIcon, Save, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -75,6 +76,7 @@ export default function EditProductPage() {
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const params = useParams<{ id: string }>();
 
   const productId = parseInt(params.id);
@@ -219,15 +221,11 @@ export default function EditProductPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this product? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowDeleteDialog(true);
+  };
 
+  const confirmDelete = async () => {
     setIsDeleting(true);
 
     try {
@@ -249,6 +247,7 @@ export default function EditProductPage() {
       );
     } finally {
       setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -407,6 +406,20 @@ export default function EditProductPage() {
           </div>
         </form>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Delete Product"
+        description="Are you sure you want to delete this product?"
+        warningMessage="This action cannot be undone."
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        variant="destructive"
+        disabled={isDeleting}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Filter, SortAsc, SortDesc, X } from "lucide-react";
 import ProductsDataTable from "./ProductsDataTable";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 interface ProductTranslation {
   id: number;
@@ -176,6 +177,7 @@ export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteProduct, setDeleteProduct] = useState<Product | undefined>();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
@@ -263,8 +265,32 @@ export default function ProductsPage() {
   };
 
   const handleDeleteProduct = (product: Product) => {
-    // For now, just show a toast - implement delete logic later
-    toast.error("Delete functionality not yet implemented");
+    setDeleteProduct(product);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteProduct) return;
+
+    try {
+      const response = await fetch(`/api/products/${deleteProduct.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Product deleted successfully");
+        fetchProducts(); // Refresh the products list
+      } else {
+        const errorData: ApiErrorResponse = await response.json();
+        throw new Error(errorData.error || "Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete product"
+      );
+    } finally {
+      setDeleteProduct(undefined);
+    }
   };
 
   const clearFilters = () => {
@@ -333,6 +359,21 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={!!deleteProduct}
+        onOpenChange={() => setDeleteProduct(undefined)}
+        title="Delete Product"
+        description={`Are you sure you want to delete "${
+          deleteProduct?.translations?.[0]?.title || "this product"
+        }"?`}
+        warningMessage="This action cannot be undone."
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        variant="destructive"
+      />
     </div>
   );
 }
