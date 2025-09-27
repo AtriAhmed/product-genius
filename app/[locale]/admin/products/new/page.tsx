@@ -131,7 +131,7 @@ export default function NewProductPage() {
       }
 
       toast.success("Product created successfully!");
-      router.push(`/admin/products/${result.product.id}`);
+      router.push(`/admin/products`);
     } catch (error) {
       console.error("Product creation error:", error);
       toast.error(
