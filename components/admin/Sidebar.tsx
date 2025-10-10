@@ -113,7 +113,7 @@ export function AdminSidebar({
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)]"
+      className="top-[55px] h-[calc(100vh-55px)] shadow-[0_0_3px_rgb(0,0,0,.3)] border-none"
       collapsible="icon"
       {...props}
     >
