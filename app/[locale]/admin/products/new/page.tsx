@@ -2,10 +2,10 @@
 
 import MediaUpload, {
   MediaItem,
-} from "@/app/[locale]/admin/products/_components/MediaUpload";
+} from "@/app/[locale]/admin/products/MediaUpload";
 import MultiLanguageForm, {
   Translation,
-} from "@/app/[locale]/admin/products/_components/ProductContentForm";
+} from "@/app/[locale]/admin/products/ProductContentForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +16,9 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import BasicInformation from "@/app/[locale]/admin/products/_components/BasicInformation";
-import PricingSection from "@/app/[locale]/admin/products/_components/PricingSection";
-import StatusSection from "@/app/[locale]/admin/products/_components/StatusSection";
+import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
+import PricingSection from "@/app/[locale]/admin/products/PricingSection";
+import StatusSection from "@/app/[locale]/admin/products/StatusSection";
 
 // Form validation schema
 const productFormSchema = z.object({
