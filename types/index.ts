@@ -54,6 +54,12 @@ export type User = {
   resetTokenExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Relations
+  subscriptions?: Subscription[];
+  payments?: Payment[];
+  orders?: Order[];
+  assignedOrders?: Order[];
+  agentProfile?: AgentProfile;
 };
 
 export type Plan = {
@@ -67,6 +73,8 @@ export type Plan = {
   features?: any; // JSON type
   createdAt: Date;
   updatedAt: Date;
+  // Relations
+  subscriptions?: Subscription[];
 };
 
 export type Subscription = {
@@ -81,6 +89,10 @@ export type Subscription = {
   cancelAtPeriodEnd: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Relations
+  user?: User;
+  plan?: Plan;
+  payments?: Payment[];
 };
 
 export type Payment = {
@@ -94,12 +106,18 @@ export type Payment = {
   paidAt?: Date;
   metadata?: any; // JSON type
   createdAt: Date;
+  // Relations
+  user?: User;
+  subscription?: Subscription;
 };
 
 export type Category = {
   id: number;
   createdAt: Date;
   updatedAt: Date;
+  // Relations
+  translations?: CategoryTranslation[];
+  products?: Product[];
 };
 
 export type CategoryTranslation = {
@@ -108,6 +126,8 @@ export type CategoryTranslation = {
   locale: string;
   title: string;
   description?: string;
+  // Relations
+  category?: Category;
 };
 
 export type Product = {
@@ -115,158 +135,17 @@ export type Product = {
   sku?: string;
   suggestedPrice?: number;
   currency?: string;
-  popularityScore: number;
+  popularityScore?: number;
   shopifyId?: string;
-  shopifyImported: boolean;
+  shopifyImported?: boolean;
   categoryId?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isActive?: boolean;
   metadata?: any; // JSON type
-  views: number;
-  likes: number;
-};
-
-export type ProductTranslation = {
-  id: number;
-  productId: number;
-  locale: string;
-  title: string;
-  description: string;
-  slug?: string;
-};
-
-export type Media = {
-  id: number;
-  productId?: number;
-  url: string;
-  provider?: string;
-  type: MediaType;
-  alt?: string;
-  sortOrder: number;
-  metadata?: any; // JSON type
-  createdAt: Date;
-};
-
-export type Supplier = {
-  id: number;
-  name: string;
-  marketplace?: string;
-  baseUrl?: string;
-  contactInfo?: string;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type ProductSupplier = {
-  id: number;
-  productId: number;
-  supplierId: number;
-  url: string;
-  marketplace?: string;
-  price?: number;
-  currency?: string;
-  isPrimary: boolean;
-  notes?: string;
-};
-
-export type Order = {
-  id: number;
-  orderNumber: string;
-  userId: number;
-  agentId?: number;
-  totalCents: number;
-  currency: string;
-  status: OrderStatus;
-  metadata?: any; // JSON type
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type OrderItem = {
-  id: number;
-  orderId: number;
-  productId: number;
-  title: string;
-  unitPriceCents: number;
-  quantity: number;
-  metadata?: any; // JSON type
-};
-
-export type Shipment = {
-  id: number;
-  orderId: number;
-  methodId: number;
-  trackingNumber?: string;
-  status: ShipmentStatus;
-  shippedAt?: Date;
-  deliveredAt?: Date;
-  costCents?: number;
-  metadata?: any; // JSON type
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type ShipmentMethod = {
-  id: number;
-  title: string;
-  country?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  costCents: number;
-  currency: string;
-  provider?: string;
-  active: boolean;
-  agentProfileId?: number;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type AgentProfile = {
-  id: number;
-  userId: number;
-  companyName?: string;
-  contactNumber?: string;
-  details?: any; // JSON type
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-// Types with relations
-export type UserWithRelations = User & {
-  subscriptions?: Subscription[];
-  payments?: Payment[];
-  orders?: Order[];
-  assignedOrders?: Order[];
-  agentProfile?: AgentProfile;
-};
-
-export type PlanWithRelations = Plan & {
-  subscriptions?: Subscription[];
-};
-
-export type SubscriptionWithRelations = Subscription & {
-  user?: User;
-  plan?: Plan;
-  payments?: Payment[];
-};
-
-export type PaymentWithRelations = Payment & {
-  user?: User;
-  subscription?: Subscription;
-};
-
-export type CategoryWithRelations = Category & {
-  translations?: CategoryTranslation[];
-  products?: Product[];
-};
-
-export type CategoryTranslationWithRelations = CategoryTranslation & {
-  category?: Category;
-};
-
-export type ProductWithRelations = Product & {
+  views?: number;
+  likes?: number;
+  // Relations
   category?: Category;
   translations?: ProductTranslation[];
   media?: Media[];
@@ -274,46 +153,134 @@ export type ProductWithRelations = Product & {
   orderItems?: OrderItem[];
 };
 
-export type ProductTranslationWithRelations = ProductTranslation & {
+export type ProductTranslation = {
+  id: number;
+  productId?: number;
+  locale?: string;
+  title?: string;
+  description?: string;
+  slug?: string;
+  // Relations
   product?: Product;
 };
 
-export type MediaWithRelations = Media & {
+export type Media = {
+  id: number;
+  productId?: number;
+  url?: string;
+  provider?: string;
+  type?: MediaType;
+  alt?: string;
+  sortOrder?: number;
+  metadata?: any; // JSON type
+  createdAt?: Date;
+  // Relations
   product?: Product;
 };
 
-export type SupplierWithRelations = Supplier & {
+export type Supplier = {
+  id: number;
+  name?: string;
+  marketplace?: string;
+  baseUrl?: string;
+  contactInfo?: string;
+  notes?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
   productLinks?: ProductSupplier[];
 };
 
-export type ProductSupplierWithRelations = ProductSupplier & {
+export type ProductSupplier = {
+  id: number;
+  productId?: number;
+  supplierId?: number;
+  url?: string;
+  marketplace?: string;
+  price?: number;
+  currency?: string;
+  isPrimary?: boolean;
+  notes?: string;
+  // Relations
   product?: Product;
   supplier?: Supplier;
 };
 
-export type OrderWithRelations = Order & {
+export type Order = {
+  id: number;
+  orderNumber?: string;
+  userId?: number;
+  agentId?: number;
+  totalCents?: number;
+  currency?: string;
+  status?: OrderStatus;
+  metadata?: any; // JSON type
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
   user?: User;
   agent?: User;
   items?: OrderItem[];
   shipment?: Shipment;
 };
 
-export type OrderItemWithRelations = OrderItem & {
+export type OrderItem = {
+  id: number;
+  orderId?: number;
+  productId?: number;
+  title?: string;
+  unitPriceCents?: number;
+  quantity?: number;
+  metadata?: any; // JSON type
+  // Relations
   order?: Order;
   product?: Product;
 };
 
-export type ShipmentWithRelations = Shipment & {
+export type Shipment = {
+  id: number;
+  orderId?: number;
+  methodId?: number;
+  trackingNumber?: string;
+  status?: ShipmentStatus;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  costCents?: number;
+  metadata?: any; // JSON type
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
   order?: Order;
   method?: ShipmentMethod;
 };
 
-export type ShipmentMethodWithRelations = ShipmentMethod & {
+export type ShipmentMethod = {
+  id: number;
+  title?: string;
+  country?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  costCents?: number;
+  currency?: string;
+  provider?: string;
+  active?: boolean;
+  agentProfileId?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
   shipments?: Shipment[];
   agent?: AgentProfile;
 };
 
-export type AgentProfileWithRelations = AgentProfile & {
+export type AgentProfile = {
+  id: number;
+  userId?: number;
+  companyName?: string;
+  contactNumber?: string;
+  details?: any; // JSON type
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
   user?: User;
   shipmentMethods?: ShipmentMethod[];
 };

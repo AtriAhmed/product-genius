@@ -1,17 +1,14 @@
 "use client";
 
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Package } from "lucide-react";
-import { UseFormRegister, FieldErrors, Control } from "react-hook-form";
-import { Controller } from "react-hook-form";
+import { FieldErrors, UseFormSetValue } from "react-hook-form";
 
 interface Category {
   id: number;
@@ -26,24 +23,18 @@ interface Category {
   };
 }
 
-interface ProductFormData {
-  categoryId?: number;
-}
-
 interface BasicInformationProps {
-  register: UseFormRegister<any>;
-  control: Control<any>;
+  setValue: UseFormSetValue<any>;
   errors: FieldErrors<any>;
   categories: Category[];
-  defaultValue?: number;
+  categoryValue?: number;
 }
 
 export default function BasicInformation({
-  register,
-  control,
+  setValue,
   errors,
   categories,
-  defaultValue,
+  categoryValue,
 }: BasicInformationProps) {
   // Get category title in the first available language (preferably English)
   const getCategoryTitle = (category: Category) => {
@@ -53,6 +44,10 @@ export default function BasicInformation({
     // Fallback to first available translation
     return category.translations[0]?.title || `Category ${category.id}`;
   };
+
+  const selectedCategory = categoryValue
+    ? categories.find((cat) => cat.id === categoryValue)
+    : null;
 
   return (
     <Card>
@@ -65,34 +60,30 @@ export default function BasicInformation({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Category</label>
-          <Controller
-            name="categoryId"
-            control={control}
-            defaultValue={defaultValue}
-            render={({ field }) => (
-              <Select
-                value={field.value?.toString() || ""}
-                onValueChange={(value) => {
-                  field.onChange(value ? parseInt(value) : undefined);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category.id}
-                      value={category.id.toString()}
-                    >
-                      {getCategoryTitle(category)} ({category._count.products}{" "}
-                      products)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
+          <Select
+            value={categoryValue?.toString() || ""}
+            onValueChange={(value) => {
+              setValue("categoryId", value ? parseInt(value) : undefined);
+            }}
+          >
+            <SelectTrigger className="w-full">
+              {selectedCategory
+                ? getCategoryTitle(selectedCategory)
+                : "Select a category"}
+            </SelectTrigger>
+            <SelectContent>
+              {categories?.length ? (
+                categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {getCategoryTitle(category)} ({category._count.products}{" "}
+                    products)
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="none">No categories available</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
         </div>
       </CardContent>
     </Card>

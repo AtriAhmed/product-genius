@@ -84,5 +84,16 @@
   "no image": "No image",
   "name": "Name",
   "actions": "Actions",
-  "view supplier": "View Supplier"
+  "view supplier": "View Supplier",
+  "update product information": "Update product information",
+  "deleting": "Deleting...",
+  "updating": "Updating...",
+  "update": "Update",
+  "product updated successfully": "Product updated successfully!",
+  "failed to update product": "Failed to update product",
+  "product deleted successfully": "Product deleted successfully!",
+  "failed to delete product": "Failed to delete product",
+  "are you sure you want to delete this product": "Are you sure you want to delete this product?",
+  "this action cannot be undone": "This action cannot be undone.",
+  "cancel": "Cancel"
 }
