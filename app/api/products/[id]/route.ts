@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  uploadProductMedia,
+  uploadFile,
   getMediaType,
   deleteMultipleFiles,
 } from "@/lib/file-upload";
@@ -163,7 +163,19 @@ export async function PUT(
     // Save uploaded files and create media records
     const newMediaRecords = await Promise.all(
       uploadedFiles.map(async ({ file, sortOrder, type }) => {
-        const uploadResult = await uploadProductMedia(file, productId);
+        const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+        const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
+        const allowedExtensions = [
+          ...allowedImageExtensions,
+          ...allowedVideoExtensions,
+        ];
+
+        const uploadResult = await uploadFile(file, {
+          directory: "uploads/products",
+          subdirectory: productId.toString(),
+          generateUniqueFilename: true,
+          allowedExtensions,
+        });
         return {
           url: uploadResult.url,
           type,

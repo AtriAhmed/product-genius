@@ -28,6 +28,8 @@ export interface MediaItem {
   id: string;
   file?: File;
   url?: string;
+  poster?: string;
+  posterFile?: File;
   type: "IMAGE" | "VIDEO";
   sortOrder: number;
 }

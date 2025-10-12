@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { uploadProductMedia, getMediaType } from "@/lib/file-upload";
+import { uploadFile, getMediaType } from "@/lib/file-upload";
 
 // Validation schemas
 const mediaSchema = z.object({
@@ -123,7 +123,11 @@ export async function POST(request: NextRequest) {
       // Save uploaded files and create media records
       const mediaRecords = await Promise.all(
         uploadedFiles.map(async ({ file, sortOrder, type }) => {
-          const uploadResult = await uploadProductMedia(file, product.id);
+          const uploadResult = await uploadFile(file, {
+            directory: "uploads/products",
+            subdirectory: product.id.toString(),
+            generateUniqueFilename: true,
+          });
           return {
             productId: product.id,
             url: uploadResult.url,

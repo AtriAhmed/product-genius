@@ -140,28 +140,6 @@ export async function uploadMultipleFiles(
 }
 
 /**
- * Specific function for uploading product images
- */
-export async function uploadProductMedia(
-  file: File,
-  productId: number
-): Promise<UploadResult> {
-  const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-  const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
-  const allowedExtensions = [
-    ...allowedImageExtensions,
-    ...allowedVideoExtensions,
-  ];
-
-  return uploadFile(file, {
-    directory: "uploads/products",
-    subdirectory: productId.toString(),
-    generateUniqueFilename: true,
-    allowedExtensions,
-  });
-}
-
-/**
  * Specific function for uploading category images
  */
 export async function uploadCategoryImage(
