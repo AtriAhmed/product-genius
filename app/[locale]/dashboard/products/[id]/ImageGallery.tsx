@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Package, Play } from "lucide-react";
 import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
-import { Media } from "./types";
+import { Media } from "@/types";
 
 interface ImageGalleryProps {
   media: Media[];
@@ -29,14 +29,17 @@ export function ImageGallery({ media }: ImageGalleryProps) {
       <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
         {selectedMedia.type === "IMAGE" ? (
           <Image
-            src={getMediaUrl(selectedMedia.url)}
+            src={getMediaUrl(selectedMedia.url!)}
             alt="Product"
             fill
             className="object-cover hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <video
-            src={getMediaUrl(selectedMedia.url)}
+            src={getMediaUrl(selectedMedia.url!)}
+            {...(selectedMedia.poster
+              ? { poster: getMediaUrl(selectedMedia.poster) }
+              : {})}
             controls
             autoPlay
             className="w-full h-full object-cover"
@@ -57,15 +60,28 @@ export function ImageGallery({ media }: ImageGalleryProps) {
             >
               {item.type === "IMAGE" ? (
                 <Image
-                  src={getMediaUrl(item.url)}
+                  src={getMediaUrl(item.url!)}
                   alt={`Thumbnail ${index + 1}`}
                   fill
                   className="object-cover"
                 />
               ) : (
-                <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
-                  <div className="">
-                    <Play className="size-5" />
+                <div className="relative w-full h-full">
+                  {item.poster ? (
+                    <Image
+                      src={getMediaUrl(item.poster!)}
+                      alt={`Video thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={getMediaUrl(selectedMedia.url!)}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                    <Play className="size-5 text-white" />
                   </div>
                 </div>
               )}

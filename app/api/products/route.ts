@@ -11,7 +11,6 @@ const mediaSchema = z.object({
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0).default(0),
   provider: z.string().optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 const translationSchema = z.object({
@@ -35,7 +34,6 @@ const createProductSchema = z.object({
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional(),
   isActive: z.boolean().default(true),
-  metadata: z.record(z.string(), z.unknown()).optional(),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
   suppliers: z.array(supplierSchema).optional().default([]),
@@ -99,7 +97,6 @@ export async function POST(request: NextRequest) {
           currency: validatedData.currency,
           categoryId: validatedData.categoryId,
           isActive: validatedData.isActive,
-          metadata: validatedData.metadata as any,
         },
       });
 
@@ -108,7 +105,14 @@ export async function POST(request: NextRequest) {
         file: File;
         sortOrder: number;
         type: "IMAGE" | "VIDEO";
+        posterFile?: File;
       }[] = [];
+
+      // Collect media files and their posters
+      const mediaFiles = new Map<
+        number,
+        { file: File; type: "IMAGE" | "VIDEO"; posterFile?: File }
+      >();
 
       for (const [key, value] of formData.entries()) {
         if (key.startsWith("media_")) {
@@ -116,24 +120,56 @@ export async function POST(request: NextRequest) {
           const sortOrder = parseInt(key.split("_")[1]) || 0;
           const type = getMediaType(file);
 
-          uploadedFiles.push({ file, sortOrder, type });
+          if (!mediaFiles.has(sortOrder)) {
+            mediaFiles.set(sortOrder, { file, type });
+          }
+        } else if (key.startsWith("poster_")) {
+          const file = value as File;
+          const sortOrder = parseInt(key.split("_")[1]) || 0;
+
+          const mediaEntry = mediaFiles.get(sortOrder);
+          if (mediaEntry) {
+            mediaEntry.posterFile = file;
+          }
         }
       }
 
+      // Convert to array format
+      mediaFiles.forEach((media, sortOrder) => {
+        uploadedFiles.push({
+          file: media.file,
+          sortOrder,
+          type: media.type,
+          posterFile: media.posterFile,
+        });
+      });
+
       // Save uploaded files and create media records
       const mediaRecords = await Promise.all(
-        uploadedFiles.map(async ({ file, sortOrder, type }) => {
+        uploadedFiles.map(async ({ file, sortOrder, type, posterFile }) => {
           const uploadResult = await uploadFile(file, {
             directory: "uploads/products",
             subdirectory: product.id.toString(),
             generateUniqueFilename: true,
           });
+
+          let posterUrl: string | undefined;
+          if (posterFile) {
+            const posterUploadResult = await uploadFile(posterFile, {
+              directory: "uploads/products",
+              subdirectory: `${product.id}/posters`,
+              generateUniqueFilename: true,
+            });
+            posterUrl = posterUploadResult.url;
+          }
+
           return {
             productId: product.id,
             url: uploadResult.url,
             type,
             sortOrder,
             provider: "local",
+            poster: posterUrl,
           };
         })
       );
@@ -145,7 +181,7 @@ export async function POST(request: NextRequest) {
         type: media.type,
         sortOrder: media.sortOrder,
         provider: media.provider || "external",
-        metadata: media.metadata as any,
+        poster: null, // URL-based media doesn't have posters
       }));
 
       // Create all media records
@@ -216,7 +252,6 @@ export async function POST(request: NextRequest) {
           currency: validatedData.currency,
           categoryId: validatedData.categoryId,
           isActive: validatedData.isActive,
-          metadata: validatedData.metadata as any,
           translations: {
             create: validatedData.translations.map((translation) => ({
               locale: translation.locale,
@@ -230,7 +265,7 @@ export async function POST(request: NextRequest) {
               type: media.type,
               sortOrder: media.sortOrder,
               provider: media.provider || "external",
-              metadata: media.metadata as any,
+              poster: null, // JSON-only creation doesn't have posters
             })),
           },
           suppliers: {
@@ -346,9 +381,6 @@ export async function GET(request: NextRequest) {
       }),
       prisma.product.count({ where }),
     ]);
-
-    console.log("-------------------- products --------------------");
-    console.log(products);
 
     return NextResponse.json({
       products,

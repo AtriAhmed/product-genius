@@ -65,6 +65,9 @@ function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
     transition,
   };
 
+  console.log("-------------------- item --------------------");
+  console.log(item);
+
   return (
     <div
       ref={setNodeRef}
@@ -80,10 +83,18 @@ function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
         {/* Media Preview */}
         {item.type === "VIDEO" ? (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <video
-              src={getMediaUrl(item.url!)}
-              className="w-full h-full object-cover"
-            />
+            {item.poster ? (
+              <img
+                src={getMediaUrl(item.poster)}
+                alt="Video thumbnail"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <video
+                src={getMediaUrl(item.url!)}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
         ) : (
           <img
@@ -169,6 +180,80 @@ export default function MediaUpload({
     return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
   };
 
+  const generateVideoPoster = useCallback(
+    (videoFile: File): Promise<{ posterUrl: string; posterFile: File }> => {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("Canvas context not available"));
+          return;
+        }
+
+        video.crossOrigin = "anonymous";
+        video.muted = true;
+
+        video.onloadedmetadata = () => {
+          // Set canvas dimensions to video dimensions
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+
+          // Seek to 1 second or 10% of video duration, whichever is smaller
+          const seekTime = Math.min(1, video.duration * 0.1);
+          video.currentTime = seekTime;
+        };
+
+        video.onseeked = () => {
+          try {
+            // Draw video frame to canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to blob
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error("Failed to generate poster blob"));
+                  return;
+                }
+
+                // Create File from blob
+                const posterFile = new File(
+                  [blob],
+                  `${videoFile.name.split(".")[0]}_poster.jpg`,
+                  {
+                    type: "image/jpeg",
+                  }
+                );
+
+                const posterUrl = URL.createObjectURL(posterFile);
+
+                // Cleanup
+                URL.revokeObjectURL(video.src);
+
+                resolve({ posterUrl, posterFile });
+              },
+              "image/jpeg",
+              0.8
+            );
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        video.onerror = () => {
+          reject(new Error("Failed to load video for poster generation"));
+        };
+
+        // Load video
+        video.src = URL.createObjectURL(videoFile);
+        video.load();
+      });
+    },
+    []
+  );
+
   const validateFile = (file: File): string | null => {
     if (maxFileSize && file.size > maxFileSize * 1024 * 1024) {
       return `File size must be less than ${maxFileSize}MB`;
@@ -190,20 +275,22 @@ export default function MediaUpload({
   };
 
   const handleFilesSelect = useCallback(
-    (files: FileList) => {
+    async (files: FileList) => {
       const newMedia: MediaItem[] = [];
       const errors: string[] = [];
 
-      Array.from(files).forEach((file, index) => {
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
         const error = validateFile(file);
+
         if (error) {
           errors.push(`${file.name}: ${error}`);
-          return;
+          continue;
         }
 
         if (value.length + newMedia.length >= maxFiles) {
           errors.push(`Maximum ${maxFiles} files allowed`);
-          return;
+          break;
         }
 
         const mediaItem: MediaItem = {
@@ -214,8 +301,20 @@ export default function MediaUpload({
           url: createPreviewUrl(file),
         };
 
+        // Generate poster for videos
+        if (getFileType(file) === "VIDEO") {
+          try {
+            const { posterUrl, posterFile } = await generateVideoPoster(file);
+            mediaItem.poster = posterUrl;
+            mediaItem.posterFile = posterFile;
+          } catch (error) {
+            console.error("Failed to generate video poster:", error);
+            // Continue without poster if generation fails
+          }
+        }
+
         newMedia.push(mediaItem);
-      });
+      }
 
       if (errors.length > 0) {
         console.error("File upload errors:", errors);
@@ -226,13 +325,22 @@ export default function MediaUpload({
         onChange([...value, ...newMedia]);
       }
     },
-    [value, onChange, maxFiles, validateFile, createPreviewUrl]
+    [
+      value,
+      onChange,
+      maxFiles,
+      validateFile,
+      createPreviewUrl,
+      generateVideoPoster,
+    ]
   );
 
-  const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInput = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (files) {
-      handleFilesSelect(files);
+      await handleFilesSelect(files);
     }
     // Reset input
     if (fileInputRef.current) {
@@ -250,13 +358,13 @@ export default function MediaUpload({
     setDragOver(false);
   };
 
-  const handleDrop = (event: React.DragEvent) => {
+  const handleDrop = async (event: React.DragEvent) => {
     event.preventDefault();
     setDragOver(false);
 
     const files = event.dataTransfer.files;
     if (files) {
-      handleFilesSelect(files);
+      await handleFilesSelect(files);
     }
   };
 
@@ -291,6 +399,9 @@ export default function MediaUpload({
     const item = value.find((item) => item.id === id);
     if (item?.url && item.file) {
       URL.revokeObjectURL(item.url);
+    }
+    if (item?.poster) {
+      URL.revokeObjectURL(item.poster);
     }
     const newItems = value.filter((item) => item.id !== id);
 
@@ -385,7 +496,15 @@ export default function MediaUpload({
 
                   return activeItem.type === "VIDEO" ? (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <Video className="w-12 h-12 text-muted-foreground" />
+                      {activeItem.poster ? (
+                        <img
+                          src={getMediaUrl(activeItem.poster)}
+                          alt="Video thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Video className="w-12 h-12 text-muted-foreground" />
+                      )}
                     </div>
                   ) : (
                     <img

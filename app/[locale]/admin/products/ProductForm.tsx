@@ -144,6 +144,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       data.media.forEach((item: any) => {
         if (item.file) {
           formData.append(`media_${item.sortOrder}`, item.file);
+
+          // Add poster file if exists (for videos)
+          if (item.posterFile) {
+            formData.append(`poster_${item.sortOrder}`, item.posterFile);
+          }
         }
       });
 

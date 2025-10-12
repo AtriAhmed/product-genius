@@ -16,6 +16,7 @@ import { Edit, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
+import { Media } from "@/types";
 
 interface ProductTranslation {
   id: number;
@@ -32,13 +33,6 @@ interface Category {
     title: string;
     description: string;
   }[];
-}
-
-interface Media {
-  id: number;
-  url: string;
-  type: "IMAGE" | "VIDEO";
-  sortOrder: number;
 }
 
 interface Product {
@@ -157,6 +151,17 @@ export default function ProductsDataTable({
                         <Image
                           src={getMediaUrl(primaryMedia.url)}
                           alt={translation?.title || "Product"}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : // For videos, try to show poster first, fallback to video thumbnail
+                      primaryMedia.poster ? (
+                        <Image
+                          src={getMediaUrl(primaryMedia.poster)!}
+                          alt={`${
+                            translation?.title || "Product"
+                          } - Video Thumbnail`}
                           width={48}
                           height={48}
                           className="w-full h-full object-cover"

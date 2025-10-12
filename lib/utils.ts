@@ -6,9 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Helper function to get media URL
-export function getMediaUrl(mediaPath: string): string {
+export function getMediaUrl(mediaPath?: string): string {
+  if (!mediaPath) return "";
+
   // If it's an external URL, return as is
-  if (mediaPath.startsWith("http://") || mediaPath.startsWith("https://")) {
+  if (mediaPath.includes("http://") || mediaPath.includes("https://")) {
     return mediaPath;
   }
 

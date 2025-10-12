@@ -20,6 +20,7 @@ const mediaSchema = z.object({
   url: z.string().min(1),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 const updateProductSchema = z.object({
@@ -148,7 +149,14 @@ export async function PUT(
       file: File;
       sortOrder: number;
       type: "IMAGE" | "VIDEO";
+      posterFile?: File;
     }[] = [];
+
+    // Collect media files and their posters
+    const mediaFiles = new Map<
+      number,
+      { file: File; type: "IMAGE" | "VIDEO"; posterFile?: File }
+    >();
 
     for (const [key, value] of formData.entries()) {
       if (key.startsWith("media_") && value instanceof File) {
@@ -156,13 +164,33 @@ export async function PUT(
         const sortOrder = parseInt(key.split("_")[1]) || 0;
         const type = getMediaType(file);
 
-        uploadedFiles.push({ file, sortOrder, type });
+        if (!mediaFiles.has(sortOrder)) {
+          mediaFiles.set(sortOrder, { file, type });
+        }
+      } else if (key.startsWith("poster_") && value instanceof File) {
+        const file = value as File;
+        const sortOrder = parseInt(key.split("_")[1]) || 0;
+
+        const mediaEntry = mediaFiles.get(sortOrder);
+        if (mediaEntry) {
+          mediaEntry.posterFile = file;
+        }
       }
     }
 
+    // Convert to array format
+    mediaFiles.forEach((media, sortOrder) => {
+      uploadedFiles.push({
+        file: media.file,
+        sortOrder,
+        type: media.type,
+        posterFile: media.posterFile,
+      });
+    });
+
     // Save uploaded files and create media records
     const newMediaRecords = await Promise.all(
-      uploadedFiles.map(async ({ file, sortOrder, type }) => {
+      uploadedFiles.map(async ({ file, sortOrder, type, posterFile }) => {
         const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
         const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
         const allowedExtensions = [
@@ -176,17 +204,35 @@ export async function PUT(
           generateUniqueFilename: true,
           allowedExtensions,
         });
+
+        let posterUrl: string | undefined;
+        if (posterFile) {
+          const posterUploadResult = await uploadFile(posterFile, {
+            directory: "uploads/products",
+            subdirectory: `${productId}/posters`,
+            generateUniqueFilename: true,
+            allowedExtensions: allowedImageExtensions,
+          });
+          posterUrl = posterUploadResult.url;
+        }
+
         return {
           url: uploadResult.url,
           type,
           sortOrder,
+          poster: posterUrl,
+          metadata: undefined,
         };
       })
     );
 
     // Combine existing media (from URLs) and new uploaded media
     const allMediaRecords = [
-      ...validatedData.media, // Existing media from form
+      ...validatedData.media.map((item) => ({
+        ...item,
+        poster: undefined, // Existing media doesn't have posters
+        metadata: item.metadata || undefined,
+      })), // Existing media from form
       ...newMediaRecords, // Newly uploaded files
     ];
 
@@ -228,6 +274,8 @@ export async function PUT(
             type: item.type,
             sortOrder: index,
             provider: item.url.startsWith("/uploads/") ? "local" : "external",
+            poster: item.poster || null,
+            metadata: item.metadata as any,
           })),
         },
       },
