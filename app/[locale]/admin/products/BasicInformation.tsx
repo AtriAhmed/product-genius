@@ -63,7 +63,9 @@ export default function BasicInformation({
           <Select
             value={categoryValue?.toString() || ""}
             onValueChange={(value) => {
-              setValue("categoryId", value ? parseInt(value) : undefined);
+              setValue("categoryId", value ? parseInt(value) : undefined, {
+                shouldDirty: true,
+              });
             }}
           >
             <SelectTrigger className="w-full">

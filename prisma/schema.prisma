@@ -205,6 +205,7 @@ model Media {
   product   Product?  @relation(fields: [productId], references: [id])
   productId Int?
   url       String
+  poster    String?
   provider  String?
   type      MediaType
   alt       String?

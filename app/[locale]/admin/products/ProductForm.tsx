@@ -1,8 +1,6 @@
 "use client";
 
-import MediaUpload, {
-  MediaItem,
-} from "@/app/[locale]/admin/products/MediaUpload";
+import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
 import MultiLanguageForm, {
   Translation,
 } from "@/app/[locale]/admin/products/ProductContentForm";
@@ -53,10 +51,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   const router = useRouter();
   const t = useTranslations("products");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [translations, setTranslations] = useState<Translation[]>([
-    { locale: "en", title: "", description: "" },
-  ]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -77,62 +71,53 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     fetchCategories();
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    control,
-    formState: { errors, isValid },
-  } = useForm<ProductFormData>({
+  const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       suggestedPrice: product?.suggestedPrice || undefined,
       currency: "USD",
       categoryId: product?.categoryId || undefined,
       isActive: product?.isActive ?? true,
-      translations: product?.translations || [],
-      media: product?.media || [],
+      translations: product?.translations || [
+        { locale: "en", title: "", description: "" },
+      ],
+      media: [],
     },
-    mode: "onChange",
   });
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid, isDirty },
+  } = form;
 
   // Initialize form data for edit mode
   useEffect(() => {
     if (isEditMode && product) {
-      const productTranslations =
-        product.translations?.map((t: any) => ({
-          locale: t.locale,
-          title: t.title,
-          description: t.description,
-        })) || [];
-
-      const productMedia =
-        product.media?.map((m: any) => ({
-          id: `existing-${m.id}`,
-          url: m.url,
-          type: m.type,
-          sortOrder: m.sortOrder,
-          preview: m.url,
-        })) || [];
-
-      setTranslations(productTranslations);
-      setMedia(productMedia);
-
-      // Set form default values
-      setValue("suggestedPrice", product.suggestedPrice);
-      setValue("currency", product.currency || "USD");
-      setValue("categoryId", product.categoryId);
-      setValue("isActive", product.isActive ?? true);
-      setValue("translations", productTranslations);
-      setValue("media", productMedia);
+      // Reset form with product data
+      reset({
+        suggestedPrice: product.suggestedPrice,
+        currency: product.currency || "USD",
+        categoryId: product.categoryId,
+        isActive: product.isActive ?? true,
+        translations: product.translations,
+        media: product.media,
+      });
+    } else if (isCreateMode) {
+      // Initialize with default values for create mode
+      reset({
+        suggestedPrice: undefined,
+        currency: "USD",
+        categoryId: undefined,
+        isActive: true,
+        translations: [{ locale: "en", title: "", description: "" }],
+        media: [],
+      });
     }
-  }, [product, isEditMode, setValue]);
-
-  // Update form when translations change
-  useEffect(() => {
-    setValue("translations", translations, { shouldValidate: true });
-  }, [translations, setValue]);
+  }, [product, isEditMode, isCreateMode, reset]);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -144,10 +129,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       // Add product data as JSON
       const productData = {
         ...data,
-        translations,
-        media: media
-          .filter((item) => item.url && !item.file)
-          .map((item) => ({
+        media: data.media
+          .filter((item: any) => item.url && !item.file)
+          .map((item: any) => ({
             url: item.url,
             type: item.type,
             sortOrder: item.sortOrder,
@@ -157,7 +141,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       formData.append("productData", JSON.stringify(productData));
 
       // Add media files
-      media.forEach((item) => {
+      data.media.forEach((item: any) => {
         if (item.file) {
           formData.append(`media_${item.sortOrder}`, item.file);
         }
@@ -260,25 +244,23 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   size="sm"
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="gap-2"
+                  className="gap-2 text-xs"
                 >
                   <Trash2 className="w-4 h-4" />
-                  {isDeleting ? t("deleting") : t("delete product")}
+                  {isDeleting ? t("deleting") : t("delete")}
                 </Button>
               )}
-              <Badge variant={isValid ? "default" : "secondary"}>
-                {isValid ? t("ready to save") : t("incomplete")}
-              </Badge>
               <Button
                 type="submit"
                 form="product-form"
-                disabled={!isValid || isSubmitting}
-                className="gap-2"
+                disabled={!isValid || isSubmitting || !isDirty}
+                className="gap-2 text-xs"
+                size="sm"
               >
                 <Save className="w-4 h-4" />
                 {isSubmitting
                   ? `${isEditMode ? t("updating") : t("creating")}...`
-                  : `${isEditMode ? t("update") : t("create")} ${t("product")}`}
+                  : `${isEditMode ? t("update") : t("create")}`}
               </Button>
             </div>
           </div>
@@ -297,7 +279,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             <div className="lg:col-span-2 space-y-6">
               {/* Basic Information */}
               <BasicInformation
-                register={register}
                 setValue={setValue}
                 errors={errors}
                 categories={categories}
@@ -317,8 +298,13 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 </CardHeader>
                 <CardContent>
                   <MultiLanguageForm
-                    value={translations}
-                    onChange={setTranslations}
+                    value={watch("translations") || []}
+                    onChange={(newTranslations) => {
+                      setValue("translations", newTranslations, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
                     requiredLanguages={[]}
                   />
                   {errors.translations && (
@@ -342,8 +328,13 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 </CardHeader>
                 <CardContent>
                   <MediaUpload
-                    value={media}
-                    onChange={setMedia}
+                    value={watch("media") || []}
+                    onChange={(newMedia) => {
+                      setValue("media", newMedia, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
                     maxFiles={100}
                     maxFileSize={500}
                   />

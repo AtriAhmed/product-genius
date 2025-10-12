@@ -168,6 +168,7 @@ export type Media = {
   id: number;
   productId?: number;
   url?: string;
+  poster?: string;
   provider?: string;
   type?: MediaType;
   alt?: string;

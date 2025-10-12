@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import LanguageSelector from "@/components/LanguageSelector";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import LanguageSelector from "@/components/LanguageSelector";
-import TranslationDropdown from "./TranslationDropdown";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
+import TranslationDropdown from "./TranslationDropdown";
 
 export interface Translation {
   locale: string;
@@ -128,7 +128,7 @@ export default function MultiLanguageForm({
   };
 
   // Ensure required languages are present
-  React.useEffect(() => {
+  useEffect(() => {
     const missingRequired = requiredLanguages.filter(
       (lang) => !value.some((t) => t.locale === lang)
     );

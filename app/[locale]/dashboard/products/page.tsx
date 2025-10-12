@@ -31,13 +31,7 @@ import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
 import { MainLoader } from "@/components/Loaders";
 import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
-
-interface ProductTranslation {
-  id: number;
-  locale: string;
-  title: string;
-  description: string;
-}
+import { ProductTranslation } from "@/types";
 
 interface Category {
   id: number;

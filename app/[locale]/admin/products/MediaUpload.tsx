@@ -30,7 +30,6 @@ export interface MediaItem {
   url?: string;
   type: "IMAGE" | "VIDEO";
   sortOrder: number;
-  preview: string;
 }
 
 interface MediaUploadProps {
@@ -79,22 +78,16 @@ function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
         {/* Media Preview */}
         {item.type === "VIDEO" ? (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <Video className="w-12 h-12 text-muted-foreground" />
+            <video
+              src={getMediaUrl(item.url!)}
+              className="w-full h-full object-cover"
+            />
           </div>
         ) : (
           <img
-            src={item.url ? getMediaUrl(item.url) : item.preview}
+            src={getMediaUrl(item.url!)}
             alt="Media preview"
             className="w-full h-full object-cover"
-            // onError={(e) => {
-            //   const target = e.target as HTMLImageElement;
-            //   target.style.display = "none";
-            //   const parent = target.parentElement;
-            //   if (parent) {
-            //     parent.innerHTML =
-            //       '<div class="w-full h-full flex items-center justify-center bg-gray-100"><svg class="w-12 h-12 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>';
-            //   }
-            // }}
           />
         )}
 
@@ -106,7 +99,6 @@ function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
             ) : (
               <ImageIcon className="w-3 h-3" />
             )}
-            {item.type}
           </div>
         </div>
 
@@ -133,9 +125,6 @@ function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
 
         {/* File Info */}
         <div className="absolute bottom-2 left-2 bg-black/50 rounded px-2 py-1 text-xs text-white max-w-[calc(100%-3rem)]">
-          <p className="truncate">
-            {item.file?.name || item.url || "Media file"}
-          </p>
           {item.file && (
             <p className="text-gray-300">
               {(item.file.size / 1024 / 1024).toFixed(2)} MB
@@ -220,7 +209,7 @@ export default function MediaUpload({
           file,
           type: getFileType(file),
           sortOrder: value.length + newMedia.length,
-          preview: createPreviewUrl(file),
+          url: createPreviewUrl(file),
         };
 
         newMedia.push(mediaItem);
@@ -298,8 +287,8 @@ export default function MediaUpload({
 
   const removeItem = (id: string) => {
     const item = value.find((item) => item.id === id);
-    if (item?.preview && item.file) {
-      URL.revokeObjectURL(item.preview);
+    if (item?.url && item.file) {
+      URL.revokeObjectURL(item.url);
     }
     const newItems = value.filter((item) => item.id !== id);
 
@@ -310,25 +299,6 @@ export default function MediaUpload({
     }));
 
     onChange(reorderedItems);
-  };
-
-  const addUrlMedia = () => {
-    const url = prompt("Enter media URL:");
-    if (!url) return;
-
-    try {
-      new URL(url); // Validate URL
-      const mediaItem: MediaItem = {
-        id: `url-${Date.now()}`,
-        url,
-        type: "IMAGE", // Default to image, user can change if needed
-        sortOrder: value.length,
-        preview: url,
-      };
-      onChange([...value, mediaItem]);
-    } catch {
-      alert("Please enter a valid URL");
-    }
   };
 
   return (
@@ -367,16 +337,6 @@ export default function MediaUpload({
           >
             <Plus className="w-3 h-3 mr-1" />
             Choose Files
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addUrlMedia}
-            disabled={value.length >= maxFiles}
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            Add URL
           </Button>
         </div>
 
@@ -427,11 +387,7 @@ export default function MediaUpload({
                     </div>
                   ) : (
                     <img
-                      src={
-                        activeItem.url
-                          ? getMediaUrl(activeItem.url)
-                          : activeItem.preview
-                      }
+                      src={getMediaUrl(activeItem.url!)}
                       alt="Media preview"
                       className="w-full h-full object-cover"
                     />
