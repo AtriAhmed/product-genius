@@ -16,10 +16,12 @@ import {
   Video,
   Save,
   FileImage,
+  Camera,
 } from "lucide-react";
 import { cn, getMediaUrl } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { MediaItem } from "@/app/[locale]/admin/products/MediaUpload";
+import { generateVideoPoster } from "@/lib/media";
 
 interface MediaPreviewDialogProps {
   open: boolean;
@@ -38,7 +40,9 @@ export default function MediaPreviewDialog({
   const [alt, setAlt] = useState(mediaItem?.alt || "");
   const [newPosterFile, setNewPosterFile] = useState<File | null>(null);
   const [previewPosterUrl, setPreviewPosterUrl] = useState<string | null>(null);
+  const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   const posterInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Update local state when mediaItem changes
   useEffect(() => {
@@ -84,6 +88,40 @@ export default function MediaPreviewDialog({
     setPreviewPosterUrl(null);
   };
 
+  const handleGeneratePosterFromTimestamp = async () => {
+    if (!videoRef.current) return;
+
+    // Check if we have either a file or a URL
+    if (!mediaItem?.file && !mediaItem?.url) return;
+
+    setIsGeneratingPoster(true);
+    try {
+      let result: { posterUrl: string; posterFile: File };
+
+      if (mediaItem.file) {
+        // Use file with current timestamp
+        const currentTime = videoRef.current.currentTime;
+        result = await generateVideoPoster(mediaItem.file, currentTime);
+      } else {
+        // Use the video element directly to capture current frame
+        result = await generateVideoPoster(videoRef.current);
+      }
+
+      // Clean up previous poster if exists
+      if (previewPosterUrl) {
+        URL.revokeObjectURL(previewPosterUrl);
+      }
+
+      setNewPosterFile(result.posterFile);
+      setPreviewPosterUrl(result.posterUrl);
+    } catch (error) {
+      console.error("Failed to generate poster:", error);
+      // You could add a toast notification here
+    } finally {
+      setIsGeneratingPoster(false);
+    }
+  };
+
   const currentPosterUrl = previewPosterUrl || mediaItem.poster;
 
   return (
@@ -106,6 +144,7 @@ export default function MediaPreviewDialog({
             <div className="relative max-w-full max-h-full">
               {mediaItem.type === "VIDEO" ? (
                 <video
+                  ref={videoRef}
                   src={getMediaUrl(mediaItem.url!)}
                   controls
                   className="max-w-full max-h-full rounded-lg shadow-lg"
@@ -179,18 +218,37 @@ export default function MediaPreviewDialog({
                     </div>
                   )}
 
-                  {/* Upload Button */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => posterInputRef.current?.click()}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    {currentPosterUrl
-                      ? t("change thumbnail")
-                      : t("upload thumbnail")}
-                  </Button>
+                  <div className="flex flex-col gap-1">
+                    {/* Upload Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => posterInputRef.current?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {currentPosterUrl
+                        ? t("change thumbnail")
+                        : t("upload thumbnail")}
+                    </Button>
+
+                    {/* Generate Poster from Current Timestamp */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleGeneratePosterFromTimestamp}
+                      disabled={
+                        isGeneratingPoster ||
+                        (!mediaItem?.file && !mediaItem?.url)
+                      }
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      {isGeneratingPoster
+                        ? t("generating;;;")
+                        : t("capture current frame")}
+                    </Button>
+                  </div>
 
                   <input
                     ref={posterInputRef}

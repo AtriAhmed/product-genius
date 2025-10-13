@@ -140,41 +140,6 @@ export async function uploadMultipleFiles(
 }
 
 /**
- * Specific function for uploading category images
- */
-export async function uploadCategoryImage(
-  file: File,
-  categoryId: number
-): Promise<UploadResult> {
-  const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-
-  return uploadFile(file, {
-    directory: "uploads/categories",
-    subdirectory: categoryId.toString(),
-    generateUniqueFilename: true,
-    allowedExtensions,
-  });
-}
-
-/**
- * Specific function for uploading user avatars
- */
-export async function uploadUserAvatar(
-  file: File,
-  userId: number
-): Promise<UploadResult> {
-  const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-
-  return uploadFile(file, {
-    directory: "uploads/avatars",
-    subdirectory: userId.toString(),
-    generateUniqueFilename: true,
-    allowedExtensions,
-    maxFileSize: 2 * 1024 * 1024, // 2MB
-  });
-}
-
-/**
  * Utility function to get media type from file
  */
 export function getMediaType(file: File): "IMAGE" | "VIDEO" {

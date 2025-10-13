@@ -18,8 +18,3 @@ export function getMediaUrl(mediaPath?: string): string {
   // return `/api/media?path=${encodeURIComponent(mediaPath)}`;
   return `/api/media?path=${mediaPath}`;
 }
-
-// Helper function to check if URL is external
-export function isExternalUrl(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://");
-}

@@ -113,5 +113,7 @@
   "order": "Order",
   "save changes": "Save Changes",
   "image": "Image",
-  "video": "Video"
+  "video": "Video",
+  "generating;;;": "Generating...",
+  "capture current frame": "Capture Current Frame"
 }

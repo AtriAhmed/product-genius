@@ -24,6 +24,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { generateVideoPoster } from "@/lib/media";
 
 export interface MediaItem {
   id: string;
@@ -72,9 +73,6 @@ function SortableMediaItem({
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  console.log("-------------------- item --------------------");
-  console.log(item);
 
   return (
     <div
@@ -205,80 +203,6 @@ export default function MediaUpload({
   const getFileType = (file: File): "IMAGE" | "VIDEO" => {
     return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
   };
-
-  const generateVideoPoster = useCallback(
-    (videoFile: File): Promise<{ posterUrl: string; posterFile: File }> => {
-      return new Promise((resolve, reject) => {
-        const video = document.createElement("video");
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-          reject(new Error("Canvas context not available"));
-          return;
-        }
-
-        video.crossOrigin = "anonymous";
-        video.muted = true;
-
-        video.onloadedmetadata = () => {
-          // Set canvas dimensions to video dimensions
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-
-          // Seek to 1 second or 10% of video duration, whichever is smaller
-          const seekTime = Math.min(1, video.duration * 0.1);
-          video.currentTime = seekTime;
-        };
-
-        video.onseeked = () => {
-          try {
-            // Draw video frame to canvas
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Convert canvas to blob
-            canvas.toBlob(
-              (blob) => {
-                if (!blob) {
-                  reject(new Error("Failed to generate poster blob"));
-                  return;
-                }
-
-                // Create File from blob
-                const posterFile = new File(
-                  [blob],
-                  `${videoFile.name.split(".")[0]}_poster.jpg`,
-                  {
-                    type: "image/jpeg",
-                  }
-                );
-
-                const posterUrl = URL.createObjectURL(posterFile);
-
-                // Cleanup
-                URL.revokeObjectURL(video.src);
-
-                resolve({ posterUrl, posterFile });
-              },
-              "image/jpeg",
-              0.8
-            );
-          } catch (error) {
-            reject(error);
-          }
-        };
-
-        video.onerror = () => {
-          reject(new Error("Failed to load video for poster generation"));
-        };
-
-        // Load video
-        video.src = URL.createObjectURL(videoFile);
-        video.load();
-      });
-    },
-    []
-  );
 
   const validateFile = (file: File): string | null => {
     if (maxFileSize && file.size > maxFileSize * 1024 * 1024) {

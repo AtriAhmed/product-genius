@@ -1,121 +1,124 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import fs from "fs";
+import { NextResponse } from "next/server";
 import path from "path";
+import fs from "fs";
 
-export async function GET(request: NextRequest) {
+const UPLOAD_DIR = path.join(process.cwd());
+
+const CONTENT_TYPES: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".gif": "image/gif",
+  ".pdf": "application/pdf",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".ogg": "video/ogg",
+  ".mov": "video/quicktime",
+};
+
+function getContentType(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  return CONTENT_TYPES[ext] || "application/octet-stream";
+}
+
+function parseRange(
+  range: string,
+  fileSize: number
+): { start: number; end: number } | null {
+  const parts = range.replace(/bytes=/, "").split("-");
+  const start = parseInt(parts[0], 10);
+  const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+  // Validate range
+  if (
+    isNaN(start) ||
+    isNaN(end) ||
+    start > end ||
+    start < 0 ||
+    end >= fileSize
+  ) {
+    return null;
+  }
+
+  return { start, end };
+}
+
+export async function GET(req: Request) {
   try {
-    // // Check authentication for admin routes
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    const url = new URL(req.url);
+    const filePathQuery = url.searchParams.get("path");
 
-    // Get the file path from URL parameters
-    const { searchParams } = new URL(request.url);
-    const filePath = searchParams.get("path");
-
-    if (!filePath) {
-      return NextResponse.json(
-        { error: "File path is required" },
-        { status: 400 }
-      );
+    if (!filePathQuery) {
+      return new NextResponse("Query parameter 'path' is required", {
+        status: 400,
+      });
     }
 
-    console.log("-------------------- filePath --------------------");
-    console.log(filePath);
+    // Prevent directory traversal attacks
+    const safePath = path
+      .normalize(filePathQuery)
+      .replace(/^(\.\.(\/|\\|$))+/, "");
+    const filePath = path.join(UPLOAD_DIR, safePath);
 
-    // Security check: prevent directory traversal attacks
-    if (filePath.includes("..") || filePath.includes("\\..")) {
-      return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
+    // Ensure the resolved path is still within UPLOAD_DIR
+    if (!filePath.startsWith(UPLOAD_DIR)) {
+      return new NextResponse("Invalid file path", { status: 403 });
     }
 
-    // If it's an external URL (starts with http/https), redirect to it
-    if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
-      return NextResponse.redirect(filePath);
+    // Check if file exists and is a file (not directory)
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      return new NextResponse("File not found", { status: 404 });
     }
 
-    // Handle local files - construct safe file path
-    const uploadsDir = path.join(process.cwd());
-    const fullFilePath = path.join(uploadsDir, filePath);
+    const stat = fs.statSync(filePath);
+    const fileSize = stat.size;
+    const contentType = getContentType(filePath);
 
-    // Additional security check: ensure the resolved path is within uploads directory
-    const normalizedUploadsDir = path.resolve(uploadsDir);
-    const normalizedFilePath = path.resolve(fullFilePath);
+    // Check for range header
+    const rangeHeader = req.headers.get("range");
 
-    if (!normalizedFilePath.startsWith(normalizedUploadsDir)) {
-      return NextResponse.json({ error: "Access denied" }, { status: 403 });
-    }
+    if (rangeHeader) {
+      const range = parseRange(rangeHeader, fileSize);
 
-    try {
-      // Check if file exists
-      if (!fs.existsSync(normalizedFilePath)) {
-        return NextResponse.json({ error: "File not found" }, { status: 404 });
+      if (!range) {
+        return new NextResponse("Invalid range", {
+          status: 416,
+          headers: {
+            "Content-Range": `bytes */${fileSize}`,
+          },
+        });
       }
 
-      // Read the file
-      const fileBuffer = fs.readFileSync(normalizedFilePath);
+      const { start, end } = range;
+      const chunkSize = end - start + 1;
+      const fileStream = fs.createReadStream(filePath, { start, end });
 
-      // Determine content type based on file extension
-      const ext = path.extname(filePath).toLowerCase();
-      let contentType = "application/octet-stream";
-
-      switch (ext) {
-        case ".jpg":
-        case ".jpeg":
-          contentType = "image/jpeg";
-          break;
-        case ".png":
-          contentType = "image/png";
-          break;
-        case ".gif":
-          contentType = "image/gif";
-          break;
-        case ".webp":
-          contentType = "image/webp";
-          break;
-        case ".svg":
-          contentType = "image/svg+xml";
-          break;
-        case ".mp4":
-          contentType = "video/mp4";
-          break;
-        case ".mov":
-          contentType = "video/quicktime";
-          break;
-        case ".avi":
-          contentType = "video/x-msvideo";
-          break;
-        case ".webm":
-          contentType = "video/webm";
-          break;
-        default:
-          // Try to guess from file content or use default
-          contentType = "application/octet-stream";
-      }
-
-      // Return the file with appropriate headers
-      return new Response(fileBuffer, {
+      return new NextResponse(fileStream as any, {
+        status: 206,
         headers: {
+          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": chunkSize.toString(),
           "Content-Type": contentType,
-          "Cache-Control": "public, max-age=31536000, immutable", // Cache for 1 year
-          "Content-Length": fileBuffer.length.toString(),
-          "Content-Disposition": "inline", // Display inline rather than download
+          "Cache-Control": "public, max-age=31536000, immutable",
         },
       });
-    } catch (fileError) {
-      console.error("Error reading file:", fileError);
-      return NextResponse.json(
-        { error: "Error reading file" },
-        { status: 500 }
-      );
     }
+
+    // Return entire file using stream for efficiency
+    const fileStream = fs.createReadStream(filePath);
+
+    return new NextResponse(fileStream as any, {
+      status: 200,
+      headers: {
+        "Content-Type": contentType,
+        "Content-Length": fileSize.toString(),
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
   } catch (error) {
-    console.error("Media serving error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("File serving error:", error);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
