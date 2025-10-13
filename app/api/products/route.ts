@@ -7,10 +7,11 @@ import { uploadFile, getMediaType } from "@/lib/file-upload";
 
 // Validation schemas
 const mediaSchema = z.object({
-  url: z.url(),
+  url: z.string().min(1),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0).default(0),
   provider: z.string().optional(),
+  poster: z.string().nullable().optional(),
 });
 
 const translationSchema = z.object({
@@ -100,94 +101,88 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Handle file uploads
-      const uploadedFiles: {
-        file: File;
-        sortOrder: number;
-        type: "IMAGE" | "VIDEO";
-        posterFile?: File;
-      }[] = [];
+      // Create a map from the media array (sortOrder -> mediaObject)
+      const mediaMap = new Map(
+        validatedData.media.map((media, index) => [index, { ...media }])
+      );
 
-      // Collect media files and their posters
-      const mediaFiles = new Map<
-        number,
-        { file: File; type: "IMAGE" | "VIDEO"; posterFile?: File }
-      >();
-
+      // Process form data entries for file uploads
       for (const [key, value] of formData.entries()) {
-        if (key.startsWith("media_")) {
+        if (key.startsWith("media_") && value instanceof File) {
           const file = value as File;
-          const sortOrder = parseInt(key.split("_")[1]) || 0;
-          const type = getMediaType(file);
+          const index = parseInt(key.split("_")[1]);
 
-          if (!mediaFiles.has(sortOrder)) {
-            mediaFiles.set(sortOrder, { file, type });
+          if (!isNaN(index) && mediaMap.has(index)) {
+            // Upload the media file
+            const allowedImageExtensions = [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webp",
+            ];
+            const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
+            const allowedExtensions = [
+              ...allowedImageExtensions,
+              ...allowedVideoExtensions,
+            ];
+
+            const uploadResult = await uploadFile(file, {
+              directory: "uploads/products",
+              subdirectory: product.id.toString(),
+              generateUniqueFilename: true,
+              allowedExtensions,
+            });
+
+            // Update the URL in the media map
+            const mediaObject = mediaMap.get(index)!;
+            mediaObject.url = uploadResult.url;
+            mediaObject.type = getMediaType(file);
           }
-        } else if (key.startsWith("poster_")) {
+        } else if (key.startsWith("poster_") && value instanceof File) {
           const file = value as File;
-          const sortOrder = parseInt(key.split("_")[1]) || 0;
+          const index = parseInt(key.split("_")[1]);
 
-          const mediaEntry = mediaFiles.get(sortOrder);
-          if (mediaEntry) {
-            mediaEntry.posterFile = file;
+          if (!isNaN(index) && mediaMap.has(index)) {
+            // Upload the poster file
+            const allowedImageExtensions = [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webp",
+            ];
+
+            const posterUploadResult = await uploadFile(file, {
+              directory: "uploads/products",
+              subdirectory: `${product.id}/posters`,
+              generateUniqueFilename: true,
+              allowedExtensions: allowedImageExtensions,
+            });
+
+            // Update the poster in the media map
+            const mediaObject = mediaMap.get(index)!;
+            mediaObject.poster = posterUploadResult.url;
           }
         }
       }
 
-      // Convert to array format
-      mediaFiles.forEach((media, sortOrder) => {
-        uploadedFiles.push({
-          file: media.file,
-          sortOrder,
-          type: media.type,
-          posterFile: media.posterFile,
-        });
-      });
-
-      // Save uploaded files and create media records
-      const mediaRecords = await Promise.all(
-        uploadedFiles.map(async ({ file, sortOrder, type, posterFile }) => {
-          const uploadResult = await uploadFile(file, {
-            directory: "uploads/products",
-            subdirectory: product.id.toString(),
-            generateUniqueFilename: true,
-          });
-
-          let posterUrl: string | undefined;
-          if (posterFile) {
-            const posterUploadResult = await uploadFile(posterFile, {
-              directory: "uploads/products",
-              subdirectory: `${product.id}/posters`,
-              generateUniqueFilename: true,
-            });
-            posterUrl = posterUploadResult.url;
-          }
-
-          return {
-            productId: product.id,
-            url: uploadResult.url,
-            type,
-            sortOrder,
-            provider: "local",
-            poster: posterUrl,
-          };
-        })
-      );
-
-      // Add media from URLs (if any)
-      const urlMediaRecords = validatedData.media.map((media) => ({
+      // Convert map back to array for database creation
+      const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
         productId: product.id,
         url: media.url,
         type: media.type,
         sortOrder: media.sortOrder,
-        provider: media.provider || "external",
-        poster: null, // URL-based media doesn't have posters
+        provider: media.url.startsWith("/uploads/")
+          ? "local"
+          : media.provider || "external",
+        poster: media.poster || null,
       }));
 
       // Create all media records
-      if (mediaRecords.length > 0 || urlMediaRecords.length > 0) {
+      if (allMediaRecords.length > 0) {
         await prisma.media.createMany({
-          data: [...mediaRecords, ...urlMediaRecords],
+          data: allMediaRecords,
         });
       }
 

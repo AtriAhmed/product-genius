@@ -126,16 +126,17 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       // Prepare form data for multipart upload
       const formData = new FormData();
 
+      console.log("-------------------- data --------------------");
+      console.log(data);
+
+      const mediaWithoutFiles = data.media.map(
+        ({ file, posterFile, ...rest }) => rest
+      );
+
       // Add product data as JSON
       const productData = {
         ...data,
-        media: data.media
-          .filter((item: any) => item.url && !item.file)
-          .map((item: any) => ({
-            url: item.url,
-            type: item.type,
-            sortOrder: item.sortOrder,
-          })),
+        media: mediaWithoutFiles,
       };
 
       formData.append("productData", JSON.stringify(productData));
@@ -144,11 +145,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       data.media.forEach((item: any) => {
         if (item.file) {
           formData.append(`media_${item.sortOrder}`, item.file);
-
-          // Add poster file if exists (for videos)
-          if (item.posterFile) {
-            formData.append(`poster_${item.sortOrder}`, item.posterFile);
-          }
+        }
+        if (item.posterFile) {
+          formData.append(`poster_${item.sortOrder}`, item.posterFile);
         }
       });
 

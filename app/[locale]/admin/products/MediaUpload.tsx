@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { X, Upload, Image as ImageIcon, Video, Plus } from "lucide-react";
+import { X, Upload, Image as ImageIcon, Video, Plus, Edit } from "lucide-react";
 import { cn, getMediaUrl } from "@/lib/utils";
+import MediaPreviewDialog from "./MediaPreviewDialog";
 import {
   DndContext,
   closestCenter,
@@ -32,6 +33,7 @@ export interface MediaItem {
   posterFile?: File;
   type: "IMAGE" | "VIDEO";
   sortOrder: number;
+  alt?: string;
 }
 
 interface MediaUploadProps {
@@ -48,9 +50,15 @@ interface SortableMediaItemProps {
   item: MediaItem;
   index: number;
   onRemove: (id: string) => void;
+  onPreview: (item: MediaItem) => void;
 }
 
-function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
+function SortableMediaItem({
+  item,
+  index,
+  onRemove,
+  onPreview,
+}: SortableMediaItemProps) {
   const {
     attributes,
     listeners,
@@ -122,19 +130,33 @@ function SortableMediaItem({ item, index, onRemove }: SortableMediaItemProps) {
           </div>
         </div>
 
-        {/* Remove Button */}
-        <Button
-          type="button"
-          variant="destructive"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(item.id);
-          }}
-          className="absolute bottom-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <X className="w-4 h-4" />
-        </Button>
+        {/* Action Buttons */}
+        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview(item);
+            }}
+            className="h-8 w-8 p-0"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(item.id);
+            }}
+            className="h-8 w-8 p-0"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
         {/* File Info */}
         <div className="absolute bottom-2 left-2 bg-black/50 rounded px-2 py-1 text-xs text-white max-w-[calc(100%-3rem)]">
@@ -159,6 +181,10 @@ export default function MediaUpload({
 }: MediaUploadProps) {
   const [dragOver, setDragOver] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [selectedMediaItem, setSelectedMediaItem] = useState<MediaItem | null>(
+    null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
@@ -414,6 +440,18 @@ export default function MediaUpload({
     onChange(reorderedItems);
   };
 
+  const handlePreviewMedia = (item: MediaItem) => {
+    setSelectedMediaItem(item);
+    setPreviewDialogOpen(true);
+  };
+
+  const handleUpdateMedia = (updatedItem: MediaItem) => {
+    const newItems = value.map((item) =>
+      item.id === updatedItem.id ? updatedItem : item
+    );
+    onChange(newItems);
+  };
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* Upload Area - Reduced Height */}
@@ -482,6 +520,7 @@ export default function MediaUpload({
                   item={item}
                   index={index}
                   onRemove={removeItem}
+                  onPreview={handlePreviewMedia}
                 />
               ))}
             </div>
@@ -525,6 +564,14 @@ export default function MediaUpload({
           <strong>Drag and drop</strong> to reorder media files
         </div>
       )}
+
+      {/* Media Preview Dialog */}
+      <MediaPreviewDialog
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+        mediaItem={selectedMediaItem}
+        onUpdateMedia={handleUpdateMedia}
+      />
     </div>
   );
 }

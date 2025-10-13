@@ -20,7 +20,7 @@ const mediaSchema = z.object({
   url: z.string().min(1),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  poster: z.string().nullable().optional(),
 });
 
 const updateProductSchema = z.object({
@@ -144,112 +144,94 @@ export async function PUT(
     // Validate the product data
     const validatedData = updateProductSchema.parse(productData);
 
-    // Handle file uploads for new media
-    const uploadedFiles: {
-      file: File;
-      sortOrder: number;
-      type: "IMAGE" | "VIDEO";
-      posterFile?: File;
-    }[] = [];
+    // Create a map from the media array (sortOrder -> mediaObject)
+    const mediaMap = new Map(
+      validatedData.media.map((media, index) => [index, { ...media }])
+    );
 
-    // Collect media files and their posters
-    const mediaFiles = new Map<
-      number,
-      { file: File; type: "IMAGE" | "VIDEO"; posterFile?: File }
-    >();
-
+    // Process form data entries for file uploads
     for (const [key, value] of formData.entries()) {
       if (key.startsWith("media_") && value instanceof File) {
         const file = value as File;
-        const sortOrder = parseInt(key.split("_")[1]) || 0;
-        const type = getMediaType(file);
+        const index = parseInt(key.split("_")[1]);
 
-        if (!mediaFiles.has(sortOrder)) {
-          mediaFiles.set(sortOrder, { file, type });
+        if (!isNaN(index) && mediaMap.has(index)) {
+          // Upload the media file
+          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+          const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
+          const allowedExtensions = [
+            ...allowedImageExtensions,
+            ...allowedVideoExtensions,
+          ];
+
+          const uploadResult = await uploadFile(file, {
+            directory: "uploads/products",
+            subdirectory: productId.toString(),
+            generateUniqueFilename: true,
+            allowedExtensions,
+          });
+
+          // Update the URL in the media map
+          const mediaObject = mediaMap.get(index)!;
+          mediaObject.url = uploadResult.url;
+          mediaObject.type = getMediaType(file);
         }
       } else if (key.startsWith("poster_") && value instanceof File) {
         const file = value as File;
-        const sortOrder = parseInt(key.split("_")[1]) || 0;
+        const index = parseInt(key.split("_")[1]);
 
-        const mediaEntry = mediaFiles.get(sortOrder);
-        if (mediaEntry) {
-          mediaEntry.posterFile = file;
-        }
-      }
-    }
+        if (!isNaN(index) && mediaMap.has(index)) {
+          // Upload the poster file
+          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
-    // Convert to array format
-    mediaFiles.forEach((media, sortOrder) => {
-      uploadedFiles.push({
-        file: media.file,
-        sortOrder,
-        type: media.type,
-        posterFile: media.posterFile,
-      });
-    });
-
-    // Save uploaded files and create media records
-    const newMediaRecords = await Promise.all(
-      uploadedFiles.map(async ({ file, sortOrder, type, posterFile }) => {
-        const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-        const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
-        const allowedExtensions = [
-          ...allowedImageExtensions,
-          ...allowedVideoExtensions,
-        ];
-
-        const uploadResult = await uploadFile(file, {
-          directory: "uploads/products",
-          subdirectory: productId.toString(),
-          generateUniqueFilename: true,
-          allowedExtensions,
-        });
-
-        let posterUrl: string | undefined;
-        if (posterFile) {
-          const posterUploadResult = await uploadFile(posterFile, {
+          const posterUploadResult = await uploadFile(file, {
             directory: "uploads/products",
             subdirectory: `${productId}/posters`,
             generateUniqueFilename: true,
             allowedExtensions: allowedImageExtensions,
           });
-          posterUrl = posterUploadResult.url;
+
+          // Update the poster in the media map
+          const mediaObject = mediaMap.get(index)!;
+          mediaObject.poster = posterUploadResult.url;
         }
+      }
+    }
 
-        return {
-          url: uploadResult.url,
-          type,
-          sortOrder,
-          poster: posterUrl,
-          metadata: undefined,
-        };
-      })
+    // Convert map back to array and sort by sortOrder
+    const allMediaRecords = Array.from(mediaMap.values()).sort(
+      (a, b) => a.sortOrder - b.sortOrder
     );
-
-    // Combine existing media (from URLs) and new uploaded media
-    const allMediaRecords = [
-      ...validatedData.media.map((item) => ({
-        ...item,
-        poster: undefined, // Existing media doesn't have posters
-        metadata: item.metadata || undefined,
-      })), // Existing media from form
-      ...newMediaRecords, // Newly uploaded files
-    ];
-
-    // Sort media by sortOrder
-    allMediaRecords.sort((a, b) => a.sortOrder - b.sortOrder);
 
     // Get current media files to identify which ones to delete
     const currentMedia = await prisma.media.findMany({
       where: { productId },
-      select: { url: true },
+      select: { url: true, poster: true },
     });
 
     // Identify files to delete (local files that are no longer in the new media list)
     const newMediaUrls = new Set(allMediaRecords.map((m) => m.url));
-    const filesToDelete = currentMedia
-      .filter((m) => m.url.startsWith("/uploads/") && !newMediaUrls.has(m.url))
-      .map((m) => m.url);
+    const newPosterUrls = new Set(
+      allMediaRecords.map((m) => m.poster).filter(Boolean)
+    );
+
+    const filesToDelete = [
+      // Delete media files that are no longer in the list
+      ...currentMedia
+        .filter(
+          (m) => m.url.startsWith("/uploads/") && !newMediaUrls.has(m.url)
+        )
+        .map((m) => m.url),
+      // Delete poster files that are no longer in the list
+      ...currentMedia
+        .filter(
+          (m) =>
+            m.poster &&
+            m.poster.startsWith("/uploads/") &&
+            !newPosterUrls.has(m.poster)
+        )
+        .map((m) => m.poster!),
+    ];
 
     // Update product in database with transaction
     const updatedProduct = await prisma.product.update({
@@ -275,7 +257,6 @@ export async function PUT(
             sortOrder: index,
             provider: item.url.startsWith("/uploads/") ? "local" : "external",
             poster: item.poster || null,
-            metadata: item.metadata as any,
           })),
         },
       },
@@ -366,7 +347,7 @@ export async function DELETE(
       where: { id: productId },
       include: {
         media: {
-          select: { url: true },
+          select: { url: true, poster: true },
         },
       },
     });
@@ -375,10 +356,17 @@ export async function DELETE(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Get local files to delete
-    const localFiles = existingProduct.media
-      .filter((m) => m.url.startsWith("/uploads/"))
-      .map((m) => m.url);
+    // Get local files to delete (both media and poster files)
+    const localFiles = [
+      // Media files
+      ...existingProduct.media
+        .filter((m) => m.url.startsWith("/uploads/"))
+        .map((m) => m.url),
+      // Poster files
+      ...existingProduct.media
+        .filter((m) => m.poster && m.poster.startsWith("/uploads/"))
+        .map((m) => m.poster!),
+    ];
 
     // Delete the product (cascade will handle related records)
     await prisma.product.delete({

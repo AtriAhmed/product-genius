@@ -97,5 +97,21 @@
   "this action cannot be undone": "This action cannot be undone.",
   "cancel": "Cancel",
   "create": "Create",
-  "delete": "Delete"
+  "delete": "Delete",
+  "media preview": "Media Preview",
+  "alt text": "Alt Text",
+  "describe this media": "Describe this media...",
+  "provide descriptive alt text": "Provide a descriptive alternative text for accessibility and SEO",
+  "video thumbnail": "Video Thumbnail",
+  "upload thumbnail": "Upload Thumbnail",
+  "change thumbnail": "Change Thumbnail",
+  "custom thumbnail description": "Upload a custom thumbnail for your video. Recommended size: 1280x720px",
+  "media information": "Media Information",
+  "type": "Type",
+  "size": "Size",
+  "file": "File",
+  "order": "Order",
+  "save changes": "Save Changes",
+  "image": "Image",
+  "video": "Video"
 }
