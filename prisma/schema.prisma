@@ -62,6 +62,13 @@ enum ShipmentStatus {
   CANCELLED
 }
 
+enum PlanInterval {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
 model TempAccount {
   id           Int      @id @default(autoincrement())
   email        String   @unique
@@ -100,14 +107,16 @@ model User {
 }
 
 model Plan {
-  id            Int     @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   name          String
   description   String?
   price         Float
-  interval      String
+  interval      PlanInterval
   stripePriceId String?
-  active        Boolean @default(true)
+  active        Boolean      @default(true)
   features      Json?
+  mostPopular   Boolean      @default(false)
+  sortOrder     Int          @default(0)
 
   subscriptions Subscription[]
   createdAt     DateTime       @default(now())
