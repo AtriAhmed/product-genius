@@ -219,8 +219,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-4">
+      <div className="mx-auto px-4 py-4">
+        <div className="max-w-3xl">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm" onClick={goBack}>
@@ -271,15 +271,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <form
-          id="product-form"
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-8"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="mx-auto px-4 py-8">
+        <form id="product-form" onSubmit={handleSubmit(onSubmit)} className="">
+          <div className="max-w-3xl">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-2">
               {/* Basic Information */}
               <BasicInformation
                 setValue={setValue}
@@ -344,17 +340,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   />
                 </CardContent>
               </Card>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Pricing */}
-              <PricingSection
-                register={register}
-                watch={watch}
-                defaultPrice={product?.suggestedPrice}
-                defaultCurrency={product?.currency}
-              />
             </div>
           </div>
         </form>

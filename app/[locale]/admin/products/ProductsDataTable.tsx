@@ -16,37 +16,7 @@ import { Edit, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
-import { Media } from "@/types";
-
-interface ProductTranslation {
-  id: number;
-  locale: string;
-  title: string;
-  description: string;
-}
-
-interface Category {
-  id: number;
-  translations: {
-    id: number;
-    locale: string;
-    title: string;
-    description: string;
-  }[];
-}
-
-interface Product {
-  id: number;
-  sku?: string;
-  suggestedPrice?: number;
-  currency?: string;
-  isActive: boolean;
-  translations: ProductTranslation[];
-  media: Media[];
-  category?: Category;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Category, Media, Product, ProductTranslation } from "@/types";
 
 interface ProductsDataTableProps {
   products: Product[];
@@ -132,7 +102,9 @@ export default function ProductsDataTable({
         </TableHeader>
         <TableBody>
           {products.map((product) => {
-            const translation = getCurrentTranslation(product.translations);
+            const translation = getCurrentTranslation(
+              product?.translations || []
+            );
             const categoryTranslation = getCurrentCategoryTranslation(
               product.category
             );
@@ -247,18 +219,18 @@ export default function ProductsDataTable({
                 {/* Translations */}
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {product.translations.slice(0, 3).map((translation) => (
+                    {product?.translations?.slice(0, 3).map((translation) => (
                       <Badge
                         key={translation.locale}
                         variant="secondary"
                         className="text-xs"
                       >
-                        {translation.locale.toUpperCase()}
+                        {translation?.locale?.toUpperCase()}
                       </Badge>
                     ))}
-                    {product.translations.length > 3 && (
+                    {product?.translations?.length! > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{product.translations.length - 3}
+                        +{product?.translations?.length! - 3}
                       </Badge>
                     )}
                   </div>

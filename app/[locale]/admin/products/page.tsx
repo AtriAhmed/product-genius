@@ -16,43 +16,7 @@ import {
 import { Plus, Search, Filter, SortAsc, SortDesc, X } from "lucide-react";
 import ProductsDataTable from "./ProductsDataTable";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-
-interface ProductTranslation {
-  id: number;
-  locale: string;
-  title: string;
-  description: string;
-}
-
-interface Category {
-  id: number;
-  translations: {
-    id: number;
-    locale: string;
-    title: string;
-    description: string;
-  }[];
-}
-
-interface Media {
-  id: number;
-  url: string;
-  type: "IMAGE" | "VIDEO";
-  sortOrder: number;
-}
-
-interface Product {
-  id: number;
-  sku?: string;
-  suggestedPrice?: number;
-  currency?: string;
-  isActive: boolean;
-  translations: ProductTranslation[];
-  media: Media[];
-  category?: Category;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Product, ProductTranslation } from "@/types";
 
 interface ProductsResponse {
   products: Product[];
@@ -221,8 +185,10 @@ export default function ProductsPage() {
         // Client-side sorting for unsupported API sorts
         if (sortBy === "title") {
           sortedProducts = [...data.products].sort((a, b) => {
-            const aTitle = getCurrentTranslation(a.translations)?.title || "";
-            const bTitle = getCurrentTranslation(b.translations)?.title || "";
+            const aTitle =
+              getCurrentTranslation(a?.translations || [])?.title || "";
+            const bTitle =
+              getCurrentTranslation(b?.translations || [])?.title || "";
             const comparison = aTitle.localeCompare(bTitle);
             return sortOrder === "asc" ? comparison : -comparison;
           });
