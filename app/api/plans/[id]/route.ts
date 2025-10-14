@@ -72,26 +72,7 @@ export async function GET(
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    // Get Stripe prices for this product
-    let stripePrices: any[] = [];
-    if (plan.stripeProductId) {
-      try {
-        const prices = await stripe.prices.list({
-          product: plan.stripeProductId,
-          active: true,
-        });
-        stripePrices = prices.data;
-      } catch (error) {
-        console.warn("Failed to fetch Stripe prices:", error);
-      }
-    }
-
-    return NextResponse.json({
-      plan: {
-        ...plan,
-        stripePrices,
-      },
-    });
+    return NextResponse.json(plan);
   } catch (error) {
     console.error("Error fetching plan:", error);
     return NextResponse.json(
@@ -196,7 +177,7 @@ export async function PUT(
             unit_amount: Math.round(
               (validatedData.price || existingPlan.price) * 100
             ),
-            currency: "usd",
+            currency: "eur",
             recurring: {
               interval:
                 intervalMap[validatedData.interval || existingPlan.interval],
