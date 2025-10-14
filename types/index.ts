@@ -30,6 +30,8 @@ export type ShipmentStatus =
   | "RETURNED"
   | "CANCELLED";
 
+export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
+
 // Base model types (without relations)
 export type TempAccount = {
   id: number;
@@ -62,15 +64,26 @@ export type User = {
   agentProfile?: AgentProfile;
 };
 
+export type PlanFeature = {
+  key: string;
+  value: string;
+  description?: string;
+  included: boolean;
+  note?: string;
+};
+
 export type Plan = {
   id: number;
   name: string;
   description?: string;
   price: number;
-  interval: string;
+  interval: PlanInterval;
+  stripeProductId?: string;
   stripePriceId?: string;
   active: boolean;
-  features?: any; // JSON type
+  features?: PlanFeature[];
+  mostPopular: boolean;
+  sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
   // Relations

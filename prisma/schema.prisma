@@ -107,16 +107,17 @@ model User {
 }
 
 model Plan {
-  id            Int          @id @default(autoincrement())
-  name          String
-  description   String?
-  price         Float
-  interval      PlanInterval
-  stripePriceId String?
-  active        Boolean      @default(true)
-  features      Json?
-  mostPopular   Boolean      @default(false)
-  sortOrder     Int          @default(0)
+  id              Int          @id @default(autoincrement())
+  name            String
+  description     String?
+  price           Float
+  interval        PlanInterval
+  stripeProductId String?
+  stripePriceId   String?
+  active          Boolean      @default(true)
+  features        Json?
+  mostPopular     Boolean      @default(false)
+  sortOrder       Int          @default(0)
 
   subscriptions Subscription[]
   createdAt     DateTime       @default(now())
