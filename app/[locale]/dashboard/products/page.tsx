@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -31,37 +31,8 @@ import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
 import { MainLoader } from "@/components/Loaders";
 import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
-import { ProductTranslation } from "@/types";
-
-interface Category {
-  id: number;
-  translations: {
-    id: number;
-    locale: string;
-    title: string;
-    description: string;
-  }[];
-}
-
-interface Media {
-  id: number;
-  url: string;
-  type: "IMAGE" | "VIDEO";
-  sortOrder: number;
-}
-
-interface Product {
-  id: number;
-  sku?: string;
-  suggestedPrice?: number;
-  currency?: string;
-  isActive: boolean;
-  translations: ProductTranslation[];
-  media: Media[];
-  category?: Category;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Product, ProductTranslation } from "@/types";
+import ProductCard from "@/app/[locale]/dashboard/products/ProductCard";
 
 interface ProductsResponse {
   products: Product[];
@@ -71,118 +42,6 @@ interface ProductsResponse {
     total: number;
     pages: number;
   };
-}
-
-const currencies = [
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "C$" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-];
-
-const currencyMap = Object.fromEntries(
-  currencies.map((currency) => [currency.code, currency])
-);
-
-// Product Card Component
-function ProductCard({
-  product,
-  onView,
-}: {
-  product: Product;
-  onView: (product: Product) => void;
-}) {
-  const t = useTranslations("products");
-
-  const getCurrentTranslation = (
-    translations: ProductTranslation[],
-    locale = "en"
-  ) => {
-    return (
-      translations.find((t) => t.locale === locale) || translations[0] || null
-    );
-  };
-
-  const translation = getCurrentTranslation(product.translations);
-  const mainMedia = product.media[0];
-  const categoryTranslation =
-    product.category?.translations?.find((t) => t.locale === "en") ||
-    product.category?.translations?.[0];
-
-  return (
-    <Card
-      className="group cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden pt-0 pb-2 gap-2"
-      onClick={() => onView(product)}
-    >
-      <div className="h-[200px] relative overflow-hidden bg-gray-100">
-        {mainMedia ? (
-          mainMedia?.type === "IMAGE" ? (
-            <Image
-              src={getMediaUrl(mainMedia.url)}
-              alt={translation?.title || "Product"}
-              fill
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="relative w-full h-full">
-              <video
-                src={getMediaUrl(mainMedia.url)}
-                className="w-full h-full object-cover"
-              />
-              {/* Video Play Button Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors duration-300">
-                <div className="bg-black/60 rounded-full p-3 group-hover:bg-black/80 transition-all duration-300 backdrop-blur-sm">
-                  <Play className="w-6 h-6 text-white fill-white ml-0.5" />
-                </div>
-              </div>
-            </div>
-          )
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <span className="text-gray-400">No Image</span>
-          </div>
-        )}
-      </div>
-
-      <CardContent className="p-4 pt-0">
-        <div className="space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-              {translation?.title || "Untitled"}
-            </h3>
-          </div>
-
-          {categoryTranslation && (
-            <Badge variant="secondary" className="text-xs">
-              {categoryTranslation.title}
-            </Badge>
-          )}
-
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {translation?.description}
-          </p>
-
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            {product.suggestedPrice && (
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-primary">
-                  {currencyMap[product.currency!]?.symbol || product.currency}
-                  {product.suggestedPrice}
-                </span>
-              </div>
-            )}
-            <span className="ms-auto px-2 py-1 rounded-sm bg-primary-500 hover:bg-primary-500/90 text-white text-[11px] font-medium">
-              {t("view supplier")}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 // Product Filters Component
@@ -324,8 +183,10 @@ export default function UserProductsPage() {
         // Client-side sorting for unsupported API sorts
         if (sortBy === "title") {
           sortedProducts = [...data.products].sort((a, b) => {
-            const aTitle = getCurrentTranslation(a.translations)?.title || "";
-            const bTitle = getCurrentTranslation(b.translations)?.title || "";
+            const aTitle =
+              getCurrentTranslation(a?.translations || [])?.title || "";
+            const bTitle =
+              getCurrentTranslation(b?.translations || [])?.title || "";
             return sortOrder === "asc"
               ? aTitle.localeCompare(bTitle)
               : bTitle.localeCompare(aTitle);

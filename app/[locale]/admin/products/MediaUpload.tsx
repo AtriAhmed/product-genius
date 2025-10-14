@@ -157,13 +157,13 @@ function SortableMediaItem({
         </div>
 
         {/* File Info */}
-        <div className="absolute bottom-2 left-2 bg-black/50 rounded px-2 py-1 text-xs text-white max-w-[calc(100%-3rem)]">
+        {/* <div className="absolute bottom-2 left-2 bg-black/50 rounded px-2 py-1 text-xs text-white max-w-[calc(100%-3rem)]">
           {item.file && (
             <p className="text-gray-300">
               {(item.file.size / 1024 / 1024).toFixed(2)} MB
             </p>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
