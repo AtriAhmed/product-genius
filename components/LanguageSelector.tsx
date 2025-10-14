@@ -94,7 +94,7 @@ export default function LanguageSelector({
             const hasError = hasErrors ? hasErrors(languageCode) : false;
 
             return (
-              <div key={languageCode} className="relative">
+              <div key={languageCode} className="relative group">
                 <Button
                   type="button"
                   variant={
@@ -124,15 +124,13 @@ export default function LanguageSelector({
                 </Button>
 
                 {!isRequired(languageCode) && (
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     onClick={() => onLanguageRemove(languageCode)}
-                    className="absolute -top-2 -right-2 h-5 w-5 p-0 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="absolute -top-1 -right-1 size-4 rounded-full bg-foreground hover:bg-muted-foreground hover opacity-0 group-hover:opacity-100 duration-200"
                   >
-                    <X className="w-3 h-3" />
-                  </Button>
+                    <X className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 size-2.5 text-background " />
+                  </button>
                 )}
               </div>
             );

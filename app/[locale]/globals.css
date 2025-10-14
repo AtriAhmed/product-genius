@@ -3,6 +3,8 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@custom-variant light (html:not(.dark) &);
+
 :root {
   --muted-background: #f5f5f5;
   --muted-foreground: oklch(0.556 0 0);

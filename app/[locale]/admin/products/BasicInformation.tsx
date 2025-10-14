@@ -7,6 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Package } from "lucide-react";
 import { FieldErrors, UseFormSetValue } from "react-hook-form";
 
@@ -28,6 +29,7 @@ interface BasicInformationProps {
   errors: FieldErrors<any>;
   categories: Category[];
   categoryValue?: number;
+  isActive?: boolean;
 }
 
 export default function BasicInformation({
@@ -35,6 +37,7 @@ export default function BasicInformation({
   errors,
   categories,
   categoryValue,
+  isActive = true,
 }: BasicInformationProps) {
   // Get category title in the first available language (preferably English)
   const getCategoryTitle = (category: Category) => {
@@ -50,7 +53,7 @@ export default function BasicInformation({
     : null;
 
   return (
-    <Card>
+    <Card className="bg-background">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Package className="w-5 h-5" />
@@ -86,6 +89,23 @@ export default function BasicInformation({
               )}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Active Status</label>
+            <p className="text-sm text-muted-foreground">
+              Control product visibility in your store
+            </p>
+          </div>
+          <Switch
+            checked={isActive}
+            onCheckedChange={(checked) => {
+              setValue("isActive", checked, {
+                shouldDirty: true,
+              });
+            }}
+          />
         </div>
       </CardContent>
     </Card>

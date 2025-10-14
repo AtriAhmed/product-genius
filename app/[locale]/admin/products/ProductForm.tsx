@@ -19,7 +19,6 @@ import { z } from "zod";
 import axios from "axios";
 import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
 import PricingSection from "@/app/[locale]/admin/products/PricingSection";
-import StatusSection from "@/app/[locale]/admin/products/StatusSection";
 import { Product } from "@/types";
 
 // Form validation schema
@@ -218,9 +217,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="border-b bg-card">
+      <div className="border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-4">
@@ -287,10 +286,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 errors={errors}
                 categories={categories}
                 categoryValue={watch("categoryId")}
+                isActive={watch("isActive")}
               />
 
               {/* Multi-language Content */}
-              <Card>
+              <Card className="bg-background">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
@@ -320,7 +320,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               </Card>
 
               {/* Media Upload */}
-              <Card>
+              <Card className="bg-background">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ImageIcon className="w-5 h-5" />
@@ -354,12 +354,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 watch={watch}
                 defaultPrice={product?.suggestedPrice}
                 defaultCurrency={product?.currency}
-              />
-
-              {/* Status */}
-              <StatusSection
-                register={register}
-                defaultValue={product?.isActive}
               />
             </div>
           </div>

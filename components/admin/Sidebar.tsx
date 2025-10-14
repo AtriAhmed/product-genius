@@ -113,11 +113,11 @@ export function AdminSidebar({
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)] shadow-[0_0_3px_rgb(0,0,0,.3)] border-none"
+      className="top-[55px] h-[calc(100vh-55px)] shadow-[0_0_3px_rgb(0,0,0,.2)] light:border-none"
       collapsible="icon"
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="bg-background">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
@@ -139,7 +139,7 @@ export function AdminSidebar({
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-background">
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>{t("admin panel")}</SidebarGroupLabel>
@@ -158,7 +158,7 @@ export function AdminSidebar({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="bg-background">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
