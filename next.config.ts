@@ -3,6 +3,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   images: {
+    localPatterns: [
+      {
+        pathname: "/api/media/**",
+      },
+    ],
     remotePatterns: [
       {
         protocol: "https",

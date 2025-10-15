@@ -1,0 +1,104 @@
+"use client";
+
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Product } from "@/types";
+import { Search, SortAsc, SortDesc } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+// Product Filters Component
+export default function ProductFilters({
+  search,
+  filter,
+  sortBy,
+  sortOrder,
+  onSearchChange,
+  onFilterChange,
+  onSortChange,
+  onClearFilters,
+}: {
+  search: string;
+  filter: string;
+  sortBy: string;
+  sortOrder: string;
+  onSearchChange: (value: string) => void;
+  onFilterChange: (value: string) => void;
+  onSortChange: (sortBy: string, sortOrder: string) => void;
+  onClearFilters: () => void;
+}) {
+  const t = useTranslations("products");
+
+  const sortOptions = [
+    { value: "createdAt-desc", label: t("newest first") },
+    { value: "createdAt-asc", label: t("oldest first") },
+    { value: "title-asc", label: t("a-z") },
+    { value: "title-desc", label: t("z-a") },
+    { value: "suggestedPrice-desc", label: t("highest price") },
+    { value: "suggestedPrice-asc", label: t("lowest price") },
+  ];
+
+  const currentSortValue = `${sortBy}-${sortOrder}`;
+  //   const hasActiveFilters =
+  //     search ||
+  //     filter !== "all" ||
+  //     sortBy !== "createdAt" ||
+  //     sortOrder !== "desc";
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-4 pb-6">
+      {/* Search */}
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Input
+          placeholder={t("search products")}
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {/* Sort */}
+      <Select
+        value={currentSortValue}
+        onValueChange={(value) => {
+          const [newSortBy, newSortOrder] = value.split("-");
+          onSortChange(newSortBy, newSortOrder);
+        }}
+      >
+        <SelectTrigger className="w-full lg:w-48">
+          {sortOrder === "asc" ? (
+            <SortAsc className="w-4 h-4 mr-2" />
+          ) : (
+            <SortDesc className="w-4 h-4 mr-2" />
+          )}
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {sortOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Clear Filters */}
+      {/* {hasActiveFilters && (
+        <Button
+          variant="outline"
+          onClick={onClearFilters}
+          className="lg:w-auto"
+        >
+          <X className="w-4 h-4 mr-2" />
+          {t("clear filters")}
+        </Button>
+      )} */}
+    </div>
+  );
+}

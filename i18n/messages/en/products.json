@@ -115,5 +115,10 @@
   "image": "Image",
   "video": "Video",
   "generating;;;": "Generating...",
-  "capture current frame": "Capture Current Frame"
+  "capture current frame": "Capture Current Frame",
+  "discover our amazing collection of products": "Discover our amazing collection of products",
+  "try adjusting your search criteria": "Try adjusting your search criteria",
+  "no products available at the moment": "No products available at the moment",
+  "previous": "Previous",
+  "next": "Next"
 }
