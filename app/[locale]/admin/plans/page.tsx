@@ -126,8 +126,8 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="">
-      <div className="container mx-auto px-4 py-4">
+    <div>
+      <div className="container mx-auto px-4 py-2">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
           <div>

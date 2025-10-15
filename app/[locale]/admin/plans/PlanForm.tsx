@@ -89,7 +89,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-2 px-4">
       <div className="max-w-3xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -118,7 +118,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
                 className=""
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                {t("delete plan")}
+                {t("delete")}
               </Button>
             )}
 
@@ -133,8 +133,8 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
                   ? t("creating")
                   : t("updating")
                 : mode === "create"
-                ? t("create plan button")
-                : t("update plan button")}
+                ? t("create")
+                : t("update")}
             </Button>
           </div>
         </div>

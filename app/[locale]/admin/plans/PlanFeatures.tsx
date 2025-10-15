@@ -349,7 +349,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
 
         {/* Add/Edit Feature Form */}
         <Card ref={featuresFormRef}>
-          {/* <CardHeader>
+          <CardHeader>
             <CardTitle className="text-lg">
               {editingKey !== null ? (
                 <>
@@ -363,7 +363,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                 </>
               )}
             </CardTitle>
-          </CardHeader> */}
+          </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmitAdd(addFeature)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
