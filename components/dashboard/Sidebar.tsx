@@ -65,8 +65,8 @@ const navigationData = [
     icon: ShoppingCart,
   },
   {
-    title: "subscriptions",
-    url: "/dashboard/subscription",
+    title: "billing",
+    url: "/dashboard/billing",
     icon: CreditCard,
   },
   {

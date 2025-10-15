@@ -20,6 +20,9 @@ const routeLabels: Record<string, string> = {
   "/dashboard/products/import": "Import Products",
   "/dashboard/products/analytics": "Product Analytics",
   "/dashboard/categories": "Categories",
+  "/dashboard/orders": "Orders",
+  "/dashboard/users": "Users",
+  "/dashboard/billing": "Billing",
   // Admin routes
   "/admin": "Dashboard",
   "/admin/products": "Products",
