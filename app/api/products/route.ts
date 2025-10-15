@@ -379,12 +379,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       products,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
     });
   } catch (error) {
     console.error("Products fetch error:", error);

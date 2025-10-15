@@ -15,12 +15,10 @@ import ProductFilters from "@/app/[locale]/admin/products/ProductsFilter";
 
 interface ProductsResponse {
   products: Product[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
 }
 
 async function fetcher(
@@ -97,11 +95,11 @@ export default function ProductsPage() {
   };
 
   const products = getProcessedProducts();
-  const pagination = data?.pagination || {
-    page: 1,
-    limit: 20,
-    total: 0,
-    pages: 0,
+  const pagination = {
+    page: data?.page || 1,
+    limit: data?.limit || 20,
+    total: data?.total || 0,
+    pages: data?.pages || 0,
   };
 
   // Handle SWR error
@@ -167,7 +165,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-2">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
           <div>

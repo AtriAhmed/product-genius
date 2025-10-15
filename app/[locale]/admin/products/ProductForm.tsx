@@ -219,7 +219,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="mx-auto px-4 py-4">
+      <div className="mx-auto px-4 py-2">
         <div className="max-w-3xl">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-4">
