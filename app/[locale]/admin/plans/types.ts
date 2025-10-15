@@ -3,7 +3,7 @@ import { z } from "zod";
 // Form validation schemas
 export const planFeatureSchema = z.object({
   key: z.string().min(1, "Feature key is required"),
-  value: z.string().min(1, "Feature value is required"),
+  value: z.string().optional(),
   description: z.string().optional(),
   included: z.boolean(),
   note: z.string().optional(),

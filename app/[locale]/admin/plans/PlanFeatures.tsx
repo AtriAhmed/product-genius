@@ -42,8 +42,8 @@ import { PlanFormData } from "./types";
 // Schema for the add feature form
 const addFeatureSchema = z.object({
   key: z.string().min(1, "Feature key is required"),
-  value: z.string().min(1, "Feature value is required"),
-  description: z.string().optional(),
+  value: z.string().optional(),
+  description: z.string().min(1, "Feature description is required"),
   included: z.boolean(),
   note: z.string().optional(),
 });
@@ -273,7 +273,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
 
     setEditingKey(featureKey);
     setValueAdd("key", feature.key);
-    setValueAdd("value", feature.value);
+    setValueAdd("value", feature.value || "");
     setValueAdd("description", feature.description || "");
     setValueAdd("included", feature.included);
     setValueAdd("note", feature.note || "");
@@ -401,9 +401,14 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                   </Label>
                   <Input
                     id="add-description"
-                    placeholder="Optional description"
+                    placeholder="Description of this feature"
                     {...registerAdd("description")}
                   />
+                  {errorsAdd.description && (
+                    <p className="text-sm text-destructive mt-1">
+                      {errorsAdd.description.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>

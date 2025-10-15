@@ -11,8 +11,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const PlanFeatureSchema = z.object({
   key: z.string().min(1),
-  value: z.string().min(1),
-  description: z.string().optional(),
+  value: z.string().optional(),
+  description: z.string().min(1),
   included: z.boolean(),
   note: z.string().optional(),
 });

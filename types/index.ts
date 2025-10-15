@@ -67,7 +67,7 @@ export type User = {
 export type PlanFeature = {
   key: string;
   value: string;
-  description?: string;
+  description: string;
   included: boolean;
   note?: string;
 };
