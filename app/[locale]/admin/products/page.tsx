@@ -1,22 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { Button } from "@/components/ui/button";
+import { Product, ProductTranslation } from "@/types";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, Search, Filter, SortAsc, SortDesc, X } from "lucide-react";
+import useSWR from "swr";
+import axios from "axios";
 import ProductsDataTable from "./ProductsDataTable";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { Product, ProductTranslation } from "@/types";
+import ProductFilters from "@/app/[locale]/admin/products/ProductsFilter";
 
 interface ProductsResponse {
   products: Product[];
@@ -32,126 +27,41 @@ interface ApiErrorResponse {
   error: string;
 }
 
-// Filters Component
-function ProductFilters({
-  search,
-  filter,
-  sortBy,
-  sortOrder,
-  onSearchChange,
-  onFilterChange,
-  onSortChange,
-  onClearFilters,
-}: {
-  search: string;
-  filter: string;
-  sortBy: string;
-  sortOrder: string;
-  onSearchChange: (value: string) => void;
-  onFilterChange: (value: string) => void;
-  onSortChange: (sortBy: string, sortOrder: string) => void;
-  onClearFilters: () => void;
-}) {
-  const t = useTranslations("products");
-
-  const sortOptions = [
-    { value: "createdAt-desc", label: t("newest first") },
-    { value: "createdAt-asc", label: t("oldest first") },
-    { value: "title-asc", label: t("a-z") },
-    { value: "title-desc", label: t("z-a") },
-    { value: "suggestedPrice-desc", label: t("highest price") },
-    { value: "suggestedPrice-asc", label: t("lowest price") },
-  ];
-
-  const currentSortValue = `${sortBy}-${sortOrder}`;
-  const hasActiveFilters =
-    search ||
-    filter !== "all" ||
-    sortBy !== "createdAt" ||
-    sortOrder !== "desc";
-
-  return (
-    <div className="flex flex-col lg:flex-row gap-4 pb-3">
-      {/* Search */}
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input
-          placeholder={t("search products")}
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Status Filter */}
-      <Select value={filter} onValueChange={onFilterChange}>
-        <SelectTrigger className="w-full lg:w-48">
-          <Filter className="w-4 h-4 mr-2" />
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("all products")}</SelectItem>
-          <SelectItem value="active">{t("active products")}</SelectItem>
-          <SelectItem value="inactive">{t("inactive products")}</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Sort */}
-      <Select
-        value={currentSortValue}
-        onValueChange={(value) => {
-          const [newSortBy, newSortOrder] = value.split("-");
-          onSortChange(newSortBy, newSortOrder);
-        }}
-      >
-        <SelectTrigger className="w-full lg:w-48">
-          {sortOrder === "asc" ? (
-            <SortAsc className="w-4 h-4 mr-2" />
-          ) : (
-            <SortDesc className="w-4 h-4 mr-2" />
-          )}
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {sortOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Clear Filters */}
-      {hasActiveFilters && (
-        <Button
-          variant="outline"
-          onClick={onClearFilters}
-          className="lg:w-auto"
-        >
-          <X className="w-4 h-4 mr-2" />
-          {t("clear filters")}
-        </Button>
-      )}
-    </div>
-  );
+async function fetcher(
+  page: number,
+  limit: number,
+  search: string,
+  isActive: boolean | undefined
+) {
+  const response = await axios.get("/api/products", {
+    params: { page, limit, search, active: isActive },
+  });
+  return response.data;
 }
 
 export default function ProductsPage() {
   const t = useTranslations("products");
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [deleteProduct, setDeleteProduct] = useState<Product | undefined>();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 20,
-    total: 0,
-    pages: 0,
-  });
+  const [page, setPage] = useState(1);
+  const limit = 20;
+
+  const isActive =
+    filter === "all" ? undefined : filter === "active" ? true : false;
+
+  // SWR hook for data fetching
+  const { data, error, isLoading, mutate } = useSWR<ProductsResponse>(
+    ["products", page, limit, search, isActive],
+    () => fetcher(page, limit, search, isActive),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+    }
+  );
 
   // Helper function for client-side sorting
   const getCurrentTranslation = (
@@ -163,60 +73,45 @@ export default function ProductsPage() {
     );
   };
 
-  // Fetch products
-  const fetchProducts = async () => {
-    try {
-      setIsLoading(true);
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        search,
-        isActive:
-          filter === "all" ? "" : filter === "active" ? "true" : "false",
-        // Note: API doesn't support sorting by title directly, so we'll handle basic sorting
+  // Process and sort products from SWR data
+  const getProcessedProducts = (): Product[] => {
+    if (!data?.products) return [];
+
+    let sortedProducts = [...data.products];
+
+    // Client-side sorting for unsupported API sorts
+    if (sortBy === "title") {
+      sortedProducts = sortedProducts.sort((a, b) => {
+        const aTitle =
+          getCurrentTranslation(a?.translations || [])?.title || "";
+        const bTitle =
+          getCurrentTranslation(b?.translations || [])?.title || "";
+        const comparison = aTitle.localeCompare(bTitle);
+        return sortOrder === "asc" ? comparison : -comparison;
       });
-
-      const response = await fetch(`/api/products?${params}`);
-
-      if (response.ok) {
-        const data: ProductsResponse = await response.json();
-        let sortedProducts = data.products;
-
-        // Client-side sorting for unsupported API sorts
-        if (sortBy === "title") {
-          sortedProducts = [...data.products].sort((a, b) => {
-            const aTitle =
-              getCurrentTranslation(a?.translations || [])?.title || "";
-            const bTitle =
-              getCurrentTranslation(b?.translations || [])?.title || "";
-            const comparison = aTitle.localeCompare(bTitle);
-            return sortOrder === "asc" ? comparison : -comparison;
-          });
-        } else if (sortBy === "suggestedPrice") {
-          sortedProducts = [...data.products].sort((a, b) => {
-            const aPrice = a.suggestedPrice || 0;
-            const bPrice = b.suggestedPrice || 0;
-            return sortOrder === "asc" ? aPrice - bPrice : bPrice - aPrice;
-          });
-        }
-
-        setProducts(sortedProducts);
-        setPagination(data.pagination);
-      } else {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error || "Failed to fetch products");
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("Failed to load products");
-    } finally {
-      setIsLoading(false);
+    } else if (sortBy === "suggestedPrice") {
+      sortedProducts = sortedProducts.sort((a, b) => {
+        const aPrice = a.suggestedPrice || 0;
+        const bPrice = b.suggestedPrice || 0;
+        return sortOrder === "asc" ? aPrice - bPrice : bPrice - aPrice;
+      });
     }
+
+    return sortedProducts;
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, [search, filter, sortBy, sortOrder, pagination.page]);
+  const products = getProcessedProducts();
+  const pagination = data?.pagination || {
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0,
+  };
+
+  // Handle SWR error
+  if (error) {
+    toast.error("Failed to load products");
+  }
 
   const handleAddProduct = () => {
     router.push("/admin/products/new");
@@ -238,17 +133,9 @@ export default function ProductsPage() {
     if (!deleteProduct) return;
 
     try {
-      const response = await fetch(`/api/products/${deleteProduct.id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast.success("Product deleted successfully");
-        fetchProducts(); // Refresh the products list
-      } else {
-        const errorData: ApiErrorResponse = await response.json();
-        throw new Error(errorData.error || "Failed to delete product");
-      }
+      await axios.delete(`/api/products/${deleteProduct.id}`);
+      toast.success("Product deleted successfully");
+      mutate();
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error(
@@ -264,11 +151,22 @@ export default function ProductsPage() {
     setFilter("all");
     setSortBy("createdAt");
     setSortOrder("desc");
+    setPage(1);
   };
 
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
+  };
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
+    setPage(1);
   };
 
   return (
@@ -296,8 +194,8 @@ export default function ProductsPage() {
           filter={filter}
           sortBy={sortBy}
           sortOrder={sortOrder}
-          onSearchChange={setSearch}
-          onFilterChange={setFilter}
+          onSearchChange={handleSearchChange}
+          onFilterChange={handleFilterChange}
           onSortChange={handleSortChange}
           onClearFilters={clearFilters}
         />
@@ -311,15 +209,57 @@ export default function ProductsPage() {
           isLoading={isLoading}
         />
 
+        {/* Pagination */}
+        {!isLoading && products.length > 0 && pagination.pages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Previous
+            </Button>
+            {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+              let pageNumber;
+              if (pagination.pages <= 5) {
+                pageNumber = i + 1;
+              } else if (page <= 3) {
+                pageNumber = i + 1;
+              } else if (page >= pagination.pages - 2) {
+                pageNumber = pagination.pages - 4 + i;
+              } else {
+                pageNumber = page - 2 + i;
+              }
+
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={page === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPage(pageNumber)}
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === pagination.pages}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+
         {/* Results Count */}
         {!isLoading && products.length > 0 && (
-          <div className="mt-8 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             {t("showing results", {
-              start: (pagination.page - 1) * pagination.limit + 1,
-              end: Math.min(
-                pagination.page * pagination.limit,
-                pagination.total
-              ),
+              start: (page - 1) * limit + 1,
+              end: Math.min(page * limit, pagination.total),
               total: pagination.total,
             })}
           </div>
