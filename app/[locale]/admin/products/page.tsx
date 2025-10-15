@@ -23,10 +23,6 @@ interface ProductsResponse {
   };
 }
 
-interface ApiErrorResponse {
-  error: string;
-}
-
 async function fetcher(
   page: number,
   limit: number,

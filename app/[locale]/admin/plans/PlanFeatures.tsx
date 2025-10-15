@@ -349,7 +349,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
 
         {/* Add/Edit Feature Form */}
         <Card ref={featuresFormRef}>
-          <CardHeader>
+          {/* <CardHeader>
             <CardTitle className="text-lg">
               {editingKey !== null ? (
                 <>
@@ -363,10 +363,10 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                 </>
               )}
             </CardTitle>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent>
             <form onSubmit={handleSubmitAdd(addFeature)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                 <div>
                   <Label htmlFor="add-key">{t("feature key")}</Label>
                   <Input
@@ -420,14 +420,17 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                   />
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={includedValue}
-                    onCheckedChange={(checked) =>
-                      setValueAdd("included", checked)
-                    }
-                  />
+                <div>
                   <Label>{t("feature included")}</Label>
+                  <div>
+                    <Switch
+                      className="block"
+                      checked={includedValue}
+                      onCheckedChange={(checked) =>
+                        setValueAdd("included", checked)
+                      }
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -459,17 +462,6 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
             </form>
           </CardContent>
         </Card>
-
-        {/* Empty state when no features */}
-        {featuresWithIds.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <Plus className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>
-              No features added yet. Use the form below to add your first
-              feature.
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
