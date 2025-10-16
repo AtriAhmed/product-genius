@@ -6,7 +6,7 @@ import { useIsMounted } from "@/hooks/use-is-mounted";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 
 export default function Navbar() {
