@@ -13,6 +13,8 @@ export type SubscriptionStatus =
 
 export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
 
+export type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "diners" | "jcb" | "unionpay" | "unknown";
+
 export type OrderStatus =
   | "DRAFT"
   | "PENDING"
@@ -339,3 +341,16 @@ export type CreateOrder = Omit<Order, "id" | "createdAt" | "updatedAt">;
 export type UpdateOrder = Partial<
   Omit<Order, "id" | "createdAt" | "updatedAt">
 >;
+
+// Payment method types for Stripe
+export type PaymentMethod = {
+  id: string;
+  type: string;
+  card?: {
+    brand: CardBrand;
+    last4: string;
+    expMonth: number;
+    expYear: number;
+  };
+  isDefault?: boolean;
+};

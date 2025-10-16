@@ -1,0 +1,19 @@
+{
+  "billing": "Billing",
+  "payment methods": "Payment Methods",
+  "manage cards": "Manage your payment methods",
+  "add new card": "Add New Card",
+  "saved cards": "Saved Cards",
+  "no cards": "No payment methods found",
+  "add first card": "Add your first payment method to get started",
+  "default": "Default",
+  "set as default": "Set as Default",
+  "delete card": "Delete Card",
+  "confirm delete": "Are you sure you want to delete this card?",
+  "delete warning": "This action cannot be undone.",
+  "card deleted": "Card deleted successfully",
+  "card added": "Card added successfully",
+  "card set default": "Card set as default",
+  "expires": "Expires",
+  "ending in": "Ending in"
+}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe";
 
 interface Params {
   token: string;
@@ -62,7 +63,7 @@ export async function GET(
       );
     }
 
-    // Create the user account
+    // Create the user account first
     const user = await prisma.user.create({
       data: {
         name: tempAccount.name,
@@ -71,6 +72,29 @@ export async function GET(
         role: "USER",
       },
     });
+
+    try {
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: user.name || undefined,
+        metadata: {
+          userId: user.id.toString(),
+        },
+      });
+
+      // Update user with Stripe customer ID
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          stripeCustomerId: customer.id,
+        },
+      });
+    } catch (stripeError) {
+      console.error("Error creating Stripe customer:", stripeError);
+      // User is already created, so we log the error but don't fail the verification
+      // The customer can be created later when they try to subscribe
+    }
 
     // Delete the temp account after successful user creation
     await prisma.tempAccount.delete({

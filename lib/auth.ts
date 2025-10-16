@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { createCustomer } from "@/lib/stripe";
 import bcrypt from "bcrypt";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -68,6 +69,14 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (dbUser) {
+          if (!dbUser.stripeCustomerId) {
+            await createCustomer(
+              dbUser.id,
+              dbUser.email,
+              dbUser.name || "No Name"
+            );
+          }
+
           session.user.id = dbUser.id.toString();
           session.user.name = dbUser.name;
           session.user.email = dbUser.email;

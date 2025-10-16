@@ -29,6 +29,8 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@stripe/react-stripe-js": "^5.2.0",
+    "@stripe/stripe-js": "^8.1.0",
     "@types/nodemailer": "^7.0.1",
     "aos": "^2.3.4",
     "axios": "^1.12.2",

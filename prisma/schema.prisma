@@ -69,6 +69,11 @@ enum PlanInterval {
   YEAR
 }
 
+enum InvoiceType {
+  PLAN
+  PAYMENT
+}
+
 model TempAccount {
   id           Int      @id @default(autoincrement())
   email        String   @unique
@@ -97,10 +102,10 @@ model User {
 
   // relations
   subscriptions  Subscription[]
-  payments       Payment[]
   orders         Order[]        @relation("UserOrders")
   assignedOrders Order[]        @relation("AgentAssignedOrders")
   agentProfile   AgentProfile?  @relation("AgentProfileUser")
+  Invoice        Invoice[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,24 +141,31 @@ model Subscription {
   endsAt               DateTime?
   trialEndsAt          DateTime?
   cancelAtPeriodEnd    Boolean            @default(false)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  Payment              Payment[]
+  usage                Json?
+  Invoice              Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Payment {
-  id                    Int           @id @default(autoincrement())
-  user                  User          @relation(fields: [userId], references: [id])
-  userId                Int
-  subscription          Subscription? @relation(fields: [subscriptionId], references: [id])
-  subscriptionId        Int?
-  stripePaymentIntentId String?
-  amountCents           Int
-  currency              String
-  status                PaymentStatus @default(PENDING)
-  paidAt                DateTime?
-  metadata              Json?
-  createdAt             DateTime      @default(now())
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  stripeInvoiceId String        @unique
+  user            User          @relation(fields: [userId], references: [id])
+  userId          Int
+  subscription    Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId  Int?
+  amountCents     Int
+  taxCents        Int
+  currency        String
+  status          String
+  pdfUrl          String?
+  hostedUrl       String?
+  paidAt          DateTime?
+  type            InvoiceType? // PLAN or PAYMENT
+  periodStart     DateTime
+  periodEnd       DateTime
+  createdAt       DateTime      @default(now())
 }
 
 model Category {

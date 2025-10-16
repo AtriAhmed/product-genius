@@ -1,0 +1,19 @@
+{
+  "billing": "Facturation",
+  "payment methods": "Méthodes de paiement",
+  "manage cards": "Gérez vos méthodes de paiement",
+  "add new card": "Ajouter une nouvelle carte",
+  "saved cards": "Cartes enregistrées",
+  "no cards": "Aucune méthode de paiement trouvée",
+  "add first card": "Ajoutez votre première méthode de paiement pour commencer",
+  "default": "Par défaut",
+  "set as default": "Définir par défaut",
+  "delete card": "Supprimer la carte",
+  "confirm delete": "Êtes-vous sûr de vouloir supprimer cette carte?",
+  "delete warning": "Cette action ne peut pas être annulée.",
+  "card deleted": "Carte supprimée avec succès",
+  "card added": "Carte ajoutée avec succès",
+  "card set default": "Carte définie par défaut",
+  "expires": "Expire",
+  "ending in": "Se terminant par"
+}
