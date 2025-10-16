@@ -13,7 +13,15 @@ export type SubscriptionStatus =
 
 export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
 
-export type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "diners" | "jcb" | "unionpay" | "unknown";
+export type CardBrand =
+  | "visa"
+  | "mastercard"
+  | "amex"
+  | "discover"
+  | "diners"
+  | "jcb"
+  | "unionpay"
+  | "unknown";
 
 export type OrderStatus =
   | "DRAFT"
@@ -354,3 +362,54 @@ export type PaymentMethod = {
   };
   isDefault?: boolean;
 };
+
+// Subscription API Types
+export type CreateSubscriptionRequest = {
+  planId: number;
+  paymentMethodId: string;
+};
+
+export type CreateSubscriptionResponse = {
+  subscription: Subscription & {
+    plan: Plan;
+    user: Pick<User, "id" | "name" | "email">;
+  };
+  clientSecret?: string;
+  subscriptionId: string;
+};
+
+export type UpdateSubscriptionRequest = {
+  planId?: number;
+  cancelAtPeriodEnd?: boolean;
+};
+
+export type SubscriptionWithDetails = Subscription & {
+  plan: Plan;
+  user: Pick<User, "id" | "name" | "email">;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+
+// Stripe Webhook Types
+export type StripeWebhookEvent = {
+  id: string;
+  type: string;
+  data: {
+    object: any;
+  };
+};
+
+export type StripeSubscriptionStatus =
+  | "incomplete"
+  | "incomplete_expired"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid";

@@ -1,9 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import SavedCards from "./SavedCards";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useTranslations } from "next-intl";
+import SavedCards from "@/app/[locale]/dashboard/billing/SavedCards";
 
 // Initialize Stripe
 const stripePromise = loadStripe(
