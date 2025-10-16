@@ -27,6 +27,12 @@
   "api access": "API access",
 
   "month": "month",
+  "day": "day",
+  "week": "week",
+  "year": "year",
+  "choose plan": "Choose Plan",
+  "failed to load plans": "Failed to load plans",
+  "no plans available": "No plans available",
 
   "faqs": "FAQs",
   "frequently asked questions": "Frequently asked questions",

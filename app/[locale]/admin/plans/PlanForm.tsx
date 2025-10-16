@@ -35,7 +35,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isDirty },
   } = useForm<PlanFormData>({
     resolver: zodResolver(planFormSchema),
     defaultValues: {
@@ -124,7 +124,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
 
             <Button
               onClick={handleSubmit(onSubmit)}
-              disabled={!isValid || isSubmitting}
+              disabled={!isValid || isSubmitting || !isDirty}
               size="sm"
             >
               <Save className="h-4 w-4 mr-2" />

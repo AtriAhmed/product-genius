@@ -38,6 +38,10 @@ import { useRef, useState } from "react";
 import { useForm, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { z } from "zod";
 import { PlanFormData } from "./types";
+import {
+  restrictToVerticalAxis,
+  restrictToParentElement,
+} from "@dnd-kit/modifiers";
 
 // Schema for the add feature form
 const addFeatureSchema = z.object({
@@ -180,7 +184,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
     setValue: setValueAdd,
     setError: setErrorAdd,
     clearErrors: clearErrorsAdd,
-    formState: { errors: errorsAdd },
+    formState: { errors: errorsAdd, isDirty: isDirtyAdd, isValid: isValidAdd },
   } = useForm<AddFeatureFormData>({
     resolver: zodResolver(addFeatureSchema),
     defaultValues: {
@@ -218,7 +222,9 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
         const newFeatures = [...features];
         const [removed] = newFeatures.splice(oldIndex, 1);
         newFeatures.splice(newIndex, 0, removed);
-        setValue("features", newFeatures);
+        setValue("features", newFeatures, {
+          shouldDirty: true,
+        });
       }
     }
   };
@@ -245,12 +251,17 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
       const newFeatures = features.map((feature) =>
         feature.key === editingKey ? data : feature
       );
-      setValue("features", newFeatures);
+      setValue("features", newFeatures, {
+        shouldDirty: true,
+      });
       setEditingKey(null);
     } else {
       // Add new feature
       const newFeatures = [...features, data];
-      setValue("features", newFeatures);
+      setValue("features", newFeatures),
+        {
+          shouldDirty: true,
+        };
     }
     resetAdd();
   };
@@ -259,7 +270,9 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
     const newFeatures = features.filter(
       (feature) => feature.key !== featureKey
     );
-    setValue("features", newFeatures);
+    setValue("features", newFeatures, {
+      shouldDirty: true,
+    });
     // Reset editing state if the edited feature is being removed
     if (editingKey === featureKey) {
       setEditingKey(null);
@@ -304,6 +317,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             >
               <Table>
                 <TableHeader>
@@ -427,7 +441,9 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                       className="block"
                       checked={includedValue}
                       onCheckedChange={(checked) =>
-                        setValueAdd("included", checked)
+                        setValueAdd("included", checked, {
+                          shouldDirty: true,
+                        })
                       }
                     />
                   </div>
@@ -445,7 +461,11 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                     Cancel
                   </Button>
                 )}
-                <Button type="submit" size="sm">
+                <Button
+                  disabled={!!editingKey && !isDirtyAdd}
+                  type="submit"
+                  size="sm"
+                >
                   {editingKey !== null ? (
                     <>
                       <Edit className="h-4 w-4 mr-2" />

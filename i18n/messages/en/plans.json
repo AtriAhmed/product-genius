@@ -84,5 +84,6 @@
   "subscriptions": "Subscriptions",
   "view": "View",
   "delete": "Delete",
-  "failed to load plans": "Failed to load plans"
+  "failed to load plans": "Failed to load plans",
+  "not included": "Not Included"
 }
