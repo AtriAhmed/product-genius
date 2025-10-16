@@ -90,11 +90,11 @@ export function UserSidebar({
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)]"
+      className="top-[55px] h-[calc(100vh-55px)] light:border-none"
       collapsible="icon"
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="bg-background">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
@@ -116,7 +116,7 @@ export function UserSidebar({
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-background">
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>{t("user panel")}</SidebarGroupLabel>
@@ -135,7 +135,7 @@ export function UserSidebar({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="bg-background">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

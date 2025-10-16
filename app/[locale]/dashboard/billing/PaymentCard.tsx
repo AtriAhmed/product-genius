@@ -32,7 +32,7 @@ export default function PaymentCard({
     <Card
       className={`py-1.5 relative overflow-hidden ${getCardBackground(
         paymentMethod.card?.brand || "unknown"
-      )} min-h-[140px] w-full sm:w-fit min-w-[200px] grow sm:max-w-[250px] flex flex-col justify-between transition-all duration-200 hover:scale-[1.01]`}
+      )} min-h-[140px] w-full sm:w-fit sm:min-w-[200px] grow sm:max-w-[250px] flex flex-col justify-between transition-all duration-200 hover:scale-[1.01]`}
     >
       <CardContent className="p-2.5 flex flex-col h-full">
         {/* Header */}
