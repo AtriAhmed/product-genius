@@ -31,7 +31,6 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
 
   const {
     register,
-    control,
     handleSubmit,
     watch,
     setValue,
@@ -41,6 +40,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     defaultValues: {
       name: plan?.name || "",
       description: plan?.description || "",
+      oldPrice: plan?.oldPrice || undefined,
       price: plan?.price || 0,
       interval: plan?.interval || "MONTH",
       active: plan?.active ?? true,
@@ -144,7 +144,8 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
           {/* Basic Information */}
           <PlanBasicInformation
             register={register}
-            control={control}
+            setValue={setValue}
+            watch={watch}
             errors={errors}
           />
         </form>

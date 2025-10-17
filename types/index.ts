@@ -86,6 +86,7 @@ export type Plan = {
   id: number;
   name: string;
   description?: string;
+  oldPrice?: number;
   price: number;
   interval: PlanInterval;
   stripeProductId?: string;

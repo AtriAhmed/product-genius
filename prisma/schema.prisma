@@ -115,6 +115,7 @@ model Plan {
   id              Int          @id @default(autoincrement())
   name            String
   description     String?
+  oldPrice        Float?
   price           Float
   interval        PlanInterval
   stripeProductId String?

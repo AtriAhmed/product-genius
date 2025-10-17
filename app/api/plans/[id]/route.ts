@@ -20,6 +20,7 @@ const PlanFeatureSchema = z.object({
 const UpdatePlanSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
+  oldPrice: z.number().optional().nullable(),
   price: z.number().min(0).optional(),
   interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]).optional(),
   active: z.boolean().optional(),
@@ -204,6 +205,9 @@ export async function PUT(
         }),
         ...(validatedData.price !== undefined && {
           price: validatedData.price,
+        }),
+        ...(validatedData.oldPrice !== undefined && {
+          oldPrice: validatedData.oldPrice,
         }),
         ...(validatedData.interval && { interval: validatedData.interval }),
         ...(validatedData.active !== undefined && {

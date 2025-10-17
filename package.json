@@ -2,14 +2,10 @@
   "name": "product-genius",
   "version": "0.1.0",
   "private": true,
-  "prisma": {
-    "seed": "npx tsx prisma/seed.ts"
-  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start",
-    "db:seed": "prisma db seed"
+    "start": "next start"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

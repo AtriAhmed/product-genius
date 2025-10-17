@@ -17,20 +17,24 @@ import {
   UseFormRegister,
   FieldErrors,
   Control,
-  Controller,
+  UseFormSetValue,
+  UseFormWatch,
 } from "react-hook-form";
 import { PlanFormData } from "./types";
+import { PlanInterval } from "@/types";
 
 type PlanBasicInformationProps = {
   register: UseFormRegister<PlanFormData>;
-  control: Control<PlanFormData>;
   errors: FieldErrors<PlanFormData>;
+  setValue: UseFormSetValue<PlanFormData>;
+  watch: UseFormWatch<PlanFormData>;
 };
 
 export default function PlanBasicInformation({
   register,
-  control,
   errors,
+  setValue,
+  watch,
 }: PlanBasicInformationProps) {
   const t = useTranslations("plans");
 
@@ -41,12 +45,21 @@ export default function PlanBasicInformation({
     { value: "YEAR", label: t("yearly") },
   ] as const;
 
+  const interval = watch("interval");
+  const active = watch("active");
+  const mostPopular = watch("mostPopular");
+
+  const selectedInterval = interval
+    ? intervalOptions.find((opt) => opt.value === interval)
+    : null;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t("basic information")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Name */}
         <div>
           <Label htmlFor="name">{t("plan name")}</Label>
           <Input
@@ -61,6 +74,7 @@ export default function PlanBasicInformation({
           )}
         </div>
 
+        {/* Description */}
         <div>
           <Label htmlFor="description">{t("plan description")}</Label>
           <Textarea
@@ -71,7 +85,7 @@ export default function PlanBasicInformation({
         </div>
 
         {/* Pricing Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="price">{t("price")}</Label>
             <Input
@@ -80,7 +94,9 @@ export default function PlanBasicInformation({
               step="0.01"
               min="0"
               placeholder={t("price placeholder")}
-              {...register("price", { valueAsNumber: true })}
+              {...register("price", {
+                setValueAs: (v) => (v === "" ? undefined : Number(v)),
+              })}
             />
             {errors.price && (
               <p className="text-sm text-destructive mt-1">
@@ -89,26 +105,49 @@ export default function PlanBasicInformation({
             )}
           </div>
 
+          {/* New Old Price Field */}
+          <div>
+            <Label htmlFor="oldPrice">{t("old price")}</Label>
+            <Input
+              id="oldPrice"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder={t("old price")}
+              {...register("oldPrice", {
+                setValueAs: (v) => (v === "" ? null : Number(v)),
+              })}
+            />
+            {errors.oldPrice && (
+              <p className="text-sm text-destructive mt-1">
+                {errors.oldPrice.message}
+              </p>
+            )}
+          </div>
+
           <div>
             <Label>{t("interval")}</Label>
-            <Controller
-              name="interval"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {intervalOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
+            <Select
+              value={interval}
+              onValueChange={(value) =>
+                setValue("interval", value as PlanInterval, {
+                  shouldDirty: true,
+                })
+              }
+            >
+              <SelectTrigger className="w-full">
+                {selectedInterval
+                  ? selectedInterval.label
+                  : t("select interval")}
+              </SelectTrigger>
+              <SelectContent>
+                {intervalOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -121,15 +160,11 @@ export default function PlanBasicInformation({
                 {t("active plans are available")}
               </p>
             </div>
-            <Controller
-              name="active"
-              control={control}
-              render={({ field }) => (
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              )}
+            <Switch
+              checked={active}
+              onCheckedChange={(checked) =>
+                setValue("active", checked, { shouldDirty: true })
+              }
             />
           </div>
 
@@ -140,15 +175,11 @@ export default function PlanBasicInformation({
                 {t("mark as most popular")}
               </p>
             </div>
-            <Controller
-              name="mostPopular"
-              control={control}
-              render={({ field }) => (
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              )}
+            <Switch
+              checked={mostPopular}
+              onCheckedChange={(checked) =>
+                setValue("mostPopular", checked, { shouldDirty: true })
+              }
             />
           </div>
 
