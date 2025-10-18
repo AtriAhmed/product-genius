@@ -258,10 +258,9 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
     } else {
       // Add new feature
       const newFeatures = [...features, data];
-      setValue("features", newFeatures),
-        {
-          shouldDirty: true,
-        };
+      setValue("features", newFeatures, {
+        shouldDirty: true,
+      });
     }
     resetAdd();
   };
@@ -341,7 +340,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
                     </TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody suppressHydrationWarning>
+                <TableBody>
                   <SortableContext
                     items={featuresWithIds.map((field) => field.id)}
                     strategy={verticalListSortingStrategy}
