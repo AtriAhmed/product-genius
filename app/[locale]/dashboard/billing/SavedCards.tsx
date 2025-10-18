@@ -122,7 +122,11 @@ export default function SavedCards() {
             </CardTitle>
             <p className="text-sm text-muted-foreground">{t("manage cards")}</p>
           </div>
-          <Button className="ms-auto" onClick={() => setShowAddDialog(true)}>
+          <Button
+            className="ms-auto"
+            onClick={() => setShowAddDialog(true)}
+            variant="primary"
+          >
             <Plus className="w-4 h-4 mr-2" />
             {t("add new card")}
           </Button>

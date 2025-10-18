@@ -13,8 +13,9 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 // Import separated components
-import PlanBasicInformation from "./PlanBasicInformation";
-import PlanFeatures from "./PlanFeatures";
+import CopyPlanDropdown from "@/app/[locale]/admin/plans/CopyPlanDropdown";
+import PlanBasicInformation from "@/app/[locale]/admin/plans/PlanBasicInformation";
+import PlanFeatures from "@/app/[locale]/admin/plans/PlanFeatures";
 import { PlanFormData, planFormSchema } from "./types";
 
 type PlanFormProps = {
@@ -40,7 +41,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     defaultValues: {
       name: plan?.name || "",
       description: plan?.description || "",
-      oldPrice: plan?.oldPrice || undefined,
+      oldPrice: plan?.oldPrice || null,
       price: plan?.price || 0,
       interval: plan?.interval || "MONTH",
       active: plan?.active ?? true,
@@ -138,6 +139,13 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
             </Button>
           </div>
         </div>
+
+        {/* Copy Plan Option */}
+        {mode === "create" && (
+          <div className="mb-4">
+            <CopyPlanDropdown setValue={setValue} />
+          </div>
+        )}
 
         {/* Form Content */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 mb-2">

@@ -35,7 +35,9 @@ export default async function Layout({
               <DashboardBreadcrumb />
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 py-4 sm:px-4 pt-0">
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </Private>

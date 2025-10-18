@@ -17,7 +17,7 @@ export default function BillingPage() {
   return (
     <Elements stripe={stripePromise}>
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-2">
+        <div className="container mx-auto px-2 py-2 space-y-2">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground">
@@ -30,12 +30,7 @@ export default function BillingPage() {
           <SavedCards />
 
           {/* Available Plans Section */}
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
-              {t("available plans")}
-            </h2>
-            <PlansList />
-          </div>
+          <PlansList />
         </div>
       </div>
     </Elements>

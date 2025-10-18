@@ -86,5 +86,10 @@
   "view": "View",
   "delete": "Delete",
   "failed to load plans": "Failed to load plans",
-  "not included": "Not Included"
+  "not included": "Not Included",
+  "copy from plan": "Copy from Plan",
+  "failed to fetch plans": "Failed to fetch plans",
+  "plan data copied successfully": "Plan data copied successfully",
+  "create": "Create",
+  "subscription plans": "Subscription Plans"
 }
