@@ -120,7 +120,6 @@ export default function SavedCards() {
               <CreditCard className="w-5 h-5" />
               {t("saved cards")}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">{t("manage cards")}</p>
           </div>
           <Button
             className="ms-auto"

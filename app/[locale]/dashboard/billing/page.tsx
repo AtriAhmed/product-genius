@@ -3,6 +3,7 @@
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { useTranslations } from "next-intl";
+import CurrentSubscription from "@/app/[locale]/dashboard/billing/CurrentSubscription";
 import SavedCards from "@/app/[locale]/dashboard/billing/SavedCards";
 import PlansList from "@/app/[locale]/dashboard/billing/PlansList";
 
@@ -25,6 +26,9 @@ export default function BillingPage() {
             </h1>
             <p className="text-muted-foreground mt-2">{t("payment methods")}</p>
           </div>
+
+          {/* Current Subscription Section */}
+          <CurrentSubscription />
 
           {/* Saved Cards Section */}
           <SavedCards />
