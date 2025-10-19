@@ -206,7 +206,7 @@ model Product {
 
   translations ProductTranslation[]
   media        Media[]
-  suppliers    ProductSupplier[]
+  suppliers    Supplier[]
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   isActive     Boolean              @default(true)
@@ -242,32 +242,17 @@ model Media {
 }
 
 model Supplier {
-  id           Int               @id @default(autoincrement())
-  name         String
-  marketplace  String?
-  baseUrl      String?
-  contactInfo  String?
-  notes        String?
-  productLinks ProductSupplier[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @default(now())
-}
-
-model ProductSupplier {
-  id          Int      @id @default(autoincrement())
-  product     Product  @relation(fields: [productId], references: [id])
+  id          Int     @id @default(autoincrement())
+  product     Product @relation(fields: [productId], references: [id])
   productId   Int
-  supplier    Supplier @relation(fields: [supplierId], references: [id])
-  supplierId  Int
-  url         String
+  url         String?
   marketplace String?
   price       Float?
   currency    String?
-  isPrimary   Boolean  @default(false)
+  isInternal  Boolean @default(false)
   notes       String?
 
   @@index([productId])
-  @@index([supplierId])
 }
 
 model Order {
@@ -286,7 +271,6 @@ model Order {
   totalCents Int
   currency   String
   status     OrderStatus @default(PENDING)
-  shipment   Shipment?
   metadata   Json?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
@@ -304,41 +288,6 @@ model OrderItem {
   metadata       Json?
 }
 
-model Shipment {
-  id             Int            @id @default(autoincrement())
-  order          Order          @relation(fields: [orderId], references: [id])
-  orderId        Int            @unique
-  method         ShipmentMethod @relation(fields: [methodId], references: [id])
-  methodId       Int
-  trackingNumber String?
-  status         ShipmentStatus @default(PENDING)
-  shippedAt      DateTime?
-  deliveredAt    DateTime?
-  costCents      Int?
-  metadata       Json?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-}
-
-model ShipmentMethod {
-  id             Int           @id @default(autoincrement())
-  title          String
-  country        String?
-  minPrice       Float?
-  maxPrice       Float?
-  costCents      Int
-  currency       String
-  provider       String?
-  active         Boolean       @default(true)
-  agent          AgentProfile? @relation(fields: [agentProfileId], references: [id])
-  agentProfileId Int?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  Shipment       Shipment[]
-
-  @@index([country])
-}
-
 model AgentProfile {
   id Int @id @default(autoincrement())
 
@@ -346,10 +295,9 @@ model AgentProfile {
   user   User @relation("AgentProfileUser", fields: [userId], references: [id])
   userId Int  @unique
 
-  companyName     String?
-  contactNumber   String?
-  details         Json?
-  shipmentMethods ShipmentMethod[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @default(now())
+  companyName   String?
+  contactNumber String?
+  details       Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
 }

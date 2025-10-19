@@ -32,7 +32,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
             src={getMediaUrl(selectedMedia.url!)}
             alt="Product"
             fill
-            className="object-cover hover:scale-105 transition-transform duration-300"
+            className="object-contain hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <video
@@ -42,7 +42,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
               : {})}
             controls
             autoPlay
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         )}
       </div>

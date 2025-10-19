@@ -287,14 +287,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
               {/* Multi-language Content */}
               <Card className="bg-background">
-                <CardHeader>
+                <CardHeader className="mb-2">
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
                     {t("product content")}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {t("add product information in multiple languages")}
-                  </p>
                 </CardHeader>
                 <CardContent>
                   <MultiLanguageForm

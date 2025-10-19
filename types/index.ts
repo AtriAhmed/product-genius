@@ -42,6 +42,8 @@ export type ShipmentStatus =
 
 export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
 
+export type InvoiceType = "PLAN" | "PAYMENT";
+
 // Base model types (without relations)
 export type TempAccount = {
   id: number;
@@ -70,10 +72,10 @@ export type User = {
   updatedAt: Date;
   // Relations
   subscriptions?: Subscription[];
-  payments?: Payment[];
   orders?: Order[];
   assignedOrders?: Order[];
   agentProfile?: AgentProfile;
+  invoices?: Invoice[];
 };
 
 export type PlanFeature = {
@@ -113,28 +115,34 @@ export type Subscription = {
   endsAt?: Date;
   trialEndsAt?: Date;
   cancelAtPeriodEnd: boolean;
+  usage?: any; // JSON type
+  latestStripeInvoiceId?: string;
   createdAt: Date;
   updatedAt: Date;
   // Relations
   user?: User;
   plan?: Plan;
-  payments?: Payment[];
+  users?: User[]; // CurrentSubscription relation
 };
 
-export type Payment = {
+export type Invoice = {
   id: number;
+  stripeInvoiceId: string;
   userId: number;
-  subscriptionId?: number;
-  stripePaymentIntentId?: string;
+  stripeSubscriptionId?: string;
   amountCents: number;
+  taxCents: number;
   currency: string;
-  status: PaymentStatus;
+  status: string;
+  pdfUrl?: string;
+  hostedUrl?: string;
   paidAt?: Date;
-  metadata?: any; // JSON type
+  type?: InvoiceType;
+  periodStart: Date;
+  periodEnd: Date;
   createdAt: Date;
   // Relations
   user?: User;
-  subscription?: Subscription;
 };
 
 export type Category = {
@@ -161,31 +169,30 @@ export type Product = {
   sku?: string;
   suggestedPrice?: number;
   currency?: string;
-  popularityScore?: number;
+  popularityScore: number;
   shopifyId?: string;
-  shopifyImported?: boolean;
+  shopifyImported: boolean;
   categoryId?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  isActive?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
   metadata?: any; // JSON type
-  views?: number;
-  likes?: number;
+  views: number;
+  likes: number;
   // Relations
   category?: Category;
   translations?: ProductTranslation[];
   media?: Media[];
-  suppliers?: ProductSupplier[];
+  suppliers?: Supplier[];
   orderItems?: OrderItem[];
 };
 
 export type ProductTranslation = {
   id: number;
-  productId?: number;
-  locale?: string;
-  title?: string;
-  description?: string;
-  slug?: string;
+  productId: number;
+  locale: string;
+  title: string;
+  description: string;
   // Relations
   product?: Product;
 };
@@ -193,123 +200,71 @@ export type ProductTranslation = {
 export type Media = {
   id: number;
   productId?: number;
-  url?: string;
+  url: string;
   poster?: string;
   provider?: string;
-  type?: MediaType;
+  type: MediaType;
   alt?: string;
-  sortOrder?: number;
+  sortOrder: number;
   metadata?: any; // JSON type
-  createdAt?: Date;
+  createdAt: Date;
   // Relations
   product?: Product;
 };
 
 export type Supplier = {
   id: number;
-  name?: string;
-  marketplace?: string;
-  baseUrl?: string;
-  contactInfo?: string;
-  notes?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  // Relations
-  productLinks?: ProductSupplier[];
-};
-
-export type ProductSupplier = {
-  id: number;
-  productId?: number;
-  supplierId?: number;
+  productId: number;
   url?: string;
   marketplace?: string;
   price?: number;
   currency?: string;
-  isPrimary?: boolean;
+  isInternal: boolean;
   notes?: string;
   // Relations
   product?: Product;
-  supplier?: Supplier;
 };
 
 export type Order = {
   id: number;
-  orderNumber?: string;
-  userId?: number;
+  orderNumber: string;
+  userId: number;
   agentId?: number;
-  totalCents?: number;
-  currency?: string;
-  status?: OrderStatus;
+  totalCents: number;
+  currency: string;
+  status: OrderStatus;
   metadata?: any; // JSON type
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
   // Relations
   user?: User;
   agent?: User;
   items?: OrderItem[];
-  shipment?: Shipment;
 };
 
 export type OrderItem = {
   id: number;
-  orderId?: number;
-  productId?: number;
-  title?: string;
-  unitPriceCents?: number;
-  quantity?: number;
+  orderId: number;
+  productId: number;
+  title: string;
+  unitPriceCents: number;
+  quantity: number;
   metadata?: any; // JSON type
   // Relations
   order?: Order;
   product?: Product;
 };
 
-export type Shipment = {
-  id: number;
-  orderId?: number;
-  methodId?: number;
-  trackingNumber?: string;
-  status?: ShipmentStatus;
-  shippedAt?: Date;
-  deliveredAt?: Date;
-  costCents?: number;
-  metadata?: any; // JSON type
-  createdAt?: Date;
-  updatedAt?: Date;
-  // Relations
-  order?: Order;
-  method?: ShipmentMethod;
-};
-
-export type ShipmentMethod = {
-  id: number;
-  title?: string;
-  country?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  costCents?: number;
-  currency?: string;
-  provider?: string;
-  active?: boolean;
-  agentProfileId?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  // Relations
-  shipments?: Shipment[];
-  agent?: AgentProfile;
-};
-
 export type AgentProfile = {
   id: number;
-  userId?: number;
+  userId: number;
   companyName?: string;
   contactNumber?: string;
   details?: any; // JSON type
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
   // Relations
   user?: User;
-  shipmentMethods?: ShipmentMethod[];
 };
 
 // Utility types for creating/updating records
@@ -335,8 +290,8 @@ export type UpdateSubscription = Partial<
   Omit<Subscription, "id" | "createdAt" | "updatedAt">
 >;
 
-export type CreatePayment = Omit<Payment, "id" | "createdAt">;
-export type UpdatePayment = Partial<Omit<Payment, "id" | "createdAt">>;
+export type CreateInvoice = Omit<Invoice, "id" | "createdAt">;
+export type UpdateInvoice = Partial<Omit<Invoice, "id" | "createdAt">>;
 
 export type CreateCategory = Omit<Category, "id" | "createdAt" | "updatedAt">;
 export type UpdateCategory = Partial<
@@ -347,6 +302,9 @@ export type CreateProduct = Omit<Product, "id" | "createdAt" | "updatedAt">;
 export type UpdateProduct = Partial<
   Omit<Product, "id" | "createdAt" | "updatedAt">
 >;
+
+export type CreateSupplier = Omit<Supplier, "id">;
+export type UpdateSupplier = Partial<Omit<Supplier, "id">>;
 
 export type CreateOrder = Omit<Order, "id" | "createdAt" | "updatedAt">;
 export type UpdateOrder = Partial<

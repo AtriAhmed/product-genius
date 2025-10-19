@@ -287,21 +287,6 @@ export default function MultiLanguageForm({
           })()}
         </div>
       )}
-
-      {/* Summary */}
-      <div className="text-sm text-muted-foreground">
-        <p>
-          {value.length} language{value.length !== 1 ? "s" : ""} configured
-          {requiredLanguages.length > 0 && (
-            <span> • {requiredLanguages.length} required</span>
-          )}
-        </p>
-        {value.some((t) => hasErrors(t)) && (
-          <p className="text-destructive mt-1">
-            ⚠️ Some translations are incomplete
-          </p>
-        )}
-      </div>
     </div>
   );
 }
