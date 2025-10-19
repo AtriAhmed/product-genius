@@ -74,5 +74,7 @@
   "please don't close this window": "This may take a few moments. Please don't close this window.",
   "failed to load payment methods": "Failed to load payment methods",
   "please add a payment method first": "Please add a payment method in your billing settings first.",
-  "failed to create subscription": "Failed to create subscription"
+  "failed to create subscription": "Failed to create subscription",
+  "current plan": "Current Plan",
+  "already subscribed": "Already Subscribed"
 }

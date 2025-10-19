@@ -12,15 +12,7 @@ import axios from "axios";
 import { User, Subscription, Plan } from "@/types";
 import PlanInfoDialog from "./PlanInfoDialog";
 
-type CurrentUserResponse = {
-  user: User & {
-    currentSubscription?: Subscription & {
-      plan?: Plan;
-    };
-  };
-};
-
-async function fetcher(): Promise<CurrentUserResponse> {
+async function fetcher(): Promise<User> {
   const response = await axios.get("/api/users/current");
   return response.data;
 }
@@ -29,16 +21,16 @@ export default function CurrentSubscription() {
   const t = useTranslations("billing");
   const [showPlanDialog, setShowPlanDialog] = useState(false);
 
-  const { data, error, isLoading } = useSWR<CurrentUserResponse>(
-    "current-user",
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  );
+  const {
+    data: user,
+    error,
+    isLoading,
+  } = useSWR<User>("current-user", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
 
-  const subscription = data?.user?.currentSubscription;
+  const subscription = user?.currentSubscription;
   const plan = subscription?.plan;
 
   if (error) {
@@ -47,10 +39,12 @@ export default function CurrentSubscription() {
 
   const formatDate = (date: Date | string | undefined) => {
     if (!date) return "-";
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("en-UK", {
       year: "numeric",
       month: "short",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(date));
   };
 

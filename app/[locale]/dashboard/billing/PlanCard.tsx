@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Star, Sparkles, Crown } from "lucide-react";
-import { Plan } from "@/types";
+import { Plan, User, Subscription } from "@/types";
 import {
   Card,
   CardContent,
@@ -18,14 +18,22 @@ import SubscriptionDialog from "./SubscriptionDialog";
 
 type Props = {
   plan: Plan;
+  user?: User;
   onSelect?: (plan: Plan) => void;
 };
 
-export default function PlanCard({ plan, onSelect }: Props) {
+export default function PlanCard({ plan, user, onSelect }: Props) {
   const t = useTranslations("pricing");
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
 
+  console.log("-------------------- user --------------------");
+  console.log(user);
+  const hasActiveSubscription = !!user?.currentSubscription;
+  const isCurrentPlan = user?.currentSubscription?.plan?.id === plan.id;
+
   const handleSelectPlan = () => {
+    if (hasActiveSubscription) return;
+
     if (onSelect) {
       onSelect(plan);
     } else {
@@ -44,7 +52,7 @@ export default function PlanCard({ plan, onSelect }: Props) {
       className={`relative flex flex-col justify-between transition-all mx-auto w-full max-w-[400px] duration-500 rounded-3xl border-2 shadow-lg hover:shadow-2xl hover:-translate-y-2 group
         ${
           plan.mostPopular
-            ? "border-gradient-to-r from-primary-400 to-primary-600 bg-gradient-to-br from-primary-50/50 via-white to-primary-50/30 dark:from-primary-950/50 dark:via-card dark:to-primary-950/30 shadow-primary-200/50 dark:shadow-primary-800/20"
+            ? "border-gradient-to-r from-primary-400 to-primary-600 bg-gradient-to-br via-white  dark:from-primary-950/50 dark:via-card dark:to-primary-950/30 shadow-primary-200/50 dark:shadow-primary-800/20"
             : "border-gray-200 dark:border-gray-700 bg-white dark:bg-card hover:border-primary-300 dark:hover:border-primary-600 hover:bg-gradient-to-br hover:from-primary-50/30 hover:to-white dark:hover:from-primary-950/20 dark:hover:to-card"
         }`}
     >
@@ -148,18 +156,39 @@ export default function PlanCard({ plan, onSelect }: Props) {
 
       <CardFooter className="pt-3 pb-4 px-4 relative z-10">
         <Button
-          className={`w-full h-10 text-sm font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg ${
-            plan.mostPopular
-              ? "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50"
-              : "border-2 border-primary-500 text-primary-600 hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 hover:text-white hover:border-primary-600 hover:shadow-xl hover:shadow-primary-200 dark:hover:shadow-primary-800/30"
+          className={`w-full h-10 text-sm font-semibold transition-all duration-300 transform shadow-lg ${
+            hasActiveSubscription
+              ? "bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-inner border border-gray-300 dark:border-gray-600 opacity-75"
+              : plan.mostPopular
+              ? "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50 hover:scale-105 active:scale-95"
+              : "border-2 border-primary-500 text-primary-600 hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 hover:text-white hover:border-primary-600 hover:shadow-xl hover:shadow-primary-200 dark:hover:shadow-primary-800/30 hover:scale-105 active:scale-95"
           }`}
-          variant={plan.mostPopular ? "default" : "outline"}
+          variant={
+            hasActiveSubscription
+              ? "secondary"
+              : plan.mostPopular
+              ? "default"
+              : "outline"
+          }
           onClick={handleSelectPlan}
+          disabled={hasActiveSubscription}
         >
-          <span className="flex items-center justify-center gap-2">
-            {plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
-            {t("choose plan")}
-            {plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
+          <span
+            className={`flex items-center justify-center gap-2 ${
+              hasActiveSubscription ? "opacity-80" : ""
+            }`}
+          >
+            {!hasActiveSubscription && plan.mostPopular && (
+              <Star className="w-3 h-3 fill-current" />
+            )}
+            {hasActiveSubscription
+              ? isCurrentPlan
+                ? t("current plan")
+                : t("already subscribed")
+              : t("choose plan")}
+            {!hasActiveSubscription && plan.mostPopular && (
+              <Star className="w-3 h-3 fill-current" />
+            )}
           </span>
         </Button>
 

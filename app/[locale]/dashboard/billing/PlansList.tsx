@@ -31,6 +31,12 @@ async function fetcher(): Promise<PlansResponse> {
   return response.data;
 }
 
+async function userFetcher() {
+  const response = await axios.get("/api/users/current");
+
+  return response.data;
+}
+
 export default function PlansList() {
   const t = useTranslations("pricing");
   const { data, error, isLoading } = useSWR<PlansResponse>(
@@ -38,6 +44,10 @@ export default function PlansList() {
     fetcher,
     { revalidateOnFocus: false, revalidateOnReconnect: true }
   );
+  const { data: user } = useSWR("current-user", userFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
 
   const intervals = ["DAY", "WEEK", "MONTH", "YEAR"];
   const [activeInterval, setActiveInterval] = useState("MONTH");
@@ -159,7 +169,7 @@ export default function PlansList() {
               <TabsContent key={interval} value={interval}>
                 <div className="grid sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] justify-center gap-x-2 gap-y-4">
                   {grouped[interval].map((plan) => (
-                    <PlanCard key={plan.id} plan={plan} />
+                    <PlanCard key={plan.id} plan={plan} user={user} />
                   ))}
                 </div>
               </TabsContent>

@@ -62,6 +62,8 @@ export type User = {
   passwordHash?: string;
   role: Role;
   stripeCustomerId?: string;
+  currentSubscriptionId?: number;
+  currentSubscription?: Subscription;
   resetToken?: string;
   resetTokenExpires?: Date;
   createdAt: Date;

@@ -27,6 +27,14 @@
   "api access": "Accès API",
 
   "month": "mois",
+  "day": "jour",
+  "week": "semaine",
+  "year": "année",
+  "choose plan": "Choisir le Plan",
+  "failed to load plans": "Échec du chargement des plans",
+  "no plans available": "Aucun plan disponible",
+  "check back later for more options": "Revenez plus tard pour plus d'options",
+  "subscription plans": "Plans d'Abonnement",
 
   "faqs": "FAQs",
   "frequently asked questions": "Questions fréquemment posées",
@@ -41,5 +49,32 @@
   "yes! we offer 20% off for annual subscriptions": "Oui ! Nous offrons 20 % de réduction pour les abonnements annuels.",
 
   "what payment methods do you accept?": "Quels modes de paiement acceptez-vous ?",
-  "we accept all major credit cards and paypal": "Nous acceptons toutes les principales cartes de crédit et PayPal."
+  "we accept all major credit cards and paypal": "Nous acceptons toutes les principales cartes de crédit et PayPal.",
+
+  "subscribe to plan": "S'abonner au Plan",
+  "select payment method": "Sélectionner le Mode de Paiement",
+  "processing": "Traitement...",
+  "review your plan selection": "Examinez votre sélection de plan",
+  "choose how you'd like to pay": "Choisissez comment vous aimeriez payer",
+  "setting up your subscription": "Configuration de votre abonnement...",
+  "what's included": "Ce qui est inclus:",
+  "more features": "plus de fonctionnalités",
+  "billing summary": "Résumé de Facturation",
+  "plan": "Plan",
+  "total due today": "Total dû aujourd'hui",
+  "continue to payment": "Continuer vers le Paiement",
+  "no payment methods found": "Aucune méthode de paiement trouvée",
+  "add a payment method to continue": "Ajoutez une méthode de paiement pour continuer avec votre abonnement.",
+  "go to billing settings": "Aller aux Paramètres de Facturation",
+  "default": "Par Défaut",
+  "expires": "Expire",
+  "subscribe for": "S'abonner pour",
+  "processing;;;": "Traitement...",
+  "creating your subscription": "Création de votre abonnement...",
+  "please don't close this window": "Cela peut prendre quelques instants. Veuillez ne pas fermer cette fenêtre.",
+  "failed to load payment methods": "Échec du chargement des méthodes de paiement",
+  "please add a payment method first": "Veuillez d'abord ajouter une méthode de paiement dans vos paramètres de facturation.",
+  "failed to create subscription": "Échec de la création de l'abonnement",
+  "current plan": "Plan Actuel",
+  "already subscribed": "Déjà Abonné"
 }
