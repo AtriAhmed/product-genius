@@ -20,16 +20,6 @@ const translationSchema = z.object({
   description: z.string().min(1),
 });
 
-const supplierSchema = z.object({
-  supplierId: z.number().int().positive(),
-  url: z.url(),
-  marketplace: z.string().optional(),
-  price: z.number().positive().optional(),
-  currency: z.string().length(3).optional(),
-  isPrimary: z.boolean().default(false),
-  notes: z.string().optional(),
-});
-
 const createProductSchema = z.object({
   suggestedPrice: z.number().positive().optional(),
   currency: z.string().length(3).optional(),
@@ -37,7 +27,6 @@ const createProductSchema = z.object({
   isActive: z.boolean().default(true),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
-  suppliers: z.array(supplierSchema).optional().default([]),
 });
 
 // Helper function to generate slug from title
@@ -71,232 +60,135 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const contentType = request.headers.get("content-type") || "";
+    // Handle form data with file uploads
+    const formData = await request.formData();
 
-    if (contentType.includes("multipart/form-data")) {
-      // Handle form data with file uploads
-      const formData = await request.formData();
-
-      // Extract JSON data from form
-      const productDataString = formData.get("productData") as string;
-      if (!productDataString) {
-        return NextResponse.json(
-          { error: "Product data is required" },
-          { status: 400 }
-        );
-      }
-
-      const productData = JSON.parse(productDataString);
-
-      // Validate the product data
-      const validatedData = createProductSchema.parse(productData);
-
-      // Create the product first
-      const product = await prisma.product.create({
-        data: {
-          suggestedPrice: validatedData.suggestedPrice,
-          currency: validatedData.currency,
-          categoryId: validatedData.categoryId,
-          isActive: validatedData.isActive,
-        },
-      });
-
-      // Create a map from the media array (sortOrder -> mediaObject)
-      const mediaMap = new Map(
-        validatedData.media.map((media, index) => [index, { ...media }])
-      );
-
-      // Process form data entries for file uploads
-      for (const [key, value] of formData.entries()) {
-        if (key.startsWith("media_") && value instanceof File) {
-          const file = value as File;
-          const index = parseInt(key.split("_")[1]);
-
-          if (!isNaN(index) && mediaMap.has(index)) {
-            // Upload the media file
-            const allowedImageExtensions = [
-              "jpg",
-              "jpeg",
-              "png",
-              "gif",
-              "webp",
-            ];
-            const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
-            const allowedExtensions = [
-              ...allowedImageExtensions,
-              ...allowedVideoExtensions,
-            ];
-
-            const uploadResult = await uploadFile(file, {
-              directory: "uploads/products",
-              subdirectory: product.id.toString(),
-              generateUniqueFilename: true,
-              allowedExtensions,
-            });
-
-            // Update the URL in the media map
-            const mediaObject = mediaMap.get(index)!;
-            mediaObject.url = uploadResult.url;
-            mediaObject.type = getMediaType(file);
-          }
-        } else if (key.startsWith("poster_") && value instanceof File) {
-          const file = value as File;
-          const index = parseInt(key.split("_")[1]);
-
-          if (!isNaN(index) && mediaMap.has(index)) {
-            // Upload the poster file
-            const allowedImageExtensions = [
-              "jpg",
-              "jpeg",
-              "png",
-              "gif",
-              "webp",
-            ];
-
-            const posterUploadResult = await uploadFile(file, {
-              directory: "uploads/products",
-              subdirectory: `${product.id}/posters`,
-              generateUniqueFilename: true,
-              allowedExtensions: allowedImageExtensions,
-            });
-
-            // Update the poster in the media map
-            const mediaObject = mediaMap.get(index)!;
-            mediaObject.poster = posterUploadResult.url;
-          }
-        }
-      }
-
-      // Convert map back to array for database creation
-      const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
-        productId: product.id,
-        url: media.url,
-        type: media.type,
-        sortOrder: media.sortOrder,
-        provider: media.url.startsWith("/uploads/")
-          ? "local"
-          : media.provider || "external",
-        poster: media.poster || null,
-      }));
-
-      // Create all media records
-      if (allMediaRecords.length > 0) {
-        await prisma.media.createMany({
-          data: allMediaRecords,
-        });
-      }
-
-      // Create translations with auto-generated slugs
-      await prisma.productTranslation.createMany({
-        data: validatedData.translations.map((translation) => ({
-          productId: product.id,
-          locale: translation.locale,
-          title: translation.title,
-          description: translation.description,
-        })),
-      });
-
-      // Create supplier relationships
-      if (validatedData.suppliers.length > 0) {
-        await prisma.productSupplier.createMany({
-          data: validatedData.suppliers.map((supplier) => ({
-            productId: product.id,
-            supplierId: supplier.supplierId,
-            url: supplier.url,
-            marketplace: supplier.marketplace,
-            price: supplier.price,
-            currency: supplier.currency,
-            isPrimary: supplier.isPrimary,
-            notes: supplier.notes,
-          })),
-        });
-      }
-
-      // Fetch the complete product with all relations
-      const completeProduct = await prisma.product.findUnique({
-        where: { id: product.id },
-        include: {
-          translations: true,
-          media: {
-            orderBy: { sortOrder: "asc" },
-          },
-          category: true,
-          suppliers: {
-            include: {
-              supplier: true,
-            },
-          },
-        },
-      });
-
+    // Extract JSON data from form
+    const productDataString = formData.get("productData") as string;
+    if (!productDataString) {
       return NextResponse.json(
-        {
-          message: "Product created successfully",
-          product: completeProduct,
-        },
-        { status: 201 }
-      );
-    } else {
-      // Handle JSON data (no file uploads)
-      const body = await request.json();
-      const validatedData = createProductSchema.parse(body);
-
-      const product = await prisma.product.create({
-        data: {
-          suggestedPrice: validatedData.suggestedPrice,
-          currency: validatedData.currency,
-          categoryId: validatedData.categoryId,
-          isActive: validatedData.isActive,
-          translations: {
-            create: validatedData.translations.map((translation) => ({
-              locale: translation.locale,
-              title: translation.title,
-              description: translation.description,
-            })),
-          },
-          media: {
-            create: validatedData.media.map((media) => ({
-              url: media.url,
-              type: media.type,
-              sortOrder: media.sortOrder,
-              provider: media.provider || "external",
-              poster: null, // JSON-only creation doesn't have posters
-            })),
-          },
-          suppliers: {
-            create: validatedData.suppliers.map((supplier) => ({
-              supplierId: supplier.supplierId,
-              url: supplier.url,
-              marketplace: supplier.marketplace,
-              price: supplier.price,
-              currency: supplier.currency,
-              isPrimary: supplier.isPrimary,
-              notes: supplier.notes,
-            })),
-          },
-        },
-        include: {
-          translations: true,
-          media: {
-            orderBy: { sortOrder: "asc" },
-          },
-          category: true,
-          suppliers: {
-            include: {
-              supplier: true,
-            },
-          },
-        },
-      });
-
-      return NextResponse.json(
-        {
-          message: "Product created successfully",
-          product,
-        },
-        { status: 201 }
+        { error: "Product data is required" },
+        { status: 400 }
       );
     }
+
+    const productData = JSON.parse(productDataString);
+
+    // Validate the product data
+    const validatedData = createProductSchema.parse(productData);
+
+    // Create the product first
+    const product = await prisma.product.create({
+      data: {
+        suggestedPrice: validatedData.suggestedPrice,
+        currency: validatedData.currency,
+        categoryId: validatedData.categoryId,
+        isActive: validatedData.isActive,
+      },
+    });
+
+    // Create a map from the media array (sortOrder -> mediaObject)
+    const mediaMap = new Map(
+      validatedData.media.map((media, index) => [index, { ...media }])
+    );
+
+    // Process form data entries for file uploads
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith("media_") && value instanceof File) {
+        const file = value as File;
+        const index = parseInt(key.split("_")[1]);
+
+        if (!isNaN(index) && mediaMap.has(index)) {
+          // Upload the media file
+          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+          const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
+          const allowedExtensions = [
+            ...allowedImageExtensions,
+            ...allowedVideoExtensions,
+          ];
+
+          const uploadResult = await uploadFile(file, {
+            directory: "uploads/products",
+            subdirectory: product.id.toString(),
+            generateUniqueFilename: true,
+            allowedExtensions,
+          });
+
+          // Update the URL in the media map
+          const mediaObject = mediaMap.get(index)!;
+          mediaObject.url = uploadResult.url;
+          mediaObject.type = getMediaType(file);
+        }
+      } else if (key.startsWith("poster_") && value instanceof File) {
+        const file = value as File;
+        const index = parseInt(key.split("_")[1]);
+
+        if (!isNaN(index) && mediaMap.has(index)) {
+          // Upload the poster file
+          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+
+          const posterUploadResult = await uploadFile(file, {
+            directory: "uploads/products",
+            subdirectory: `${product.id}/posters`,
+            generateUniqueFilename: true,
+            allowedExtensions: allowedImageExtensions,
+          });
+
+          // Update the poster in the media map
+          const mediaObject = mediaMap.get(index)!;
+          mediaObject.poster = posterUploadResult.url;
+        }
+      }
+    }
+
+    // Convert map back to array for database creation
+    const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
+      productId: product.id,
+      url: media.url,
+      type: media.type,
+      sortOrder: media.sortOrder,
+      provider: media.url.startsWith("/uploads/")
+        ? "local"
+        : media.provider || "external",
+      poster: media.poster || null,
+    }));
+
+    // Create all media records
+    if (allMediaRecords.length > 0) {
+      await prisma.media.createMany({
+        data: allMediaRecords,
+      });
+    }
+
+    // Create translations with auto-generated slugs
+    await prisma.productTranslation.createMany({
+      data: validatedData.translations.map((translation) => ({
+        productId: product.id,
+        locale: translation.locale,
+        title: translation.title,
+        description: translation.description,
+      })),
+    });
+
+    // Fetch the complete product with all relations
+    const completeProduct = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        translations: true,
+        media: {
+          orderBy: { sortOrder: "asc" },
+        },
+        category: true,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message: "Product created successfully",
+        product: completeProduct,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Product creation error:", error);
 

@@ -2,6 +2,7 @@
 CREATE TABLE `TempAccount` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NULL,
     `passwordHash` VARCHAR(191) NOT NULL,
     `token` VARCHAR(191) NOT NULL,
     `expiresAt` DATETIME(3) NOT NULL,
@@ -24,6 +25,7 @@ CREATE TABLE `User` (
     `stripeCustomerId` VARCHAR(191) NULL,
     `resetToken` VARCHAR(191) NULL,
     `resetTokenExpires` DATETIME(3) NULL,
+    `currentSubscriptionId` INTEGER NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -36,11 +38,15 @@ CREATE TABLE `Plan` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
+    `oldPrice` DOUBLE NULL,
     `price` DOUBLE NOT NULL,
-    `interval` VARCHAR(191) NOT NULL,
+    `interval` ENUM('DAY', 'WEEK', 'MONTH', 'YEAR') NOT NULL,
+    `stripeProductId` VARCHAR(191) NULL,
     `stripePriceId` VARCHAR(191) NULL,
     `active` BOOLEAN NOT NULL DEFAULT true,
     `features` JSON NULL,
+    `mostPopular` BOOLEAN NOT NULL DEFAULT false,
+    `sortOrder` INTEGER NOT NULL DEFAULT 0,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -58,6 +64,8 @@ CREATE TABLE `Subscription` (
     `endsAt` DATETIME(3) NULL,
     `trialEndsAt` DATETIME(3) NULL,
     `cancelAtPeriodEnd` BOOLEAN NOT NULL DEFAULT false,
+    `usage` JSON NULL,
+    `latestStripeInvoiceId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -65,29 +73,33 @@ CREATE TABLE `Subscription` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Payment` (
+CREATE TABLE `Invoice` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `stripeInvoiceId` VARCHAR(191) NOT NULL,
     `userId` INTEGER NOT NULL,
-    `subscriptionId` INTEGER NULL,
-    `stripePaymentIntentId` VARCHAR(191) NULL,
+    `stripeSubscriptionId` VARCHAR(191) NULL,
     `amountCents` INTEGER NOT NULL,
+    `taxCents` INTEGER NOT NULL,
     `currency` VARCHAR(191) NOT NULL,
-    `status` ENUM('PENDING', 'SUCCEEDED', 'FAILED', 'REFUNDED') NOT NULL DEFAULT 'PENDING',
+    `status` VARCHAR(191) NOT NULL,
+    `pdfUrl` VARCHAR(191) NULL,
+    `hostedUrl` VARCHAR(191) NULL,
     `paidAt` DATETIME(3) NULL,
-    `metadata` JSON NULL,
+    `type` ENUM('PLAN', 'PAYMENT') NULL,
+    `periodStart` DATETIME(3) NOT NULL,
+    `periodEnd` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    UNIQUE INDEX `Invoice_stripeInvoiceId_key`(`stripeInvoiceId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Category` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `key` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Category_key_key`(`key`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -107,8 +119,6 @@ CREATE TABLE `CategoryTranslation` (
 CREATE TABLE `Product` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `sku` VARCHAR(191) NULL,
-    `defaultTitle` VARCHAR(191) NULL,
-    `defaultDescription` VARCHAR(191) NULL,
     `suggestedPrice` DOUBLE NULL,
     `currency` VARCHAR(191) NULL,
     `popularityScore` INTEGER NOT NULL DEFAULT 0,
@@ -133,7 +143,6 @@ CREATE TABLE `ProductTranslation` (
     `locale` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` TEXT NOT NULL,
-    `slug` VARCHAR(191) NULL,
 
     UNIQUE INDEX `ProductTranslation_productId_locale_key`(`productId`, `locale`),
     PRIMARY KEY (`id`)
@@ -144,6 +153,7 @@ CREATE TABLE `Media` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `productId` INTEGER NULL,
     `url` VARCHAR(191) NOT NULL,
+    `poster` VARCHAR(191) NULL,
     `provider` VARCHAR(191) NULL,
     `type` ENUM('IMAGE', 'VIDEO') NOT NULL,
     `alt` VARCHAR(191) NULL,
@@ -157,31 +167,15 @@ CREATE TABLE `Media` (
 -- CreateTable
 CREATE TABLE `Supplier` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(191) NOT NULL,
-    `marketplace` VARCHAR(191) NULL,
-    `baseUrl` VARCHAR(191) NULL,
-    `contactInfo` VARCHAR(191) NULL,
-    `notes` VARCHAR(191) NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `ProductSupplier` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `productId` INTEGER NOT NULL,
-    `supplierId` INTEGER NOT NULL,
-    `url` VARCHAR(191) NOT NULL,
+    `url` VARCHAR(191) NULL,
     `marketplace` VARCHAR(191) NULL,
     `price` DOUBLE NULL,
     `currency` VARCHAR(191) NULL,
-    `isPrimary` BOOLEAN NOT NULL DEFAULT false,
+    `isInternal` BOOLEAN NOT NULL DEFAULT false,
     `notes` VARCHAR(191) NULL,
 
-    INDEX `ProductSupplier_productId_idx`(`productId`),
-    INDEX `ProductSupplier_supplierId_idx`(`supplierId`),
+    INDEX `Supplier_productId_idx`(`productId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -216,43 +210,6 @@ CREATE TABLE `OrderItem` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Shipment` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `orderId` INTEGER NOT NULL,
-    `methodId` INTEGER NOT NULL,
-    `trackingNumber` VARCHAR(191) NULL,
-    `status` ENUM('PENDING', 'PICKED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
-    `shippedAt` DATETIME(3) NULL,
-    `deliveredAt` DATETIME(3) NULL,
-    `costCents` INTEGER NULL,
-    `metadata` JSON NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    UNIQUE INDEX `Shipment_orderId_key`(`orderId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `ShipmentMethod` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(191) NOT NULL,
-    `country` VARCHAR(191) NULL,
-    `minPrice` DOUBLE NULL,
-    `maxPrice` DOUBLE NULL,
-    `costCents` INTEGER NOT NULL,
-    `currency` VARCHAR(191) NOT NULL,
-    `provider` VARCHAR(191) NULL,
-    `active` BOOLEAN NOT NULL DEFAULT true,
-    `agentProfileId` INTEGER NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-
-    INDEX `ShipmentMethod_country_idx`(`country`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `AgentProfile` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
@@ -267,34 +224,31 @@ CREATE TABLE `AgentProfile` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
+ALTER TABLE `User` ADD CONSTRAINT `User_currentSubscriptionId_fkey` FOREIGN KEY (`currentSubscriptionId`) REFERENCES `Subscription`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Subscription` ADD CONSTRAINT `Subscription_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Subscription` ADD CONSTRAINT `Subscription_planId_fkey` FOREIGN KEY (`planId`) REFERENCES `Plan`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Payment` ADD CONSTRAINT `Payment_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Invoice` ADD CONSTRAINT `Invoice_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Payment` ADD CONSTRAINT `Payment_subscriptionId_fkey` FOREIGN KEY (`subscriptionId`) REFERENCES `Subscription`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `CategoryTranslation` ADD CONSTRAINT `CategoryTranslation_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `CategoryTranslation` ADD CONSTRAINT `CategoryTranslation_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Product` ADD CONSTRAINT `Product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ProductTranslation` ADD CONSTRAINT `ProductTranslation_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `ProductTranslation` ADD CONSTRAINT `ProductTranslation_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Media` ADD CONSTRAINT `Media_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ProductSupplier` ADD CONSTRAINT `ProductSupplier_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `ProductSupplier` ADD CONSTRAINT `ProductSupplier_supplierId_fkey` FOREIGN KEY (`supplierId`) REFERENCES `Supplier`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Supplier` ADD CONSTRAINT `Supplier_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Order` ADD CONSTRAINT `Order_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -307,15 +261,6 @@ ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_orderId_fkey` FOREIGN KEY (`or
 
 -- AddForeignKey
 ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Shipment` ADD CONSTRAINT `Shipment_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Shipment` ADD CONSTRAINT `Shipment_methodId_fkey` FOREIGN KEY (`methodId`) REFERENCES `ShipmentMethod`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `ShipmentMethod` ADD CONSTRAINT `ShipmentMethod_agentProfileId_fkey` FOREIGN KEY (`agentProfileId`) REFERENCES `AgentProfile`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `AgentProfile` ADD CONSTRAINT `AgentProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

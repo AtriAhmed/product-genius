@@ -1,34 +1,36 @@
-import {
-  PrismaClient,
-  Role,
-  SubscriptionStatus,
-  MediaType,
-} from "../app/generated/prisma";
 import bcrypt from "bcrypt";
+import { PrismaClient, Role } from "../app/generated/prisma";
 
 const prisma = new PrismaClient();
+
+const email = "atri.omar.2003@gmail.com";
+const name = "Atri Omar";
+const password = "password";
+const role = Role.USER;
 
 async function main() {
   console.log("🌱 Starting seed...");
 
   // Create a user
-  const hashedPassword = await bcrypt.hash("password", 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.upsert({
-    where: { email: "atriahmed.1999@gmail.com" },
+    where: { email },
     update: {},
     create: {
-      email: "atriahmed.1999@gmail.com",
-      name: "Ahmed Atri",
+      email,
+      name,
       passwordHash: hashedPassword,
-      role: Role.OWNER,
+      role,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   });
 
   console.log("🎉 Seed completed successfully!");
 
   console.log("\n📋 Summary:");
-  console.log(`- User: ${user.email} (password: password123)`);
+  console.log(`- User: ${user.email} (password: password)`);
 }
 
 main()
