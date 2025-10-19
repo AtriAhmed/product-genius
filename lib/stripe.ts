@@ -30,44 +30,6 @@ export async function createCustomer(id: number, email: string, name: string) {
   }
 }
 
-export async function createSubscription(
-  customerId: string,
-  priceId: string,
-  paymentMethodId?: string
-) {
-  try {
-    const subscriptionData: any = {
-      customer: customerId,
-      items: [{ price: priceId }],
-      expand: ["latest_invoice.payment_intent"],
-    };
-
-    if (paymentMethodId) {
-      // Attach payment method to customer
-      await stripe.paymentMethods.attach(paymentMethodId, {
-        customer: customerId,
-      });
-
-      // Set as default payment method
-      await stripe.customers.update(customerId, {
-        invoice_settings: {
-          default_payment_method: paymentMethodId,
-        },
-      });
-
-      subscriptionData.payment_behavior = "default_incomplete";
-      subscriptionData.payment_settings = {
-        save_default_payment_method: "on_subscription",
-      };
-    }
-
-    return await stripe.subscriptions.create(subscriptionData);
-  } catch (error) {
-    console.error("Error creating Stripe subscription:", error);
-    throw error;
-  }
-}
-
 export async function cancelSubscription(subscriptionId: string) {
   try {
     return await stripe.subscriptions.cancel(subscriptionId);

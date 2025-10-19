@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createSubscription } from "@/lib/stripe";
 import { z } from "zod";
+import { stripe } from "@/lib/stripe";
+import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import Stripe from "stripe";
 
 const createSubscriptionSchema = z.object({
   planId: z.number(),
@@ -90,20 +92,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const user = await isAuthenticatedServerSide([], true);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const { planId, paymentMethodId } = createSubscriptionSchema.parse(body);
-
-    const userId = parseInt(session.user.id);
-
-    // Get user with stripe customer ID
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
 
     if (!user?.stripeCustomerId) {
       return NextResponse.json(
@@ -124,20 +119,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if payment method belongs to user
+    const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+
+    if (paymentMethod.customer !== user.stripeCustomerId) {
+      return NextResponse.json(
+        { error: "Payment method does not belong to customer" },
+        { status: 400 }
+      );
+    }
+
     // Create subscription in Stripe only
     // Database record will be created via webhook
-    const stripeSubscription = await createSubscription(
-      user.stripeCustomerId,
-      plan.stripePriceId,
-      paymentMethodId
-    );
+    const stripeSubscription = await stripe.subscriptions.create({
+      customer: user.stripeCustomerId,
+      items: [{ price: plan.stripePriceId }],
+      default_payment_method: paymentMethodId,
+      expand: ["latest_invoice.payment_intent"],
+      metadata: {
+        userId: user.id.toString(),
+        planId: plan.id.toString(),
+      },
+    });
 
     // Get client secret for payment confirmation
-    const invoice = stripeSubscription.latest_invoice as any;
-    const paymentIntent = invoice?.payment_intent;
+    const invoice = stripeSubscription.latest_invoice as Stripe.Invoice;
+
+    console.log("-------------------- paymentIntent --------------------");
+    console.log(invoice?.hosted_invoice_url);
 
     return NextResponse.json({
-      clientSecret: paymentIntent?.client_secret,
+      hostedUrl: invoice?.hosted_invoice_url,
       subscriptionId: stripeSubscription.id,
     });
   } catch (error) {

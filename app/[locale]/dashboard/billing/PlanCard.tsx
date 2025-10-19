@@ -13,6 +13,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+import SubscriptionDialog from "./SubscriptionDialog";
 
 type Props = {
   plan: Plan;
@@ -21,6 +23,15 @@ type Props = {
 
 export default function PlanCard({ plan, onSelect }: Props) {
   const t = useTranslations("pricing");
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+
+  const handleSelectPlan = () => {
+    if (onSelect) {
+      onSelect(plan);
+    } else {
+      setShowSubscriptionDialog(true);
+    }
+  };
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-US", {
@@ -143,7 +154,7 @@ export default function PlanCard({ plan, onSelect }: Props) {
               : "border-2 border-primary-500 text-primary-600 hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 hover:text-white hover:border-primary-600 hover:shadow-xl hover:shadow-primary-200 dark:hover:shadow-primary-800/30"
           }`}
           variant={plan.mostPopular ? "default" : "outline"}
-          onClick={() => onSelect?.(plan)}
+          onClick={handleSelectPlan}
         >
           <span className="flex items-center justify-center gap-2">
             {plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
@@ -151,6 +162,12 @@ export default function PlanCard({ plan, onSelect }: Props) {
             {plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
           </span>
         </Button>
+
+        <SubscriptionDialog
+          plan={plan}
+          isOpen={showSubscriptionDialog}
+          onClose={() => setShowSubscriptionDialog(false)}
+        />
       </CardFooter>
     </Card>
   );

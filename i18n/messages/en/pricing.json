@@ -49,5 +49,30 @@
   "yes! we offer 20% off for annual subscriptions": "Yes! We offer 20% off for annual subscriptions.",
 
   "what payment methods do you accept?": "What payment methods do you accept?",
-  "we accept all major credit cards and paypal": "We accept all major credit cards and PayPal."
+  "we accept all major credit cards and paypal": "We accept all major credit cards and PayPal.",
+
+  "subscribe to plan": "Subscribe to Plan",
+  "select payment method": "Select Payment Method",
+  "processing": "Processing...",
+  "review your plan selection": "Review your plan selection",
+  "choose how you'd like to pay": "Choose how you'd like to pay",
+  "setting up your subscription": "Setting up your subscription...",
+  "what's included": "What's included:",
+  "more features": "more features",
+  "billing summary": "Billing Summary",
+  "plan": "Plan",
+  "total due today": "Total due today",
+  "continue to payment": "Continue to Payment",
+  "no payment methods found": "No payment methods found",
+  "add a payment method to continue": "Add a payment method to continue with your subscription.",
+  "go to billing settings": "Go to Billing Settings",
+  "default": "Default",
+  "expires": "Expires",
+  "subscribe for": "Subscribe for",
+  "processing;;;": "Processing...",
+  "creating your subscription": "Creating your subscription...",
+  "please don't close this window": "This may take a few moments. Please don't close this window.",
+  "failed to load payment methods": "Failed to load payment methods",
+  "please add a payment method first": "Please add a payment method in your billing settings first.",
+  "failed to create subscription": "Failed to create subscription"
 }

@@ -126,7 +126,7 @@ export default function PlansList() {
             {availableIntervals.length > 1 && (
               <div className="flex justify-center mb-6">
                 <TabsList
-                  className={`h-auto grid w-auto bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-2xl py-1 px-2 shadow-xl shadow-gray-200/50 dark:shadow-gray-800/50 backdrop-blur-sm`}
+                  className={`h-auto grid gap-2 w-auto bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-2xl py-1 px-2 shadow-xl shadow-gray-200/50 dark:shadow-gray-800/50 backdrop-blur-sm`}
                   style={{
                     gridTemplateColumns: `repeat(${availableIntervals.length}, minmax(0, 1fr))`,
                   }}
@@ -142,7 +142,7 @@ export default function PlansList() {
                     data-[state=active]:dark:shadow-primary-800/50 data-[state=active]:scale-105
                     data-[state=inactive]:text-gray-600 data-[state=inactive]:dark:text-gray-400 
                     data-[state=inactive]:hover:text-primary-600 data-[state=inactive]:dark:hover:text-primary-400
-                    data-[state=inactive]:hover:bg-primary-50 data-[state=inactive]:dark:hover:bg-primary-950/30
+                    data-[state=inactive]:hover:bg-primary-100 data-[state=inactive]:dark:hover:bg-primary-950/30
                     data-[state=inactive]:hover:scale-102
                   `}
                     >

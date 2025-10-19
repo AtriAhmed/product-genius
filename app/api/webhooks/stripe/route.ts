@@ -47,7 +47,7 @@ async function safeUpdateSubscription(
   }
 }
 
-async function handleSubscriptionCreated(subscription: any) {
+async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   try {
     const customerId = subscription.customer as string;
 
@@ -61,14 +61,14 @@ async function handleSubscriptionCreated(subscription: any) {
       return;
     }
 
-    // Find plan by Stripe price ID
-    const priceId = subscription.items?.data?.[0]?.price?.id;
-    const plan = await prisma.plan.findFirst({
-      where: { stripePriceId: priceId },
+    // Find plan by plan ID
+    const planId = subscription.metadata?.planId;
+    const plan = await prisma.plan.findUnique({
+      where: { id: planId ? parseInt(planId) : -1 },
     });
 
     if (!plan) {
-      console.error("Plan not found for price:", priceId);
+      console.error("Plan not found for plan:", planId);
       return;
     }
 
@@ -82,25 +82,32 @@ async function handleSubscriptionCreated(subscription: any) {
       return;
     }
 
-    // Create subscription in database
     const dbStatus = await mapStripeStatusToDb(subscription.status);
 
-    await prisma.subscription.create({
+    const dbSubscription = await prisma.subscription.create({
       data: {
         userId: user.id,
         planId: plan.id,
         stripeSubscriptionId: subscription.id,
         status: dbStatus,
-        startsAt: subscription.current_period_start
-          ? new Date(subscription.current_period_start * 1000)
+        latestStripeInvoiceId: subscription.latest_invoice as string,
+        startsAt: subscription.items?.data?.[0]?.current_period_start
+          ? new Date(subscription.items?.data?.[0]?.current_period_start * 1000)
           : new Date(),
-        endsAt: subscription.current_period_end
-          ? new Date(subscription.current_period_end * 1000)
+        endsAt: subscription.items?.data?.[0]?.current_period_end
+          ? new Date(subscription.items?.data?.[0]?.current_period_end * 1000)
           : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         trialEndsAt: subscription.trial_end
           ? new Date(subscription.trial_end * 1000)
           : null,
         cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        currentSubscriptionId: dbSubscription.id,
       },
     });
 
@@ -113,19 +120,11 @@ async function handleSubscriptionCreated(subscription: any) {
 
 async function handleSubscriptionUpdated(subscription: any) {
   try {
-    // Find plan by Stripe price ID (in case of plan changes)
-    const priceId = subscription.items?.data?.[0]?.price?.id;
-    let planId = undefined;
-
-    if (priceId) {
-      const plan = await prisma.plan.findFirst({
-        where: { stripePriceId: priceId },
-      });
-
-      if (plan) {
-        planId = plan.id;
-      }
-    }
+    // Find plan by plan ID
+    const planId = subscription.metadata?.planId;
+    const plan = await prisma.plan.findUnique({
+      where: { id: planId ? parseInt(planId) : -1 },
+    });
 
     // Update subscription in database
     const dbStatus = await mapStripeStatusToDb(subscription.status);
@@ -180,57 +179,6 @@ async function handleSubscriptionDeleted(subscription: any) {
   }
 }
 
-async function handleInvoicePaymentSucceeded(invoice: any) {
-  try {
-    if (!invoice.subscription) return;
-
-    const subscriptionId = invoice.subscription as string;
-
-    // Update subscription status if it was incomplete
-    const result = await prisma.subscription.updateMany({
-      where: {
-        stripeSubscriptionId: subscriptionId,
-        status: "INCOMPLETE",
-      },
-      data: {
-        status: "ACTIVE",
-      },
-    });
-
-    if (result.count === 0) {
-      console.log(
-        "No incomplete subscription found for payment success:",
-        subscriptionId
-      );
-    }
-
-    console.log("Invoice payment succeeded processed:", invoice.id);
-  } catch (error) {
-    console.error("Error handling invoice.payment_succeeded:", error);
-    throw error;
-  }
-}
-
-async function handleInvoicePaymentFailed(invoice: any) {
-  try {
-    if (!invoice.subscription) return;
-
-    const subscriptionId = invoice.subscription as string;
-
-    // Update subscription status
-    await safeUpdateSubscription(
-      subscriptionId,
-      { status: "PAST_DUE" },
-      "invoice.payment_failed"
-    );
-
-    console.log("Invoice payment failed processed:", invoice.id);
-  } catch (error) {
-    console.error("Error handling invoice.payment_failed:", error);
-    throw error;
-  }
-}
-
 async function handleSubscriptionTrialWillEnd(subscription: any) {
   try {
     // This event can be used to notify users that their trial is ending
@@ -250,6 +198,111 @@ async function handleSubscriptionTrialWillEnd(subscription: any) {
       "Error handling customer.subscription.trial_will_end:",
       error
     );
+    throw error;
+  }
+}
+
+async function handleInvoiceCreated(invoice: Stripe.Invoice) {
+  try {
+    const customerId = invoice.customer as string;
+
+    // Find user by Stripe customer ID
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: customerId },
+    });
+
+    if (!user) {
+      console.error("User not found for customer:", customerId);
+      return;
+    }
+
+    // Find subscription if invoice is for a subscription
+    const stripeSubscriptionId = invoice.lines.data[0]?.subscription as string;
+
+    // Check if invoice already exists
+    const existingInvoice = await prisma.invoice.findFirst({
+      where: { stripeInvoiceId: invoice.id },
+    });
+
+    if (existingInvoice) {
+      console.log("Invoice already exists:", invoice.id);
+      return;
+    }
+
+    // Create invoice in database
+    const dbInvoice = await prisma.invoice.create({
+      data: {
+        stripeInvoiceId: invoice.id,
+        userId: user.id,
+        stripeSubscriptionId,
+        amountCents: invoice.amount_paid || 0,
+        taxCents: 0,
+        currency: invoice.currency || "usd",
+        status: invoice.status || "draft",
+        pdfUrl: invoice.invoice_pdf || null,
+        hostedUrl: invoice.hosted_invoice_url || null,
+        paidAt: invoice.status_transitions?.paid_at
+          ? new Date(invoice.status_transitions.paid_at * 1000)
+          : null,
+        type: stripeSubscriptionId ? "PLAN" : "PAYMENT",
+        periodStart: new Date(invoice.period_start * 1000),
+        periodEnd: new Date(invoice.period_end * 1000),
+      },
+    });
+
+    await prisma.subscription.updateMany({
+      where: { stripeSubscriptionId: stripeSubscriptionId as string },
+      data: {
+        latestStripeInvoiceId: invoice.id,
+      },
+    });
+
+    console.log("Invoice created in database:", invoice.id);
+  } catch (error) {
+    console.error("Error handling invoice.created:", error);
+    throw error;
+  }
+}
+
+async function handleInvoiceUpdated(invoice: any) {
+  try {
+    // Find subscription if invoice is for a subscription
+    let subscription = null;
+    if (invoice.subscription) {
+      subscription = await prisma.subscription.findFirst({
+        where: { stripeSubscriptionId: invoice.subscription as string },
+      });
+    }
+
+    // Update invoice in database
+    const updateData: any = {
+      amountCents: invoice.amount_paid || 0,
+      taxCents: invoice.tax || 0,
+      currency: invoice.currency || "usd",
+      status: invoice.status || "draft",
+      pdfUrl: invoice.invoice_pdf || null,
+      hostedUrl: invoice.hosted_invoice_url || null,
+      paidAt: invoice.status_transitions?.paid_at
+        ? new Date(invoice.status_transitions.paid_at * 1000)
+        : null,
+      type: subscription ? "PLAN" : "PAYMENT",
+      periodStart: new Date(invoice.period_start * 1000),
+      periodEnd: new Date(invoice.period_end * 1000),
+      subscriptionId: subscription?.id || null,
+    };
+
+    const result = await prisma.invoice.updateMany({
+      where: { stripeInvoiceId: invoice.id },
+      data: updateData,
+    });
+
+    if (result.count === 0) {
+      console.warn("No invoice found for update:", invoice.id);
+    } else {
+      console.log("Invoice updated in database:", invoice.id);
+    }
+  } catch (error) {
+    console.error("Error handling invoice.updated:", error);
     throw error;
   }
 }
@@ -295,16 +348,16 @@ export async function POST(request: NextRequest) {
         await handleSubscriptionDeleted(event.data.object);
         break;
 
-      case "invoice.payment_succeeded":
-        await handleInvoicePaymentSucceeded(event.data.object);
-        break;
-
-      case "invoice.payment_failed":
-        await handleInvoicePaymentFailed(event.data.object);
-        break;
-
       case "customer.subscription.trial_will_end":
         await handleSubscriptionTrialWillEnd(event.data.object);
+        break;
+
+      case "invoice.created":
+        await handleInvoiceCreated(event.data.object);
+        break;
+
+      case "invoice.updated":
+        await handleInvoiceUpdated(event.data.object);
         break;
 
       default:
