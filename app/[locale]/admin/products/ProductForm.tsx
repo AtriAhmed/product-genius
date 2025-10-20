@@ -20,26 +20,12 @@ import axios from "axios";
 import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
 import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import { Product } from "@/types";
-
-// Form validation schema
-const productFormSchema = z.object({
-  suggestedPrice: z.number().positive().optional(),
-  currency: z.string().length(3).optional(),
-  categoryId: z.number().int().positive().optional(),
-  isActive: z.boolean(),
-  translations: z
-    .array(
-      z.object({
-        locale: z.string().min(1),
-        title: z.string().min(1, "Title is required"),
-        description: z.string().min(1, "Description is required"),
-      })
-    )
-    .min(1, "At least one translation is required"),
-  media: z.array(z.any()),
-});
-
-type ProductFormData = z.infer<typeof productFormSchema>;
+import {
+  ProductFormData,
+  productFormSchema,
+} from "@/app/[locale]/admin/products/types";
+import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
+import { Link } from "@/i18n/navigation";
 
 type ProductFormProps = {
   product?: Product | null;
@@ -81,6 +67,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         { locale: "en", title: "", description: "" },
       ],
       media: [],
+      suppliers: product?.suppliers || [],
     },
   });
 
@@ -104,6 +91,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         isActive: product.isActive ?? true,
         translations: product.translations,
         media: product.media,
+        suppliers: product.suppliers || [],
       });
     } else if (isCreateMode) {
       // Initialize with default values for create mode
@@ -223,9 +211,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         <div className="max-w-3xl">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={goBack}>
-                <ArrowLeft className="w-4 h-4" />
-                {t("back")}
+              <Button type="button" variant="outline" size="sm" asChild>
+                <Link href="/admin/products">
+                  <ArrowLeft className="w-4 h-4" />
+                </Link>
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">
@@ -272,7 +261,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
       {/* Main Content */}
       <div className="mx-auto px-4 py-8">
-        <form id="product-form" onSubmit={handleSubmit(onSubmit)} className="">
+        <form
+          id="product-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="mb-2"
+        >
           <div className="max-w-3xl">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-2">
@@ -340,6 +333,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             </div>
           </div>
         </form>
+        <ProductSuppliers setValue={setValue} watch={watch} />
       </div>
 
       {/* Delete Confirmation Dialog */}

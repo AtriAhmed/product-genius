@@ -28,6 +28,7 @@ async function getProduct(id: number): Promise<Product | null> {
             },
           },
         },
+        suppliers: true,
       },
     });
 

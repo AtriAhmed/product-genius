@@ -23,6 +23,15 @@ const mediaSchema = z.object({
   poster: z.string().nullable().optional(),
 });
 
+const supplierSchema = z.object({
+  url: z.string().optional(),
+  marketplace: z.string().optional(),
+  price: z.number().positive().optional(),
+  currency: z.string().length(3).optional(),
+  isInternal: z.boolean().default(false),
+  notes: z.string().optional(),
+});
+
 const updateProductSchema = z.object({
   suggestedPrice: z.number().positive().optional(),
   currency: z.string().length(3).optional(),
@@ -30,6 +39,7 @@ const updateProductSchema = z.object({
   isActive: z.boolean(),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
+  suppliers: z.array(supplierSchema).optional().default([]),
 });
 
 export async function GET(
@@ -69,6 +79,7 @@ export async function GET(
             },
           },
         },
+        suppliers: true,
       },
     });
 
@@ -259,6 +270,17 @@ export async function PUT(
             poster: item.poster || null,
           })),
         },
+        suppliers: {
+          deleteMany: {}, // Remove existing suppliers
+          create: validatedData.suppliers.map((supplier) => ({
+            url: supplier.url,
+            marketplace: supplier.marketplace,
+            price: supplier.price,
+            currency: supplier.currency,
+            isInternal: supplier.isInternal,
+            notes: supplier.notes,
+          })),
+        },
       },
       include: {
         translations: {
@@ -274,6 +296,7 @@ export async function PUT(
             },
           },
         },
+        suppliers: true,
       },
     });
 

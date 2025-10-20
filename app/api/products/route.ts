@@ -20,6 +20,15 @@ const translationSchema = z.object({
   description: z.string().min(1),
 });
 
+const supplierSchema = z.object({
+  url: z.string().optional(),
+  marketplace: z.string().optional(),
+  price: z.number().positive().optional(),
+  currency: z.string().length(3).optional(),
+  isInternal: z.boolean().default(false),
+  notes: z.string().optional(),
+});
+
 const createProductSchema = z.object({
   suggestedPrice: z.number().positive().optional(),
   currency: z.string().length(3).optional(),
@@ -27,6 +36,7 @@ const createProductSchema = z.object({
   isActive: z.boolean().default(true),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
+  suppliers: z.array(supplierSchema).optional().default([]),
 });
 
 // Helper function to generate slug from title
@@ -170,6 +180,21 @@ export async function POST(request: NextRequest) {
       })),
     });
 
+    // Create suppliers
+    if (validatedData.suppliers.length > 0) {
+      await prisma.supplier.createMany({
+        data: validatedData.suppliers.map((supplier) => ({
+          productId: product.id,
+          url: supplier.url,
+          marketplace: supplier.marketplace,
+          price: supplier.price,
+          currency: supplier.currency,
+          isInternal: supplier.isInternal,
+          notes: supplier.notes,
+        })),
+      });
+    }
+
     // Fetch the complete product with all relations
     const completeProduct = await prisma.product.findUnique({
       where: { id: product.id },
@@ -179,6 +204,7 @@ export async function POST(request: NextRequest) {
           orderBy: { sortOrder: "asc" },
         },
         category: true,
+        suppliers: true,
       },
     });
 
@@ -261,6 +287,7 @@ export async function GET(request: NextRequest) {
             take: 1, // Only get the first media item for list view
           },
           category: true,
+          suppliers: true,
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -270,10 +297,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     return NextResponse.json({
-      products,
+      data: products,
+      total,
       page,
       limit,
-      total,
       pages: Math.ceil(total / limit),
     });
   } catch (error) {

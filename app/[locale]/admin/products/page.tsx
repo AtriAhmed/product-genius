@@ -14,7 +14,7 @@ import ProductsDataTable from "./ProductsDataTable";
 import ProductFilters from "@/app/[locale]/admin/products/ProductsFilter";
 
 interface ProductsResponse {
-  products: Product[];
+  data: Product[];
   page: number;
   limit: number;
   total: number;
@@ -69,9 +69,9 @@ export default function ProductsPage() {
 
   // Process and sort products from SWR data
   const getProcessedProducts = (): Product[] => {
-    if (!data?.products) return [];
+    if (!data?.data) return [];
 
-    let sortedProducts = [...data.products];
+    let sortedProducts = [...data.data];
 
     // Client-side sorting for unsupported API sorts
     if (sortBy === "title") {

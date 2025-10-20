@@ -120,5 +120,17 @@
   "try adjusting your search criteria": "Try adjusting your search criteria",
   "no products available at the moment": "No products available at the moment",
   "previous": "Previous",
-  "next": "Next"
+  "next": "Next",
+  "suppliers": "Suppliers",
+  "marketplace": "Marketplace",
+  "url": "URL",
+  "internal": "Internal",
+  "external": "External",
+  "notes": "Notes",
+  "edit": "Edit",
+  "remove": "Remove",
+  "add supplier": "Add Supplier",
+  "edit supplier": "Edit Supplier",
+  "supplier url": "Supplier URL",
+  "add": "Add"
 }

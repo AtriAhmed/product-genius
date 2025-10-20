@@ -25,6 +25,10 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
+  restrictToParentElement,
+  restrictToVerticalAxis,
+} from "@dnd-kit/modifiers";
+import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -38,10 +42,6 @@ import { useRef, useState } from "react";
 import { useForm, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { z } from "zod";
 import { PlanFormData } from "./types";
-import {
-  restrictToVerticalAxis,
-  restrictToParentElement,
-} from "@dnd-kit/modifiers";
 
 // Schema for the add feature form
 const addFeatureSchema = z.object({

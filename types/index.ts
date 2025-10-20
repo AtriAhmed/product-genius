@@ -44,6 +44,10 @@ export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
 
 export type InvoiceType = "PLAN" | "PAYMENT";
 
+export const MARKETPLACES = ["AMAZON", "ALIEXPRESS"] as const;
+
+export type Marketplace = (typeof MARKETPLACES)[number];
+
 // Base model types (without relations)
 export type TempAccount = {
   id: number;
@@ -216,7 +220,7 @@ export type Supplier = {
   id: number;
   productId: number;
   url?: string;
-  marketplace?: string;
+  marketplace?: Marketplace;
   price?: number;
   currency?: string;
   isInternal: boolean;
