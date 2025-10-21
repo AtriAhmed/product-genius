@@ -87,7 +87,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
           )}
           <div className="flex items-baseline">
             <span className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-400 dark:via-primary-500 dark:to-primary-600 bg-clip-text text-transparent">
-              {formatPrice(plan.price)}
+              {formatPrice(plan?.price || 0)}
             </span>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
         <div className="flex items-center justify-center gap-2">
           <div className="w-6 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent"></div>
           <p className="text-xs text-muted-foreground font-semibold px-2 py-1 bg-muted/50 rounded-full capitalize">
-            / {t(plan.interval?.toLowerCase())}
+            / {t(plan?.interval?.toLowerCase() || "")}
           </p>
           <div className="w-6 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent"></div>
         </div>

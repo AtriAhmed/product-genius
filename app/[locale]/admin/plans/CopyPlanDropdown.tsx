@@ -52,12 +52,12 @@ export default function CopyPlanDropdown({
     setValue("name", `${plan.name} (Copy)`);
     setValue("description", plan.description || "");
     setValue("oldPrice", plan.oldPrice);
-    setValue("price", plan.price);
-    setValue("interval", plan.interval);
-    setValue("active", plan.active);
-    setValue("features", plan.features || []);
+    setValue("price", plan?.price || 0);
+    setValue("interval", plan?.interval || "MONTH");
+    setValue("active", plan?.active || false);
+    setValue("features", plan?.features || []);
     setValue("mostPopular", false); // Reset most popular
-    setValue("sortOrder", plan.sortOrder);
+    setValue("sortOrder", plan?.sortOrder || 0);
 
     toast.success(t("plan data copied successfully"));
   };
@@ -84,7 +84,7 @@ export default function CopyPlanDropdown({
           >
             <div className="font-medium">{plan.name}</div>
             <div className="text-sm text-muted-foreground">
-              ${plan.price}/{plan.interval.toLowerCase()}
+              ${plan.price}/{plan?.interval?.toLowerCase()}
             </div>
           </DropdownMenuItem>
         ))}

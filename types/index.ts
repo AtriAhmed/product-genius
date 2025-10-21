@@ -51,29 +51,29 @@ export type Marketplace = (typeof MARKETPLACES)[number];
 // Base model types (without relations)
 export type TempAccount = {
   id: number;
-  email: string;
+  email?: string;
   name?: string;
-  passwordHash: string;
-  token: string;
-  expiresAt: Date;
-  attempts: number;
-  createdAt: Date;
-  updatedAt: Date;
+  passwordHash?: string;
+  token?: string;
+  expiresAt?: Date;
+  attempts?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type User = {
   id: number;
-  email: string;
+  email?: string;
   name?: string;
   passwordHash?: string;
-  role: Role;
+  role?: Role;
   stripeCustomerId?: string;
   currentSubscriptionId?: number;
   currentSubscription?: Subscription;
   resetToken?: string;
   resetTokenExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   // Relations
   subscriptions?: Subscription[];
   orders?: Order[];
@@ -84,45 +84,45 @@ export type User = {
 
 export type PlanFeature = {
   key: string;
-  value: string;
-  description: string;
+  value?: string;
+  description?: string;
   included: boolean;
   note?: string;
 };
 
 export type Plan = {
   id: number;
-  name: string;
+  name?: string;
   description?: string;
   oldPrice?: number;
-  price: number;
-  interval: PlanInterval;
+  price?: number;
+  interval?: PlanInterval;
   stripeProductId?: string;
   stripePriceId?: string;
-  active: boolean;
+  active?: boolean;
   features?: PlanFeature[];
-  mostPopular: boolean;
-  sortOrder: number;
-  createdAt: Date;
-  updatedAt: Date;
+  mostPopular?: boolean;
+  sortOrder?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
   // Relations
   subscriptions?: Subscription[];
 };
 
 export type Subscription = {
   id: number;
-  userId: number;
-  planId: number;
+  userId?: number;
+  planId?: number;
   stripeSubscriptionId?: string;
-  status: SubscriptionStatus;
+  status?: SubscriptionStatus;
   startsAt?: Date;
   endsAt?: Date;
   trialEndsAt?: Date;
-  cancelAtPeriodEnd: boolean;
+  cancelAtPeriodEnd?: boolean;
   usage?: any; // JSON type
   latestStripeInvoiceId?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   // Relations
   user?: User;
   plan?: Plan;
@@ -131,28 +131,28 @@ export type Subscription = {
 
 export type Invoice = {
   id: number;
-  stripeInvoiceId: string;
-  userId: number;
+  stripeInvoiceId?: string;
+  userId?: number;
   stripeSubscriptionId?: string;
-  amountCents: number;
-  taxCents: number;
-  currency: string;
-  status: string;
+  amountCents?: number;
+  taxCents?: number;
+  currency?: string;
+  status?: string;
   pdfUrl?: string;
   hostedUrl?: string;
   paidAt?: Date;
   type?: InvoiceType;
-  periodStart: Date;
-  periodEnd: Date;
-  createdAt: Date;
+  periodStart?: Date;
+  periodEnd?: Date;
+  createdAt?: Date;
   // Relations
   user?: User;
 };
 
 export type Category = {
   id: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   // Relations
   translations?: CategoryTranslation[];
   products?: Product[];
@@ -160,9 +160,9 @@ export type Category = {
 
 export type CategoryTranslation = {
   id: number;
-  categoryId: number;
-  locale: string;
-  title: string;
+  categoryId?: number;
+  locale?: string;
+  title?: string;
   description?: string;
   // Relations
   category?: Category;
@@ -173,16 +173,16 @@ export type Product = {
   sku?: string;
   suggestedPrice?: number;
   currency?: string;
-  popularityScore: number;
+  popularityScore?: number;
   shopifyId?: string;
-  shopifyImported: boolean;
+  shopifyImported?: boolean;
   categoryId?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isActive?: boolean;
   metadata?: any; // JSON type
-  views: number;
-  likes: number;
+  views?: number;
+  likes?: number;
   // Relations
   category?: Category;
   translations?: ProductTranslation[];
@@ -193,10 +193,10 @@ export type Product = {
 
 export type ProductTranslation = {
   id: number;
-  productId: number;
-  locale: string;
-  title: string;
-  description: string;
+  productId?: number;
+  locale?: string;
+  title?: string;
+  description?: string;
   // Relations
   product?: Product;
 };
@@ -204,26 +204,26 @@ export type ProductTranslation = {
 export type Media = {
   id: number;
   productId?: number;
-  url: string;
+  url?: string;
   poster?: string;
   provider?: string;
-  type: MediaType;
+  type?: MediaType;
   alt?: string;
-  sortOrder: number;
+  sortOrder?: number;
   metadata?: any; // JSON type
-  createdAt: Date;
+  createdAt?: Date;
   // Relations
   product?: Product;
 };
 
 export type Supplier = {
   id: number;
-  productId: number;
+  productId?: number;
   url?: string;
   marketplace?: Marketplace;
   price?: number;
   currency?: string;
-  isInternal: boolean;
+  isInternal?: boolean;
   notes?: string;
   // Relations
   product?: Product;
@@ -231,15 +231,15 @@ export type Supplier = {
 
 export type Order = {
   id: number;
-  orderNumber: string;
-  userId: number;
+  orderNumber?: string;
+  userId?: number;
   agentId?: number;
-  totalCents: number;
-  currency: string;
-  status: OrderStatus;
+  totalCents?: number;
+  currency?: string;
+  status?: OrderStatus;
   metadata?: any; // JSON type
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   // Relations
   user?: User;
   agent?: User;
@@ -248,11 +248,11 @@ export type Order = {
 
 export type OrderItem = {
   id: number;
-  orderId: number;
-  productId: number;
-  title: string;
-  unitPriceCents: number;
-  quantity: number;
+  orderId?: number;
+  productId?: number;
+  title?: string;
+  unitPriceCents?: number;
+  quantity?: number;
   metadata?: any; // JSON type
   // Relations
   order?: Order;
@@ -261,12 +261,12 @@ export type OrderItem = {
 
 export type AgentProfile = {
   id: number;
-  userId: number;
+  userId?: number;
   companyName?: string;
   contactNumber?: string;
   details?: any; // JSON type
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   // Relations
   user?: User;
 };

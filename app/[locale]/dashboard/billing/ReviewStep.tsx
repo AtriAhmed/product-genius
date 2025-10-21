@@ -41,10 +41,10 @@ export default function ReviewStep({ plan, onNext }: Props) {
             </div>
             <div className="text-right bg-gradient-to-br from-primary-600 to-primary-700 dark:from-primary-500 dark:to-primary-600 text-white px-3 py-2 rounded-xl shadow-lg">
               <div className="text-xl font-black">
-                {formatPrice(plan.price)}
+                {formatPrice(plan?.price || 0)}
               </div>
               <div className="text-xs font-semibold opacity-90">
-                / {t(plan.interval?.toLowerCase())}
+                / {t(plan?.interval?.toLowerCase() || "")}
               </div>
             </div>
           </div>
@@ -90,12 +90,12 @@ export default function ReviewStep({ plan, onNext }: Props) {
               <span>
                 {t("plan")}: {plan.name}
               </span>
-              <span>{formatPrice(plan.price)}</span>
+              <span>{formatPrice(plan?.price || 0)}</span>
             </div>
             <Separator className="bg-gradient-to-r from-transparent via-primary-300 to-transparent dark:via-primary-600" />
             <div className="flex justify-between font-bold text-sm bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-400 dark:to-primary-500 bg-clip-text text-transparent">
               <span>{t("total due today")}</span>
-              <span className="text-base">{formatPrice(plan.price)}</span>
+              <span className="text-base">{formatPrice(plan?.price || 0)}</span>
             </div>
           </div>
         </CardContent>

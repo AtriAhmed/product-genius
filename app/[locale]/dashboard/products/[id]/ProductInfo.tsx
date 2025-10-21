@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Product, ProductTranslation } from "./types";
+import { Product, ProductTranslation } from "@/types";
 
 interface ProductInfoProps {
   product: Product;

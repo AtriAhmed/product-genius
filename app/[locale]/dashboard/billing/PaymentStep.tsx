@@ -156,7 +156,7 @@ export default function PaymentStep({
         ) : (
           <>
             <Sparkles className="w-4 h-4 mr-2" />
-            {t("subscribe for")} {formatPrice(plan.price)}
+            {t("subscribe for")} {formatPrice(plan?.price || 0)}
           </>
         )}
       </Button>

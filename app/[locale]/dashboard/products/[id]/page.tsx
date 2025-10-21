@@ -2,171 +2,75 @@
 
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
+import { getCurrentTranslation } from "@/lib/products";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AllProviders } from "./AllProviders";
 import { ImageGallery } from "./ImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { ProductSkeleton } from "./ProductSkeleton";
 import { ProvidersPreview } from "./ProvidersPreview";
-import { Marketplace, Product, ProductTranslation, Supplier } from "./types";
+import { Product } from "@/types";
+import axios from "axios";
+import useSWR from "swr";
 
-export default function ProductViewPage() {
+async function fetcher(id: string) {
+  const response = await axios.get(`/api/products/${id}`);
+  return response.data;
+}
+
+export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("products");
   const { setBreadcrumbs, resetBreadcrumbs, createProductBreadcrumbs } =
     useBreadcrumb();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
 
   const productId = params.id as string;
 
-  // Mock data for suppliers and marketplaces
-  const mockSuppliers: Supplier[] = [
-    {
-      id: 1,
-      name: "TechSupply Co",
-      price: 299,
-      currency: "$",
-      rating: 4.8,
-      deliveryTime: "2-3 days",
-    },
-    {
-      id: 2,
-      name: "Global Vendors",
-      price: 285,
-      currency: "$",
-      rating: 4.5,
-      deliveryTime: "3-5 days",
-    },
-    {
-      id: 3,
-      name: "Quick Parts",
-      price: 310,
-      currency: "$",
-      rating: 4.9,
-      deliveryTime: "1-2 days",
-    },
-    {
-      id: 4,
-      name: "Bulk Suppliers",
-      price: 275,
-      currency: "$",
-      rating: 4.3,
-      deliveryTime: "5-7 days",
-    },
-    {
-      id: 5,
-      name: "Premium Parts",
-      price: 320,
-      currency: "$",
-      rating: 4.7,
-      deliveryTime: "2-4 days",
-    },
-  ];
-
-  const mockMarketplaces: Marketplace[] = [
-    {
-      id: 1,
-      name: "Amazon",
-      price: 325,
-      currency: "$",
-      url: "https://amazon.com",
-      rating: 4.6,
-    },
-    {
-      id: 2,
-      name: "eBay",
-      price: 295,
-      currency: "$",
-      url: "https://ebay.com",
-      rating: 4.4,
-    },
-    {
-      id: 3,
-      name: "Shopify Store",
-      price: 315,
-      currency: "$",
-      url: "https://example-store.com",
-      rating: 4.7,
-    },
-    {
-      id: 4,
-      name: "Etsy",
-      price: 340,
-      currency: "$",
-      url: "https://etsy.com",
-      rating: 4.8,
-    },
-  ];
+  const {
+    data: product,
+    error,
+    isLoading,
+  } = useSWR<Product>(["product", productId], () => fetcher(productId), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
 
   const scrollToProviders = () => {
     const element = document.getElementById("all-providers");
     element?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const getCurrentTranslation = (
-    translations: ProductTranslation[],
-    locale = "en"
-  ) => {
-    return (
-      translations.find((t) => t.locale === locale) || translations[0] || null
-    );
-  };
-
-  // Fetch product
-  const fetchProduct = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/products/${productId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setProduct(data.product); // The API returns { product: ... }
-
-        // Set up dynamic breadcrumbs
-        const product = data.product;
-        const translation = getCurrentTranslation(product.translations || []);
-        const categoryTranslation = getCurrentTranslation(
-          product.category?.translations || []
-        );
-
-        const breadcrumbs = createProductBreadcrumbs(
-          translation?.title || "Product",
-          categoryTranslation?.title,
-          product.id,
-          product.category?.id
-        );
-
-        setBreadcrumbs(breadcrumbs);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch product");
-      }
-    } catch (error) {
-      console.error("Error fetching product:", error);
-      toast.error("Failed to load product");
-      router.push("/dashboard/products");
-    } finally {
-      setIsLoading(false);
+  function updateBreadcrumbs() {
+    if (product) {
+      const translation = getCurrentTranslation(product.translations || []);
+      const categoryTranslation = getCurrentTranslation(
+        product.category?.translations || []
+      );
+      const breadcrumbs = createProductBreadcrumbs(
+        translation?.title || "Product",
+        categoryTranslation?.title,
+        product.id,
+        product.category?.id
+      );
+      setBreadcrumbs(breadcrumbs);
     }
-  };
+  }
 
   useEffect(() => {
     if (productId) {
-      fetchProduct();
+      updateBreadcrumbs();
     }
 
     // Clean up breadcrumbs when component unmounts
     return () => {
       resetBreadcrumbs();
     };
-  }, [productId]);
+  }, [product]);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -220,7 +124,7 @@ export default function ProductViewPage() {
     return notFound();
   }
 
-  const translation = getCurrentTranslation(product.translations);
+  const translation = getCurrentTranslation(product?.translations || []);
   const categoryTranslation =
     product.category?.translations?.find((t) => t.locale === "en") ||
     product.category?.translations?.[0];
@@ -244,7 +148,7 @@ export default function ProductViewPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Images */}
           <div>
-            <ImageGallery media={product.media} />
+            <ImageGallery media={product?.media || []} />
           </div>
 
           {/* Right Column - Product Info */}
@@ -259,18 +163,17 @@ export default function ProductViewPage() {
             />
 
             <ProvidersPreview
-              suppliers={mockSuppliers}
-              marketplaces={mockMarketplaces}
+              suppliers={product?.suppliers || []}
               onScrollToProviders={scrollToProviders}
             />
           </div>
         </div>
 
         {/* All Providers Section */}
-        <AllProviders
+        {/* <AllProviders
           suppliers={mockSuppliers}
           marketplaces={mockMarketplaces}
-        />
+        /> */}
       </div>
     </div>
   );

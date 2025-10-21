@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { User, Subscription, Plan } from "@/types";
 import PlanInfoDialog from "./PlanInfoDialog";
+import { formatPrice } from "@/lib/utils";
 
 async function fetcher(): Promise<User> {
   const response = await axios.get("/api/users/current");
@@ -48,17 +49,10 @@ export default function CurrentSubscription() {
     }).format(new Date(date));
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-UK", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
-  };
-
   const getStatusBadgeVariant = (status: string) => {
     switch (status?.toLowerCase()) {
       case "active":
-        return "default";
+        return "primary";
       case "trialing":
         return "secondary";
       case "past_due":
@@ -149,19 +143,19 @@ export default function CurrentSubscription() {
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-semibold">{plan?.name}</h3>
                     <Badge
-                      variant={getStatusBadgeVariant(subscription.status)}
+                      variant={getStatusBadgeVariant(subscription.status || "")}
                       className="text-xs py-0 h-5"
                     >
-                      {getStatusLabel(subscription.status)}
+                      {getStatusLabel(subscription?.status || "")}
                     </Badge>
                   </div>
                   {plan && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="font-semibold text-sm">
-                        {formatPrice(plan.price)}
+                        {formatPrice(plan?.price || 0)}
                       </span>
                       <span className="text-xs">
-                        {getIntervalLabel(plan.interval)}
+                        {getIntervalLabel(plan?.interval || "")}
                       </span>
                     </div>
                   )}

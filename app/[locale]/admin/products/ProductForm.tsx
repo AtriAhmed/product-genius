@@ -56,11 +56,18 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     fetchCategories();
   }, []);
 
-  const form = useForm<ProductFormData>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid, isDirty },
+  } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       suggestedPrice: product?.suggestedPrice || undefined,
-      currency: "USD",
+      currency: "EUR",
       categoryId: product?.categoryId || undefined,
       isActive: product?.isActive ?? true,
       translations: product?.translations || [
@@ -71,14 +78,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     },
   });
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors, isValid, isDirty },
-  } = form;
+  console.log("-------------------- errors --------------------");
+  console.log(errors);
 
   // Initialize form data for edit mode
   useEffect(() => {
@@ -86,7 +87,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       // Reset form with product data
       reset({
         suggestedPrice: product.suggestedPrice,
-        currency: product.currency || "USD",
+        currency: product.currency || "EUR",
         categoryId: product.categoryId,
         isActive: product.isActive ?? true,
         translations: product.translations,
@@ -97,7 +98,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       // Initialize with default values for create mode
       reset({
         suggestedPrice: undefined,
-        currency: "USD",
+        currency: "EUR",
         categoryId: undefined,
         isActive: true,
         translations: [{ locale: "en", title: "", description: "" }],
@@ -200,9 +201,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     }
   };
 
-  const goBack = () => {
-    router.back();
-  };
+  const data = watch();
+  console.log("-------------------- data --------------------");
+  console.log(data);
 
   return (
     <div className="min-h-screen">
@@ -245,7 +246,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               <Button
                 type="submit"
                 form="product-form"
-                disabled={!isValid || isSubmitting || !isDirty}
+                disabled={isSubmitting || !isDirty}
                 className="gap-2 text-xs"
                 size="sm"
               >

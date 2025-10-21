@@ -18,3 +18,10 @@ export function getMediaUrl(mediaPath?: string): string {
   // return `/api/media?path=${encodeURIComponent(mediaPath)}`;
   return `/api/media?path=${mediaPath}`;
 }
+
+export function formatPrice(price: number) {
+  return new Intl.NumberFormat("en-UK", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
+}

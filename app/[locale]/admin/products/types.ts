@@ -2,13 +2,13 @@ import { MARKETPLACES } from "@/types";
 import z from "zod";
 
 export const supplierSchema = z.object({
-  tempId: z.string().optional(),
-  url: z.url("Invalid URL").optional().or(z.literal("")),
-  marketplace: z.enum(MARKETPLACES).optional().or(z.literal("")),
+  id: z.union([z.number(), z.string()]).optional(),
+  url: z.url().optional().or(z.literal("")).nullable(),
+  marketplace: z.enum(MARKETPLACES).optional().nullable(),
   price: z.number().optional().nullable(),
-  currency: z.string().optional(),
+  currency: z.string().optional().nullable(),
   isInternal: z.boolean(),
-  notes: z.string().optional(),
+  notes: z.string().optional().nullable(),
 });
 
 // Form validation schema

@@ -25,6 +25,10 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
+  restrictToParentElement,
+  restrictToVerticalAxis,
+} from "@dnd-kit/modifiers";
+import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -33,27 +37,16 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Edit, GripVertical, Plus, Trash2, X } from "lucide-react";
+import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { useForm, UseFormSetValue, UseFormWatch } from "react-hook-form";
-import { z } from "zod";
 import { AddSupplierFormData, ProductFormData, supplierSchema } from "./types";
-import {
-  restrictToVerticalAxis,
-  restrictToParentElement,
-} from "@dnd-kit/modifiers";
-import { nanoid } from "nanoid";
 
 /* Select imports (used by DropdownSelect) */
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Marketplace, MARKETPLACES } from "@/types";
-import { CURRENCIES } from "@/types/constants";
 import { DropdownSelect, Option } from "@/components/Dropdown";
+import { Marketplace, Supplier } from "@/types";
+import { CURRENCIES } from "@/types/constants";
 
 type ProductSuppliersProps = {
   watch: UseFormWatch<ProductFormData>;
@@ -68,7 +61,7 @@ function SortableSupplierRow({
   onRemove,
   onEdit,
 }: {
-  supplier: any;
+  supplier: AddSupplierFormData;
   onRemove: () => void;
   onEdit: () => void;
 }) {
@@ -80,7 +73,7 @@ function SortableSupplierRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: supplier.tempId });
+  } = useSortable({ id: supplier.id?.toString() || nanoid() });
   const isMounted = useIsMounted();
 
   const style = {
@@ -101,11 +94,11 @@ function SortableSupplierRow({
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
         </div>
       </TableCell>
       <TableCell className="font-medium">
-        {supplier.marketplace || "N/A"}
+        {supplier.marketplace || "—"}
       </TableCell>
       <TableCell>
         {supplier.url ? (
@@ -120,24 +113,22 @@ function SortableSupplierRow({
               : supplier.url}
           </a>
         ) : (
-          "N/A"
+          "—"
         )}
       </TableCell>
-      <TableCell>
-        {supplier.price
-          ? `${supplier.price} ${supplier.currency || ""}`
-          : "N/A"}
+      <TableCell className="font-semibold text-nowrap">
+        {supplier.price ? `${supplier.price} ${supplier.currency || ""}` : "—"}
       </TableCell>
       <TableCell>
         <Badge variant={supplier.isInternal ? "primary" : "secondary"}>
           {!isMounted || supplier.isInternal ? (
             <>
-              <Check className="h-3 w-3 mr-1" />
+              <Check className="w-3 h-3 mr-1" />
               {t("internal")}
             </>
           ) : (
             <>
-              <X className="h-3 w-3 mr-1" />
+              <X className="w-3 h-3 mr-1" />
               {t("external")}
             </>
           )}
@@ -145,7 +136,7 @@ function SortableSupplierRow({
       </TableCell>
       <TableCell>
         {supplier.notes && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             {supplier.notes}
           </span>
         )}
@@ -156,20 +147,20 @@ function SortableSupplierRow({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+            className="w-8 h-8 p-0 hover:bg-primary/10 hover:text-primary"
             onClick={onEdit}
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="w-4 h-4" />
             <span className="sr-only">{t("edit")}</span>
           </Button>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+            className="w-8 h-8 p-0 hover:bg-destructive/10 hover:text-destructive"
             onClick={onRemove}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="w-4 h-4" />
             <span className="sr-only">{t("remove")}</span>
           </Button>
         </div>
@@ -195,7 +186,7 @@ export default function ProductSuppliers({
   // Add suppliers with temp IDs for drag and drop
   const suppliersWithIds = suppliers.map((supplier, index) => ({
     ...supplier,
-    tempId: supplier.tempId || nanoid(), // Generate temp ID for drag and drop only
+    id: supplier.id || nanoid(), // Generate temp ID for drag and drop only
   }));
 
   // Marketplace and currency options (adjust as needed)
@@ -222,10 +213,10 @@ export default function ProductSuppliers({
   } = useForm<AddSupplierFormData>({
     resolver: zodResolver(supplierSchema),
     defaultValues: {
-      url: "",
-      marketplace: "",
+      url: undefined,
+      marketplace: undefined,
       price: undefined,
-      currency: "",
+      currency: "EUR",
       isInternal: false,
       notes: "",
     },
@@ -248,10 +239,10 @@ export default function ProductSuppliers({
 
     if (over && active.id !== over.id) {
       const oldIndex = suppliersWithIds.findIndex(
-        (field) => field.tempId === active.id
+        (field) => field.id === active.id
       );
       const newIndex = suppliersWithIds.findIndex(
-        (field) => field.tempId === over.id
+        (field) => field.id === over.id
       );
 
       if (oldIndex !== -1 && newIndex !== -1) {
@@ -269,19 +260,20 @@ export default function ProductSuppliers({
   const addSupplier = (data: AddSupplierFormData) => {
     // If supplier is internal, clear marketplace and url
     const supplierData = {
-      tempId: editingId || nanoid(), // Keep existing tempId when editing, or generate new one
+      id: editingId || nanoid(), // Keep existing id when editing, or generate new one
       url: data.isInternal ? undefined : data.url || undefined,
       marketplace: data.isInternal ? undefined : data.marketplace || undefined,
-      price: data.price || undefined,
-      currency: data.currency || undefined,
+      price: data.price,
+      currency: data.currency,
       isInternal: data.isInternal,
-      notes: data.notes || undefined,
+      notes: data.notes,
     };
 
     if (editingId !== null) {
       // Update existing supplier
       const newSuppliers = suppliers.map((supplier) =>
-        supplier.tempId === editingId ? supplierData : supplier
+        // loose equality to match string and number IDs
+        supplier.id == supplierData.id ? supplierData : supplier
       );
       setValue("suppliers", newSuppliers, {
         shouldDirty: true,
@@ -297,29 +289,27 @@ export default function ProductSuppliers({
     resetAdd();
   };
 
-  const removeSupplier = (tempId: string) => {
-    const newSuppliers = suppliers.filter(
-      (supplier) => supplier.tempId !== tempId
-    );
+  const removeSupplier = (id: string | number) => {
+    const newSuppliers = suppliers.filter((supplier) => supplier.id !== id);
     setValue("suppliers", newSuppliers, {
       shouldDirty: true,
     });
     // Reset editing state if the edited supplier is being removed
-    if (editingId === tempId) {
+    if (editingId === id) {
       setEditingId(null);
       resetAdd();
     }
   };
 
-  const editSupplier = (tempId: string) => {
-    const supplier = suppliers.find((s) => s.tempId === tempId);
+  const editSupplier = (id: string | number) => {
+    const supplier = suppliers.find((s) => s.id === id);
     if (!supplier) return;
 
-    setEditingId(tempId);
-    setValueAdd("url", supplier.url || "");
-    setValueAdd("marketplace", supplier.marketplace || "");
+    setEditingId(id.toString());
+    setValueAdd("url", supplier.url);
+    setValueAdd("marketplace", supplier.marketplace);
     setValueAdd("price", supplier.price || undefined);
-    setValueAdd("currency", supplier.currency || "");
+    setValueAdd("currency", supplier.currency || "EUR");
     setValueAdd("isInternal", !!supplier.isInternal);
     setValueAdd("notes", supplier.notes || "");
     // Smooth scroll to the supplier form
@@ -344,7 +334,7 @@ export default function ProductSuppliers({
       <CardContent className="space-y-6">
         {/* Suppliers Data Table */}
         {suppliersWithIds.length > 0 && (
-          <div className="rounded-md border w-0 min-w-full">
+          <div className="w-0 min-w-full border rounded-md">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -361,7 +351,9 @@ export default function ProductSuppliers({
                     <TableHead className="font-medium">{t("url")}</TableHead>
                     <TableHead className="font-medium">{t("price")}</TableHead>
                     <TableHead className="font-medium">{t("type")}</TableHead>
-                    <TableHead className="font-medium">{t("notes")}</TableHead>
+                    <TableHead className="min-w-[150px] font-medium">
+                      {t("notes")}
+                    </TableHead>
                     <TableHead className="font-medium text-center">
                       {t("actions")}
                     </TableHead>
@@ -369,15 +361,15 @@ export default function ProductSuppliers({
                 </TableHeader>
                 <TableBody>
                   <SortableContext
-                    items={suppliersWithIds.map((field) => field.tempId)}
+                    items={suppliersWithIds.map((field) => field.id)}
                     strategy={verticalListSortingStrategy}
                   >
                     {suppliersWithIds.map((field) => (
                       <SortableSupplierRow
-                        key={field.tempId}
+                        key={field.id}
                         supplier={field}
-                        onRemove={() => removeSupplier(field.tempId)}
-                        onEdit={() => editSupplier(field.tempId)}
+                        onRemove={() => removeSupplier(field.id)}
+                        onEdit={() => editSupplier(field.id)}
                       />
                     ))}
                   </SortableContext>
@@ -393,12 +385,12 @@ export default function ProductSuppliers({
             <CardTitle className="text-lg">
               {editingId !== null ? (
                 <>
-                  <Edit className="h-5 w-5 mr-2 inline" />
+                  <Edit className="inline w-5 h-5 mr-2" />
                   {t("edit supplier")}
                 </>
               ) : (
                 <>
-                  <Plus className="h-5 w-5 mr-2 inline" />
+                  <Plus className="inline w-5 h-5 mr-2" />
                   {t("add supplier")}
                 </>
               )}
@@ -416,7 +408,7 @@ export default function ProductSuppliers({
                   setValueAdd("isInternal", true, { shouldDirty: true });
                   // clear fields not needed for internal suppliers
                   setValueAdd("url", "", { shouldDirty: true });
-                  setValueAdd("marketplace", "", { shouldDirty: true });
+                  setValueAdd("marketplace", undefined, { shouldDirty: true });
                 }}
               >
                 {t("internal") || "Internal"}
@@ -434,7 +426,7 @@ export default function ProductSuppliers({
             </div>
 
             <form onSubmit={handleSubmitAdd(addSupplier)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+              <div className="gap-x-4 gap-y-2 grid grid-cols-1 md:grid-cols-2">
                 {/* Marketplace - only when external */}
                 {!isInternalValue && (
                   <div>
@@ -451,7 +443,7 @@ export default function ProductSuppliers({
                       placeholder="Select a marketplace"
                     />
                     {errorsAdd.marketplace && (
-                      <p className="text-sm text-destructive mt-1">
+                      <p className="mt-1 text-destructive text-sm">
                         {errorsAdd.marketplace.message}
                       </p>
                     )}
@@ -468,7 +460,7 @@ export default function ProductSuppliers({
                       {...registerAdd("url")}
                     />
                     {errorsAdd.url && (
-                      <p className="text-sm text-destructive mt-1">
+                      <p className="mt-1 text-destructive text-sm">
                         {errorsAdd.url.message}
                       </p>
                     )}
@@ -488,7 +480,7 @@ export default function ProductSuppliers({
                     })}
                   />
                   {errorsAdd.price && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="mt-1 text-destructive text-sm">
                       {errorsAdd.price.message}
                     </p>
                   )}
@@ -499,7 +491,7 @@ export default function ProductSuppliers({
                   <Label htmlFor="add-currency">{t("currency")}</Label>
                   <DropdownSelect
                     id="add-currency"
-                    value={currencyValue || ""}
+                    value={currencyValue || "EUR"}
                     onValueChange={(value) =>
                       setValueAdd("currency", value, { shouldDirty: true })
                     }
@@ -507,7 +499,7 @@ export default function ProductSuppliers({
                     placeholder="Select a currency"
                   />
                   {errorsAdd.currency && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="mt-1 text-destructive text-sm">
                       {errorsAdd.currency.message}
                     </p>
                   )}
@@ -543,12 +535,12 @@ export default function ProductSuppliers({
                 >
                   {editingId !== null ? (
                     <>
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="w-4 h-4 mr-2" />
                       {t("update")}
                     </>
                   ) : (
                     <>
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2" />
                       {t("add")}
                     </>
                   )}

@@ -8,6 +8,7 @@ import {
   deleteMultipleFiles,
 } from "@/lib/file-upload";
 import { z } from "zod";
+import { MARKETPLACES } from "@/types";
 
 // Validation schemas for updates
 const translationSchema = z.object({
@@ -22,14 +23,14 @@ const mediaSchema = z.object({
   sortOrder: z.number().int().min(0),
   poster: z.string().nullable().optional(),
 });
-
-const supplierSchema = z.object({
-  url: z.string().optional(),
-  marketplace: z.string().optional(),
-  price: z.number().positive().optional(),
-  currency: z.string().length(3).optional(),
-  isInternal: z.boolean().default(false),
-  notes: z.string().optional(),
+export const supplierSchema = z.object({
+  tempId: z.string().optional(),
+  url: z.url("Invalid URL").optional().nullable(),
+  marketplace: z.enum(MARKETPLACES).optional().nullable(),
+  price: z.number().optional().nullable(),
+  currency: z.string().optional().nullable(),
+  isInternal: z.boolean(),
+  notes: z.string().optional().nullable(),
 });
 
 const updateProductSchema = z.object({
@@ -87,7 +88,7 @@ export async function GET(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ product });
+    return NextResponse.json(product);
   } catch (error) {
     console.error("Product fetch error:", error);
     return NextResponse.json(
