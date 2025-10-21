@@ -90,16 +90,16 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
   };
 
   return (
-    <div className="container mx-auto py-2 px-4">
+    <div className="mx-auto px-4 py-2 container">
       <div className="max-w-3xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-6">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">
+              <h1 className="font-bold text-2xl">
                 {mode === "create" ? t("create plan") : t("edit plan")}
               </h1>
               <p className="text-muted-foreground">
@@ -110,7 +110,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ms-auto">
             {mode === "edit" && (
               <Button
                 variant="destructive"
@@ -118,7 +118,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
                 onClick={() => setShowDeleteDialog(true)}
                 className=""
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="w-4 h-4 mr-2" />
                 {t("delete")}
               </Button>
             )}
@@ -128,7 +128,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
               disabled={!isValid || isSubmitting || !isDirty}
               size="sm"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="w-4 h-4 mr-2" />
               {isSubmitting
                 ? mode === "create"
                   ? t("creating")

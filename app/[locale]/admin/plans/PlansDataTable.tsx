@@ -60,7 +60,7 @@ export default function PlansDataTable({
         {/* Loading skeleton */}
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-16 bg-muted rounded-lg"></div>
+            <div className="h-16 rounded-lg bg-muted"></div>
           </div>
         ))}
       </div>
@@ -69,11 +69,11 @@ export default function PlansDataTable({
 
   if (plans.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-muted-foreground text-lg mb-2">
+      <div className="py-12 text-center">
+        <div className="mb-2 text-muted-foreground text-lg">
           {t("no plans found")}
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Try adjusting your search or filter criteria
         </p>
       </div>
@@ -81,7 +81,7 @@ export default function PlansDataTable({
   }
 
   return (
-    <div className="w-0 min-w-full rounded-md border">
+    <div className="w-0 min-w-full border rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
@@ -108,7 +108,7 @@ export default function PlansDataTable({
                     )}
                   </div>
                   {plan.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-1">
+                    <p className="text-muted-foreground text-sm line-clamp-1">
                       {plan.description}
                     </p>
                   )}
@@ -116,7 +116,7 @@ export default function PlansDataTable({
               </TableCell>
               <TableCell>
                 <div className="font-medium">
-                  {formatPrice(plan.price, plan.interval)}
+                  {formatPrice(plan?.price || 0, plan?.interval || "")}
                 </div>
               </TableCell>
               <TableCell>
@@ -131,15 +131,17 @@ export default function PlansDataTable({
                 </div>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {format(new Date(plan.createdAt), "MMM d, yyyy")}
+                {plan?.createdAt
+                  ? format(new Date(plan.createdAt), "MMM d, yyyy")
+                  : "—"}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center gap-2 justify-end">
+                <div className="flex justify-end items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(plan)}
-                    className="h-8 w-8 p-0"
+                    className="w-8 h-8 p-0"
                   >
                     <Edit className="w-4 h-4" />
                     <span className="sr-only">{t("edit")}</span>
@@ -148,7 +150,7 @@ export default function PlansDataTable({
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(plan)}
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    className="w-8 h-8 p-0 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="w-4 h-4" />
                     <span className="sr-only">{t("delete")}</span>

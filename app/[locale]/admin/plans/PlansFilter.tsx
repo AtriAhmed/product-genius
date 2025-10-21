@@ -48,10 +48,10 @@ export default function PlansFilter({
     search || filter !== "all" || sortBy !== "sortOrder" || sortOrder !== "asc";
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 pb-3">
+    <div className="flex flex-wrap gap-2 pb-3">
       {/* Search */}
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <div className="relative flex-1 min-w-[200px]">
+        <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
         <Input
           placeholder={t("search plans")}
           value={search}
@@ -62,7 +62,7 @@ export default function PlansFilter({
 
       {/* Status Filter */}
       <Select value={filter} onValueChange={onFilterChange}>
-        <SelectTrigger className="w-full lg:w-48">
+        <SelectTrigger className="">
           <Filter className="w-4 h-4 mr-2" />
           <SelectValue />
         </SelectTrigger>
@@ -82,7 +82,7 @@ export default function PlansFilter({
           onSortChange(newSortBy, newSortOrder);
         }}
       >
-        <SelectTrigger className="w-full lg:w-48">
+        <SelectTrigger className="">
           {sortOrder === "asc" ? (
             <SortAsc className="w-4 h-4 mr-2" />
           ) : (
