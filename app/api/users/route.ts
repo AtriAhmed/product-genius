@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcrypt";
+import { isAuthenticatedServerSide } from "@/lib/authUtils";
 
 // Validation schemas
 const createUserSchema = z.object({
@@ -18,6 +19,8 @@ const getUsersSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(10),
   search: z.string().optional(),
   role: z.enum(["OWNER", "ADMIN", "EDITOR", "AGENT", "USER"]).optional(),
+  sortBy: z.enum(["createdAt", "name", "email", "role"]).default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export async function POST(request: NextRequest) {
@@ -97,18 +100,15 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const currentUser = await isAuthenticatedServerSide(
+      ["ADMIN", "OWNER"],
+      false
+    );
+    if (!currentUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check user permissions (OWNER or ADMIN only)
-    const currentUser = await prisma.user.findUnique({
-      where: { id: parseInt(session.user.id) },
-      select: { role: true },
-    });
-
-    if (!currentUser || !["OWNER", "ADMIN"].includes(currentUser.role)) {
+    if (!currentUser || !["OWNER", "ADMIN"].includes(currentUser.role || "")) {
       return NextResponse.json(
         { error: "Insufficient permissions" },
         { status: 403 }
@@ -117,10 +117,12 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const query = getUsersSchema.parse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      search: searchParams.get("search"),
-      role: searchParams.get("role"),
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      search: searchParams.get("search") || undefined,
+      role: searchParams.get("role") || undefined,
+      sortBy: searchParams.get("sortBy") || undefined,
+      sortOrder: searchParams.get("sortOrder") || undefined,
     });
 
     const skip = (query.page - 1) * query.limit;
@@ -136,6 +138,19 @@ export async function GET(request: NextRequest) {
 
     if (query.role) {
       where.role = query.role;
+    }
+
+    // Build orderBy based on sortBy and sortOrder
+    let orderBy: any = { createdAt: "desc" };
+
+    if (query.sortBy === "name") {
+      orderBy = { name: query.sortOrder };
+    } else if (query.sortBy === "email") {
+      orderBy = { email: query.sortOrder };
+    } else if (query.sortBy === "role") {
+      orderBy = { role: query.sortOrder };
+    } else if (query.sortBy === "createdAt") {
+      orderBy = { createdAt: query.sortOrder };
     }
 
     const [users, total] = await Promise.all([
@@ -160,7 +175,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip,
         take: query.limit,
       }),

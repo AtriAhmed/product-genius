@@ -1,3 +1,5 @@
+import { Role } from "@/types";
+
 export const CURRENCIES = [
   { code: "USD", name: "US Dollar", symbol: "$" },
   { code: "EUR", name: "Euro", symbol: "€" },
@@ -10,3 +12,11 @@ export const CURRENCIES = [
 ] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
+
+export const USER_ROLES: Record<Role, { label: string; access: number }> = {
+  OWNER: { label: "owner", access: 5 },
+  ADMIN: { label: "admin", access: 4 },
+  EDITOR: { label: "editor", access: 3 },
+  AGENT: { label: "agent", access: 3 },
+  USER: { label: "user", access: 1 },
+};

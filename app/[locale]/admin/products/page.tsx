@@ -1,6 +1,7 @@
 "use client";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import Pagination from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { Product, ProductTranslation } from "@/types";
 import { Plus } from "lucide-react";
@@ -165,14 +166,14 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-2">
+      <div className="mx-auto px-4 py-2 container">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="font-bold text-foreground text-3xl">
               {t("products")}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="mt-2 text-muted-foreground">
               {t("manage your products and translations")}
             </p>
           </div>
@@ -205,52 +206,16 @@ export default function ProductsPage() {
 
         {/* Pagination */}
         {!isLoading && products.length > 0 && pagination.pages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              Previous
-            </Button>
-            {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-              let pageNumber;
-              if (pagination.pages <= 5) {
-                pageNumber = i + 1;
-              } else if (page <= 3) {
-                pageNumber = i + 1;
-              } else if (page >= pagination.pages - 2) {
-                pageNumber = pagination.pages - 4 + i;
-              } else {
-                pageNumber = page - 2 + i;
-              }
-
-              return (
-                <Button
-                  key={pageNumber}
-                  variant={page === pageNumber ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </Button>
-              );
-            })}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === pagination.pages}
-              onClick={() => setPage(page + 1)}
-            >
-              Next
-            </Button>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={pagination.pages}
+            onPageChange={setPage}
+          />
         )}
 
         {/* Results Count */}
         {!isLoading && products.length > 0 && (
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-muted-foreground text-sm text-center">
             {t("showing results", {
               start: (page - 1) * limit + 1,
               end: Math.min(page * limit, pagination.total),

@@ -21,6 +21,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     "pricing",
     "plans",
     "billing",
+    "users",
   ];
 
   // Import all message files and organize them by namespace
