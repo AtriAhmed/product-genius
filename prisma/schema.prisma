@@ -267,13 +267,16 @@ model Order {
   agent   User? @relation("AgentAssignedOrders", fields: [agentId], references: [id])
   agentId Int?
 
-  items      OrderItem[]
-  totalCents Int
-  currency   String
-  status     OrderStatus @default(PENDING)
-  metadata   Json?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  stripeInvoiceId String?
+
+  items          OrderItem[]
+  totalCents     Int
+  currency       String
+  status         OrderStatus     @default(PENDING)
+  shipmentStatus ShipmentStatus?
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model OrderItem {

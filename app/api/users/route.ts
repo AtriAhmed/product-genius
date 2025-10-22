@@ -25,23 +25,12 @@ const getUsersSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const currentUser = await isAuthenticatedServerSide(
+      ["OWNER", "ADMIN"],
+      false
+    );
+    if (!currentUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check user permissions (OWNER or ADMIN only)
-    const currentUser = await prisma.user.findUnique({
-      where: { id: parseInt(session.user.id) },
-      select: { role: true },
-    });
-
-    if (!currentUser || !["OWNER", "ADMIN"].includes(currentUser.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
     }
 
     const body = await request.json();

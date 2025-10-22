@@ -19,7 +19,7 @@ export default function SupplierCard({
   const domain = supplier.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return (
-    <Card className="flex flex-col overflow-hidden !p-2 bg-gradient-to-br from-white dark:from-gray-900 via-primary/5 dark:via-primary/10 to-primary/10 dark:to-primary/20 shadow-sm hover:shadow-xl transition-shadow duration-300">
+    <Card className="flex flex-col overflow-hidden !p-2 bg-gradient-to-br from-white dark:from-gray-900 via-primary/5 dark:via-primary/10 to-primary/10 dark:to-primary/20 shadow-sm transition-shadow duration-300">
       <CardContent className="flex flex-col space-y-2.5 h-full !p-2">
         {/* Header: Marketplace + Star */}
         <div className="flex items-center gap-2.5">
@@ -68,19 +68,10 @@ export default function SupplierCard({
         <Button
           size="sm"
           variant="primary"
-          asChild
-          className="w-full h-7 px-3 bg-gradient-to-r from-primary-600 hover:from-primary-700 to-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg text-xs transition-all duration-200"
+          className="w-full h-7 px-3 bg-gradient-to-r from-primary-600 to-primary-700 shadow-md hover:shadow-lg hover:saturate-75 text-xs transition-all duration-200"
         >
-          <a
-            href={supplier.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleVisit}
-            className="flex justify-center items-center gap-1.5"
-          >
-            <ShoppingCart className="w-3 h-3" />
-            Add to cart
-          </a>
+          <ShoppingCart className="w-3 h-3" />
+          Add to cart
         </Button>
       </CardContent>
     </Card>

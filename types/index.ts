@@ -237,6 +237,7 @@ export type Order = {
   totalCents?: number;
   currency?: string;
   status?: OrderStatus;
+  shipmentStatus?: ShipmentStatus;
   metadata?: any; // JSON type
   createdAt?: Date;
   updatedAt?: Date;
@@ -314,6 +315,37 @@ export type CreateOrder = Omit<Order, "id" | "createdAt" | "updatedAt">;
 export type UpdateOrder = Partial<
   Omit<Order, "id" | "createdAt" | "updatedAt">
 >;
+
+export type CreateOrderItem = Omit<OrderItem, "id">;
+export type UpdateOrderItem = Partial<Omit<OrderItem, "id">>;
+
+// Order API Types
+export type CreateOrderRequest = {
+  items: {
+    productId: number;
+    quantity: number;
+  }[];
+  currency?: string;
+  metadata?: any;
+};
+
+export type CreateOrderResponse = {
+  order: Order & {
+    items: (OrderItem & { product: Product })[];
+    user: Pick<User, "id" | "name" | "email">;
+  };
+};
+
+export type PayOrderRequest = {
+  paymentMethodId: string;
+};
+
+export type PayOrderResponse = {
+  success: boolean;
+  clientSecret?: string;
+  invoiceId?: string;
+  error?: string;
+};
 
 // Payment method types for Stripe
 export type PaymentMethod = {
