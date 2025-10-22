@@ -210,7 +210,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       {/* Header */}
       <div className="mx-auto px-4 py-2">
         <div className="max-w-3xl">
-          <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-4">
               <Button type="button" variant="outline" size="sm" asChild>
                 <Link href="/admin/products">
@@ -218,10 +218,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 </Link>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">
+                <h1 className="font-bold text-2xl">
                   {isEditMode ? t("edit product") : t("create product")}
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {isEditMode
                     ? t("update product information")
                     : t("add a new product to your catalog")}
@@ -262,14 +262,14 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
       {/* Main Content */}
       <div className="mx-auto px-4 py-8">
-        <form
-          id="product-form"
-          onSubmit={handleSubmit(onSubmit)}
-          className="mb-2"
-        >
-          <div className="max-w-3xl">
+        <div className="max-w-3xl">
+          <form
+            id="product-form"
+            onSubmit={handleSubmit(onSubmit)}
+            className="mb-2"
+          >
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-2">
+            <div className="space-y-2 lg:col-span-2">
               {/* Basic Information */}
               <BasicInformation
                 setValue={setValue}
@@ -299,7 +299,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                     requiredLanguages={[]}
                   />
                   {errors.translations && (
-                    <p className="text-sm text-destructive mt-2">
+                    <p className="mt-2 text-destructive text-sm">
                       {errors.translations.message}
                     </p>
                   )}
@@ -313,7 +313,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                     <ImageIcon className="w-5 h-5" />
                     {t("product media")}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {t("upload images and videos")}
                   </p>
                 </CardHeader>
@@ -332,9 +332,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </form>
-        <ProductSuppliers setValue={setValue} watch={watch} />
+          </form>
+          <ProductSuppliers setValue={setValue} watch={watch} />
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

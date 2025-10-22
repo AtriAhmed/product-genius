@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-/* removed Switch import */
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -36,7 +36,15 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Edit, GripVertical, Plus, Trash2, X } from "lucide-react";
+import {
+  Check,
+  Edit,
+  GripVertical,
+  Package,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
@@ -73,7 +81,7 @@ function SortableSupplierRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: supplier.id?.toString() || nanoid() });
+  } = useSortable({ id: supplier.id?.toString() });
   const isMounted = useIsMounted();
 
   const style = {
@@ -118,6 +126,24 @@ function SortableSupplierRow({
       </TableCell>
       <TableCell className="font-semibold text-nowrap">
         {supplier.price ? `${supplier.price} ${supplier.currency || ""}` : "—"}
+      </TableCell>
+      <TableCell>
+        <Badge
+          variant={supplier.available ? "default" : "destructive"}
+          className={supplier.available ? "bg-green-700" : ""}
+        >
+          {!isMounted || supplier.available ? (
+            <>
+              <Check className="w-3 h-3 mr-1" />
+              {t("available")}
+            </>
+          ) : (
+            <>
+              <X className="w-3 h-3 mr-1" />
+              {t("unavailable")}
+            </>
+          )}
+        </Badge>
       </TableCell>
       <TableCell>
         <Badge variant={supplier.isInternal ? "primary" : "secondary"}>
@@ -175,7 +201,6 @@ export default function ProductSuppliers({
 }: ProductSuppliersProps) {
   const t = useTranslations("products");
   const suppliersFormRef = useRef<HTMLDivElement>(null);
-  const isMounted = useIsMounted();
 
   // Watch the suppliers array from the main form
   const suppliers = watch("suppliers") || [];
@@ -186,7 +211,7 @@ export default function ProductSuppliers({
   // Add suppliers with temp IDs for drag and drop
   const suppliersWithIds = suppliers.map((supplier, index) => ({
     ...supplier,
-    id: supplier.id || nanoid(), // Generate temp ID for drag and drop only
+    id: supplier.id?.toString(), // Generate temp ID for drag and drop only
   }));
 
   // Marketplace and currency options (adjust as needed)
@@ -218,6 +243,7 @@ export default function ProductSuppliers({
       price: undefined,
       currency: "EUR",
       isInternal: false,
+      available: true,
       notes: "",
     },
   });
@@ -225,6 +251,7 @@ export default function ProductSuppliers({
   const isInternalValue = watchAdd("isInternal");
   const marketplaceValue = watchAdd("marketplace");
   const currencyValue = watchAdd("currency");
+  const availableValue = watchAdd("available");
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -258,6 +285,8 @@ export default function ProductSuppliers({
   };
 
   const addSupplier = (data: AddSupplierFormData) => {
+    console.log("-------------------- data --------------------");
+    console.log(data);
     // If supplier is internal, clear marketplace and url
     const supplierData = {
       id: editingId || nanoid(), // Keep existing id when editing, or generate new one
@@ -267,11 +296,12 @@ export default function ProductSuppliers({
       currency: data.currency,
       isInternal: data.isInternal,
       notes: data.notes,
+      available: data.available,
     };
 
     if (editingId !== null) {
       // Update existing supplier
-      const newSuppliers = suppliers.map((supplier) =>
+      const newSuppliers = suppliersWithIds.map((supplier) =>
         // loose equality to match string and number IDs
         supplier.id == supplierData.id ? supplierData : supplier
       );
@@ -290,7 +320,9 @@ export default function ProductSuppliers({
   };
 
   const removeSupplier = (id: string | number) => {
-    const newSuppliers = suppliers.filter((supplier) => supplier.id !== id);
+    const newSuppliers = suppliersWithIds.filter(
+      (supplier) => supplier.id !== id
+    );
     setValue("suppliers", newSuppliers, {
       shouldDirty: true,
     });
@@ -302,7 +334,7 @@ export default function ProductSuppliers({
   };
 
   const editSupplier = (id: string | number) => {
-    const supplier = suppliers.find((s) => s.id === id);
+    const supplier = suppliersWithIds.find((s) => s.id === id);
     if (!supplier) return;
 
     setEditingId(id.toString());
@@ -311,6 +343,7 @@ export default function ProductSuppliers({
     setValueAdd("price", supplier.price || undefined);
     setValueAdd("currency", supplier.currency || "EUR");
     setValueAdd("isInternal", !!supplier.isInternal);
+    setValueAdd("available", supplier.available !== false);
     setValueAdd("notes", supplier.notes || "");
     // Smooth scroll to the supplier form
     setTimeout(() => {
@@ -333,33 +366,36 @@ export default function ProductSuppliers({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Suppliers Data Table */}
-        {suppliersWithIds.length > 0 && (
-          <div className="w-0 min-w-full border rounded-md">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-            >
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-muted/50">
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead className="font-medium">
-                      {t("marketplace")}
-                    </TableHead>
-                    <TableHead className="font-medium">{t("url")}</TableHead>
-                    <TableHead className="font-medium">{t("price")}</TableHead>
-                    <TableHead className="font-medium">{t("type")}</TableHead>
-                    <TableHead className="min-w-[150px] font-medium">
-                      {t("notes")}
-                    </TableHead>
-                    <TableHead className="font-medium text-center">
-                      {t("actions")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+        <div className="w-0 min-w-full border rounded-md">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          >
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-muted/50">
+                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="font-medium">
+                    {t("marketplace")}
+                  </TableHead>
+                  <TableHead className="font-medium">{t("url")}</TableHead>
+                  <TableHead className="font-medium">{t("price")}</TableHead>
+                  <TableHead className="font-medium">
+                    {t("availability")}
+                  </TableHead>
+                  <TableHead className="font-medium">{t("type")}</TableHead>
+                  <TableHead className="min-w-[150px] font-medium">
+                    {t("notes")}
+                  </TableHead>
+                  <TableHead className="font-medium text-center">
+                    {t("actions")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {suppliersWithIds.length > 0 ? (
                   <SortableContext
                     items={suppliersWithIds.map((field) => field.id)}
                     strategy={verticalListSortingStrategy}
@@ -373,11 +409,23 @@ export default function ProductSuppliers({
                       />
                     ))}
                   </SortableContext>
-                </TableBody>
-              </Table>
-            </DndContext>
-          </div>
-        )}
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-32">
+                      <div className="flex flex-col justify-center items-center text-muted-foreground text-center">
+                        <Package className="w-8 h-8 mb-2" />
+                        <p className="font-medium text-sm">
+                          No suppliers available
+                        </p>
+                        <p className="text-xs">Add a supplier to get started</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </DndContext>
+        </div>
 
         {/* Add/Edit Supplier Form */}
         <Card ref={suppliersFormRef}>
@@ -511,6 +559,18 @@ export default function ProductSuppliers({
                     id="add-notes"
                     placeholder="Optional notes about this supplier"
                     {...registerAdd("notes")}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="add-available">{t("available")}</Label>
+                  <Switch
+                    id="add-available"
+                    checked={availableValue}
+                    onCheckedChange={(checked) =>
+                      setValueAdd("available", checked, { shouldDirty: true })
+                    }
+                    className="block"
                   />
                 </div>
 

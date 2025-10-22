@@ -132,5 +132,8 @@
   "add supplier": "Add Supplier",
   "edit supplier": "Edit Supplier",
   "supplier url": "Supplier URL",
-  "add": "Add"
+  "add": "Add",
+  "available": "Available",
+  "availability": "Availability",
+  "unavailable": "Unavailable"
 }
