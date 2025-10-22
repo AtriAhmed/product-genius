@@ -244,7 +244,7 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
         paidAt: invoice.status_transitions?.paid_at
           ? new Date(invoice.status_transitions.paid_at * 1000)
           : null,
-        type: stripeSubscriptionId ? "PLAN" : "PAYMENT",
+        type: stripeSubscriptionId ? "PLAN" : "ORDER",
         periodStart: new Date(invoice.period_start * 1000),
         periodEnd: new Date(invoice.period_end * 1000),
       },

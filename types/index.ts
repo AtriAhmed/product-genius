@@ -42,7 +42,7 @@ export type ShipmentStatus =
 
 export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
 
-export type InvoiceType = "PLAN" | "PAYMENT";
+export type InvoiceType = "PLAN" | "ORDER";
 
 export const MARKETPLACES = ["AMAZON", "ALIEXPRESS"] as const;
 

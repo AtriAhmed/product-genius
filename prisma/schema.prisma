@@ -71,7 +71,7 @@ enum PlanInterval {
 
 enum InvoiceType {
   PLAN
-  PAYMENT
+  ORDER
 }
 
 model TempAccount {
@@ -171,6 +171,7 @@ model Invoice {
   periodStart          DateTime
   periodEnd            DateTime
   createdAt            DateTime     @default(now())
+  Order                Order[]
 }
 
 model Category {
@@ -267,7 +268,8 @@ model Order {
   agent   User? @relation("AgentAssignedOrders", fields: [agentId], references: [id])
   agentId Int?
 
-  stripeInvoiceId String?
+  invoiceId String? // Stripe Invoice ID
+  invoice   Invoice? @relation(fields: [invoiceId], references: [stripeInvoiceId])
 
   items          OrderItem[]
   totalCents     Int
@@ -293,7 +295,7 @@ model Order {
 
 model OrderItem {
   id             Int     @id @default(autoincrement())
-  order          Order   @relation(fields: [orderId], references: [id])
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId        Int
   product        Product @relation(fields: [productId], references: [id])
   productId      Int

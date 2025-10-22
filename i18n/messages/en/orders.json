@@ -55,5 +55,13 @@
   "delivery information saved": "Delivery information saved successfully",
   "please enter delivery information first": "Please enter delivery information first",
   "edit": "Edit",
-  "enter delivery info": "Enter Delivery Info"
+  "enter delivery info": "Enter Delivery Info",
+  "please enter valid delivery info": "Please enter valid delivery info",
+  "review order": "Review Order",
+  "complete": "Complete",
+  "incomplete": "Incomplete",
+  "place order": "Place Order",
+  "processing your order": "Processing your order",
+  "failed to create order": "Failed to create order",
+  "order placed successfully": "Order placed successfully!"
 }

@@ -9,6 +9,7 @@ import useSWR from "swr";
 import CartDataTable from "./CartDataTable";
 import OrderSummary from "./OrderSummary";
 import DeliveryInfoForm from "@/app/[locale]/dashboard/orders/cart/DeliveryInfo";
+import CheckoutDialog from "./CheckoutDialog";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { useEffect, useState } from "react";
 import z from "zod";
@@ -16,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useLocalStorage from "@/hooks/use-local-storage";
 import equal from "deep-equal";
+import { useRouter } from "next/navigation";
 
 type CartProduct = Product & {
   quantity: number;
@@ -31,7 +33,7 @@ async function fetcher(productIds: number[]) {
 const deliveryInfoSchema = z.object({
   deliveryName: z.string().min(1, "Name is required"),
   deliveryPhone: z.string().min(1, "Phone is required"),
-  deliveryEmail: z.email("Invalid email"),
+  deliveryEmail: z.string().email("Invalid email"),
   deliveryAddress1: z.string().min(1, "Address is required"),
   deliveryAddress2: z.string().optional(),
   deliveryCity: z.string().min(1, "City is required"),
@@ -109,13 +111,27 @@ export default function CartPage() {
     updateQuantity(productId, newQuantity);
   };
 
-  const handleProceedToCheckout = () => {
-    if (!deliveryInfo) {
-      toast.info(t("please enter delivery information first"));
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+
+  const handleProceedToCheckout = async () => {
+    // Validate form first
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast.error(t("please enter valid delivery info"));
       return;
     }
 
-    toast.info(t("order finalization coming soon"));
+    setShowCheckoutDialog(true);
+  };
+
+  const handleOrderSuccess = () => {
+    // Clear cart and show success message
+    clearCart();
+    toast.success(t("order placed successfully"));
+    // Optionally redirect to orders page
+    // router.push("/dashboard/orders");
   };
 
   const cartItemCount = getCartItemCount();
@@ -153,10 +169,20 @@ export default function CartPage() {
               totalPrice={totalPrice}
               cartItemCount={cartItemCount}
               onProceedToCheckout={handleProceedToCheckout}
-              isLoading={isLoading || !isMounted}
+              isLoading={isLoading || !isMounted || isSubmitting}
             />
           </div>
         </div>
+
+        {/* Checkout Dialog */}
+        <CheckoutDialog
+          isOpen={showCheckoutDialog}
+          onClose={() => setShowCheckoutDialog(false)}
+          cartItems={cart}
+          totalPrice={totalPrice}
+          deliveryInfo={watchedValues as DeliveryInfoData}
+          onOrderSuccess={handleOrderSuccess}
+        />
       </div>
     </div>
   );

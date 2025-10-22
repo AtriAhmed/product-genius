@@ -4,18 +4,26 @@ import { prisma } from "@/lib/prisma";
 import { isAuthenticatedServerSide } from "@/lib/authUtils";
 import type { PaginatedResponse, CreateOrderRequest } from "@/types";
 import { nanoid } from "nanoid";
+import { stripe } from "@/lib/stripe";
+import Stripe from "stripe";
 
 const createOrderSchema = z.object({
+  paymentMethodId: z.string().min(1),
+
   items: z
     .array(
       z.object({
         productId: z.number().int().positive(),
         quantity: z.number().int().positive(),
+        // optional per-item metadata (e.g. selected options, SKU info)
+        metadata: z.any().optional(),
       })
     )
     .min(1),
+
   currency: z.string().optional().default("USD"),
   metadata: z.any().optional(),
+
   deliveryName: z.string().optional(),
   deliveryPhone: z.string().optional(),
   deliveryEmail: z.string().email().optional(),
@@ -140,16 +148,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body: CreateOrderRequest = await request.json();
+    const body = await request.json();
     const validatedData = createOrderSchema.parse(body);
 
-    // Fetch products and validate they exist and are active
-    const productIds = validatedData.items.map((item) => item.productId);
+    // Fetch products and validate they exist & active
+    const productIds = validatedData.items.map((it: any) => it.productId);
     const products = await prisma.product.findMany({
-      where: {
-        id: { in: productIds },
-        isActive: true,
-      },
+      where: { id: { in: productIds }, isActive: true },
       include: {
         translations: {
           where: { locale: "en" },
@@ -160,19 +165,18 @@ export async function POST(request: NextRequest) {
 
     if (products.length !== productIds.length) {
       const foundIds = products.map((p) => p.id);
-      const missingIds = productIds.filter((id) => !foundIds.includes(id));
+      const missingIds = productIds.filter(
+        (id: number) => !foundIds.includes(id)
+      );
       return NextResponse.json(
         { error: `Products not found or inactive: ${missingIds.join(", ")}` },
         { status: 400 }
       );
     }
 
-    // Generate unique order number
-    const orderNumber = `ORD-${Date.now()}-${nanoid()}`;
-
-    // Calculate total
+    // Prepare order items & totals
     let totalCents = 0;
-    const orderItems = validatedData.items.map((item) => {
+    const orderItems = validatedData.items.map((item: any) => {
       const product = products.find((p) => p.id === item.productId)!;
       const unitPriceCents = Math.round((product.suggestedPrice || 0) * 100);
       const title = product.translations?.[0]?.title || `Product ${product.id}`;
@@ -184,18 +188,21 @@ export async function POST(request: NextRequest) {
         title,
         unitPriceCents,
         quantity: item.quantity,
-        metadata: {},
+        metadata: item.metadata || {},
       };
     });
 
-    // Create order with items
+    // Generate order number
+    const orderNumber = `ORD-${Date.now()}-${nanoid()}`;
+
+    // Create order first (PENDING)
     const order = await prisma.order.create({
       data: {
         orderNumber,
         userId: user.id,
         totalCents,
         currency: validatedData.currency,
-        status: "DRAFT",
+        status: "PENDING",
         metadata: validatedData.metadata || {},
         deliveryName: validatedData.deliveryName,
         deliveryPhone: validatedData.deliveryPhone,
@@ -211,33 +218,208 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-        items: {
-          include: {
-            product: {
-              include: {
-                translations: {
-                  where: { locale: "en" },
-                  select: { title: true, description: true },
-                },
-                media: {
-                  where: { type: "IMAGE" },
-                  orderBy: { sortOrder: "asc" },
-                  take: 1,
-                  select: { url: true, alt: true },
-                },
-              },
-            },
-          },
-        },
+        items: true,
       },
     });
 
-    return NextResponse.json({ order }, { status: 201 });
+    // Ensure user has Stripe customer id
+    if (!user.stripeCustomerId) {
+      // delete order and error out
+      await prisma.order.delete({ where: { id: order.id } }).catch(() => {});
+      return NextResponse.json(
+        { error: "User is not set up for payments" },
+        { status: 400 }
+      );
+    }
+
+    const paymentMethodId: string = validatedData.paymentMethodId;
+
+    // Create invoice and attempt payment (invoice + invoiceItems -> finalize -> pay)
+    try {
+      // create invoice
+      const invoice = await stripe.invoices.create({
+        customer: user.stripeCustomerId,
+        currency: validatedData.currency.toLowerCase(),
+        collection_method: "charge_automatically",
+        metadata: {
+          orderId: order.id.toString(),
+          orderNumber,
+          userId: user.id.toString(),
+          type: "ORDER",
+        },
+        auto_advance: true,
+      });
+
+      // add invoice items
+      for (const it of orderItems) {
+        await stripe.invoiceItems.create({
+          customer: user.stripeCustomerId,
+          invoice: invoice.id,
+          currency: validatedData.currency.toLowerCase(),
+          amount: it.unitPriceCents * it.quantity,
+          description: it.title,
+          metadata: {
+            productId: it.productId.toString(),
+            orderId: order.id.toString(),
+          },
+        });
+      }
+
+      // finalize invoice
+      const finalizedInvoice = await stripe.invoices.finalizeInvoice(
+        invoice.id
+      );
+
+      // attempt to pay finalized invoice with provided payment method
+      const paidInvoice: Stripe.Invoice = await stripe.invoices.pay(
+        finalizedInvoice.id,
+        {
+          payment_method: paymentMethodId,
+        }
+      );
+
+      // if invoice is paid
+      if ((paidInvoice.status || "").toLowerCase() === "paid") {
+        const dbInvoice = await prisma.invoice.create({
+          data: {
+            stripeInvoiceId: invoice.id,
+            userId: user.id,
+            amountCents: invoice.amount_paid || 0,
+            taxCents: 0,
+            currency: invoice.currency || "usd",
+            status: invoice.status || "paid",
+            pdfUrl: invoice.invoice_pdf || null,
+            hostedUrl: invoice.hosted_invoice_url || null,
+            paidAt: invoice.status_transitions?.paid_at
+              ? new Date(invoice.status_transitions.paid_at * 1000)
+              : null,
+            type: "ORDER",
+            periodStart: new Date(invoice.period_start * 1000),
+            periodEnd: new Date(invoice.period_end * 1000),
+          },
+        });
+        // update order to PAID
+        try {
+          const updatedOrder = await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              invoiceId: dbInvoice.id?.toString(),
+              status: "PAID",
+            },
+            include: {
+              items: true,
+            },
+          });
+
+          return NextResponse.json(
+            { order: updatedOrder, stripeInvoiceId: paidInvoice.id },
+            { status: 201 }
+          );
+        } catch (updateErr) {
+          // DB update failed after successful payment — DO NOT refund.
+          console.error("DB update failed after invoice paid:", updateErr);
+
+          // delete order record (best-effort) and surface error for support to reconcile payment.
+          await prisma.order
+            .delete({ where: { id: order.id } })
+            .catch(() => {});
+
+          return NextResponse.json(
+            {
+              error:
+                "Payment succeeded but saving order failed. Support will reconcile the payment.",
+              stripeInvoiceId: paidInvoice.id,
+            },
+            { status: 500 }
+          );
+        }
+      }
+
+      // If the pay action resulted in a PaymentIntent that requires action (SCA),
+      // stripe.invoices.pay may throw or return an invoice with payment_intent requiring action.
+      // Try to detect and surface client_secret so frontend can complete SCA.
+      const pi =
+        (paidInvoice as any)?.payment_intent ||
+        (finalizedInvoice as any)?.payment_intent ||
+        null;
+
+      if (
+        pi &&
+        (pi.client_secret || (pi as any).status === "requires_action")
+      ) {
+        const clientSecret =
+          (pi as any).client_secret || (pi as any).client_secret === undefined
+            ? (pi as any).client_secret
+            : null;
+
+        // keep order PENDING and return client_secret / payment intent id for frontend to handle SCA
+        return NextResponse.json(
+          {
+            requiresAction: true,
+            clientSecret: clientSecret,
+            paymentIntentId: (pi as any).id || null,
+            orderId: order.id,
+            stripeInvoiceId: paidInvoice.id || invoice.id,
+          },
+          { status: 200 }
+        );
+      }
+
+      // If we reach here and invoice is not paid and there's no actionable SCA, treat as failure
+      console.error(
+        "Invoice pay returned non-paid, non-actionable status:",
+        paidInvoice.status
+      );
+      await prisma.order.delete({ where: { id: order.id } }).catch(() => {});
+      return NextResponse.json(
+        { error: "Payment failed", stripeStatus: paidInvoice.status },
+        { status: 402 }
+      );
+    } catch (stripeErr: any) {
+      console.error("Stripe error during invoice creation/payment:", stripeErr);
+
+      // If stripe provides a payment_intent that needs action in the error payload, surface it
+      if (stripeErr?.raw?.payment_intent?.client_secret) {
+        // keep order PENDING and let frontend complete SCA
+        return NextResponse.json(
+          {
+            requiresAction: true,
+            clientSecret: stripeErr.raw.payment_intent.client_secret,
+            paymentIntentId: stripeErr.raw.payment_intent.id,
+            orderId: order.id,
+            stripeInvoiceId: stripeErr?.invoice || null,
+          },
+          { status: 200 }
+        );
+      }
+
+      // Otherwise payment definitively failed — delete order and return error
+      await prisma.order.delete({ where: { id: order.id } }).catch(() => {});
+
+      if (stripeErr.type === "StripeCardError") {
+        return NextResponse.json(
+          { error: "Payment failed", details: stripeErr.message },
+          { status: 402 }
+        );
+      }
+
+      if (stripeErr.type === "StripeInvalidRequestError") {
+        return NextResponse.json(
+          { error: "Invalid payment request", details: stripeErr.message },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          error: "Payment processing failed",
+          details: stripeErr.message || stripeErr,
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("Error in create-and-invoice flow:", error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
