@@ -2,6 +2,7 @@
 
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import UserDropdown from "@/components/UserDropdown";
+import CartSheet from "@/components/CartSheet";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
@@ -23,14 +24,14 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed left-0 right-0 bg-background dark:border-b shadow-sm top-0 z-50">
+    <nav className="top-0 right-0 left-0 z-50 fixed dark:border-b bg-background shadow-sm">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
         <div className="flex justify-between h-[55px]">
           {/* Logo + Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Zap className="text-primary-500 h-8 w-8" />
-              <span className="ml-2 text-xl font-bold">ProductGenius</span>
+              <Zap className="w-8 h-8 text-primary-500" />
+              <span className="ml-2 font-bold text-xl">ProductGenius</span>
             </Link>
           </div>
 
@@ -38,28 +39,31 @@ export default function Navbar() {
           <div className="hidden md:flex md:items-center md:space-x-8">
             <Link
               href="/#features"
-              className="hover:text-primary-500 px-1 py-2 text-xs lg:text-sm font-medium"
+              className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm"
             >
               {t("features")}
             </Link>
             <Link
               href="/#niches"
-              className="hover:text-primary-500 px-1 py-2 text-xs lg:text-sm font-medium"
+              className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm"
             >
               {t("niches")}
             </Link>
             <Link
               href="/pricing"
-              className="hover:text-primary-500 px-1 py-2 text-xs lg:text-sm font-medium"
+              className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm"
             >
               {t("pricing")}
             </Link>
             <div className="flex items-center gap-2">
+              {/* Cart Sheet */}
+              <CartSheet />
+
               {/* Auth */}
               {!isAuthenticated ? (
                 <Link
                   href="/auth/login"
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-xs lg:text-sm font-medium"
+                  className="px-4 py-2 rounded-md bg-primary-500 hover:bg-primary-600 font-medium text-white text-xs lg:text-sm"
                 >
                   {t("login")}
                 </Link>
@@ -71,7 +75,7 @@ export default function Navbar() {
                         ? "/admin"
                         : "/dashboard"
                     }
-                    className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-xs lg:text-sm font-medium"
+                    className="px-4 py-2 rounded-md bg-primary-500 hover:bg-primary-600 font-medium text-white text-xs lg:text-sm"
                   >
                     {t("dashboard")}
                   </Link>
@@ -85,14 +89,14 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Hamburger */}
-          <div className="flex items-center md:hidden">
+          <div className="md:hidden flex items-center">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              className="inline-flex justify-center items-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset hover:bg-gray-100 text-gray-400 hover:text-gray-500"
             >
               <span className="sr-only">Open main menu</span>
-              <Menu className="h-6 w-6" />
+              <Menu className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -100,22 +104,22 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden px-2 pt-2 pb-3 space-y-1">
+        <div className="md:hidden space-y-1 px-2 pt-2 pb-3">
           <Link
             href="/#features"
-            className="block text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
+            className="block px-3 py-2 rounded-md font-medium text-gray-700 hover:text-primary-500 text-base"
           >
             {t("features")}
           </Link>
           <Link
             href="/#niches"
-            className="block text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
+            className="block px-3 py-2 rounded-md font-medium text-gray-700 hover:text-primary-500 text-base"
           >
             {t("niches")}
           </Link>
           <Link
             href="/pricing"
-            className="block text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
+            className="block px-3 py-2 rounded-md font-medium text-gray-700 hover:text-primary-500 text-base"
           >
             {t("pricing")}
           </Link>
@@ -123,7 +127,7 @@ export default function Navbar() {
           {!isAuthenticated ? (
             <Link
               href="/auth/login"
-              className="block bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-md text-base font-medium"
+              className="block px-3 py-2 rounded-md bg-primary-500 hover:bg-primary-600 font-medium text-white text-base"
             >
               {t("login")}
             </Link>
@@ -131,25 +135,25 @@ export default function Navbar() {
             <>
               <Link
                 href="/dashboard"
-                className="block bg-primary-500 hover:bg-primary-600 text-white px-3 py-2 rounded-md text-base font-medium"
+                className="block px-3 py-2 rounded-md bg-primary-500 hover:bg-primary-600 font-medium text-white text-base"
               >
                 {t("dashboard")}
               </Link>
 
               {/* Avatar in mobile → simpler (just links) */}
-              <div className="mt-2 space-y-1 border-t pt-2">
+              <div className="space-y-1 mt-2 pt-2 border-t">
                 <Link
                   href="/profile"
-                  className="flex items-center text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
+                  className="flex items-center px-3 py-2 rounded-md font-medium text-gray-700 hover:text-primary-500 text-base"
                 >
-                  <User className="mr-2 h-5 w-5" />
+                  <User className="w-5 h-5 mr-2" />
                   {t("profile")}
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full text-left text-gray-700 hover:text-primary-500 px-3 py-2 rounded-md text-base font-medium"
+                  className="flex items-center w-full px-3 py-2 rounded-md font-medium text-gray-700 hover:text-primary-500 text-base text-left"
                 >
-                  <LogOut className="mr-2 h-5 w-5" />
+                  <LogOut className="w-5 h-5 mr-2" />
                   {t("logout")}
                 </button>
                 {/* Theme Switcher in mobile */}

@@ -48,6 +48,12 @@ export const MARKETPLACES = ["AMAZON", "ALIEXPRESS"] as const;
 
 export type Marketplace = (typeof MARKETPLACES)[number];
 
+// Cart types
+export type CartItem = {
+  productId: number;
+  quantity: number;
+};
+
 // Base model types (without relations)
 export type TempAccount = {
   id: number;
@@ -410,3 +416,16 @@ export type StripeSubscriptionStatus =
   | "past_due"
   | "canceled"
   | "unpaid";
+
+// Delivery Information Types
+export type DeliveryInfo = {
+  deliveryName: string;
+  deliveryPhone: string;
+  deliveryEmail: string;
+  deliveryAddress1: string;
+  deliveryAddress2?: string;
+  deliveryCity: string;
+  deliveryState: string;
+  deliveryZip: string;
+  deliveryCountry: string;
+};

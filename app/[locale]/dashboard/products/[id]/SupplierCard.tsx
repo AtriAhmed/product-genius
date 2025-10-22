@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Supplier } from "@/types";
 import { formatPrice } from "@/lib/utils";
+import { useAppProvider } from "@/contexts/AppProvider";
 
 interface SupplierCardProps {
   supplier: Supplier;
@@ -14,7 +15,15 @@ export default function SupplierCard({
   supplier,
   compact = true,
 }: SupplierCardProps) {
+  const { addToCart } = useAppProvider();
   const handleVisit = () => toast(`Opening ${supplier.marketplace}`);
+
+  const handleAddToCart = () => {
+    if (supplier.productId) {
+      addToCart(supplier.productId, 1);
+      toast.success("Product added to cart!");
+    }
+  };
 
   const domain = supplier.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
@@ -68,6 +77,7 @@ export default function SupplierCard({
         <Button
           size="sm"
           variant="primary"
+          onClick={handleAddToCart}
           className="w-full h-7 px-3 bg-gradient-to-r from-primary-600 to-primary-700 shadow-md hover:shadow-lg hover:saturate-75 text-xs transition-all duration-200"
         >
           <ShoppingCart className="w-3 h-3" />

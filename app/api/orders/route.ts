@@ -16,6 +16,15 @@ const createOrderSchema = z.object({
     .min(1),
   currency: z.string().optional().default("USD"),
   metadata: z.any().optional(),
+  deliveryName: z.string().optional(),
+  deliveryPhone: z.string().optional(),
+  deliveryEmail: z.string().email().optional(),
+  deliveryAddress1: z.string().optional(),
+  deliveryAddress2: z.string().optional(),
+  deliveryCity: z.string().optional(),
+  deliveryState: z.string().optional(),
+  deliveryZip: z.string().optional(),
+  deliveryCountry: z.string().optional(),
 });
 
 const querySchema = z.object({
@@ -188,6 +197,15 @@ export async function POST(request: NextRequest) {
         currency: validatedData.currency,
         status: "DRAFT",
         metadata: validatedData.metadata || {},
+        deliveryName: validatedData.deliveryName,
+        deliveryPhone: validatedData.deliveryPhone,
+        deliveryEmail: validatedData.deliveryEmail,
+        deliveryAddress1: validatedData.deliveryAddress1,
+        deliveryAddress2: validatedData.deliveryAddress2,
+        deliveryCity: validatedData.deliveryCity,
+        deliveryState: validatedData.deliveryState,
+        deliveryZip: validatedData.deliveryZip,
+        deliveryCountry: validatedData.deliveryCountry,
         items: {
           create: orderItems,
         },

@@ -27,6 +27,15 @@ const updateOrderSchema = z.object({
     .optional(),
   agentId: z.number().int().positive().optional(),
   metadata: z.any().optional(),
+  deliveryName: z.string().optional(),
+  deliveryPhone: z.string().optional(),
+  deliveryEmail: z.string().email().optional(),
+  deliveryAddress1: z.string().optional(),
+  deliveryAddress2: z.string().optional(),
+  deliveryCity: z.string().optional(),
+  deliveryState: z.string().optional(),
+  deliveryZip: z.string().optional(),
+  deliveryCountry: z.string().optional(),
 });
 
 export async function GET(

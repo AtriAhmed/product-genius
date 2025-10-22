@@ -274,9 +274,21 @@ model Order {
   currency       String
   status         OrderStatus     @default(PENDING)
   shipmentStatus ShipmentStatus?
-  metadata       Json?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+
+  // delivery address
+  deliveryName     String?
+  deliveryPhone    String?
+  deliveryEmail    String?
+  deliveryAddress1 String?
+  deliveryAddress2 String?
+  deliveryCity     String?
+  deliveryState    String?
+  deliveryZip      String?
+  deliveryCountry  String?
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {

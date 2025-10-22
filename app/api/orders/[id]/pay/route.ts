@@ -92,14 +92,13 @@ export async function POST(
       const invoice = await stripe.invoices.create({
         customer: user.stripeCustomerId,
         currency: order.currency.toLowerCase(),
-        collection_method: "send_invoice",
-        days_until_due: 30,
+        collection_method: "charge_automatically",
         metadata: {
           orderId: order.id.toString(),
           userId: user.id.toString(),
           type: "PAYMENT",
         },
-        auto_advance: false, // We'll finalize manually
+        auto_advance: true,
       });
 
       // Add invoice items
