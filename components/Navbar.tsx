@@ -57,7 +57,7 @@ export default function Navbar() {
             </Link>
             <div className="flex items-center gap-2">
               {/* Cart Sheet */}
-              <CartSheet />
+              {user?.role === "USER" && <CartSheet />}
 
               {/* Auth */}
               {!isAuthenticated ? (
@@ -73,6 +73,8 @@ export default function Navbar() {
                     href={
                       isMounted && ["ADMIN", "OWNER"].includes(user?.role || "")
                         ? "/admin"
+                        : ["AGENT"].includes(user?.role || "")
+                        ? "/agent"
                         : "/dashboard"
                     }
                     className="px-4 py-2 rounded-md bg-primary-500 hover:bg-primary-600 font-medium text-white text-xs lg:text-sm"

@@ -6,18 +6,19 @@ import {
   Bell,
   ChevronsUpDown,
   CreditCard,
-  Heart,
+  FileText,
   Languages,
   LogOut,
   Package,
   Settings,
   ShoppingCart,
   Sparkles,
+  Truck,
   Zap,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import React from "react";
-import { useTranslations } from "next-intl";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -42,6 +43,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -63,11 +67,36 @@ const navigationData = [
     title: "orders",
     url: "/dashboard/orders",
     icon: ShoppingCart,
+    subItems: [
+      {
+        title: "orders",
+        url: "/dashboard/orders",
+        icon: Truck,
+      },
+      {
+        title: "cart",
+        url: "/dashboard/orders/cart",
+        icon: ShoppingCart,
+      },
+    ],
   },
   {
     title: "billing",
     url: "/dashboard/billing",
     icon: CreditCard,
+    subItems: [
+      {
+        title: "billing details",
+        url: "/dashboard/billing",
+        // suitable icon
+        icon: CreditCard,
+      },
+      {
+        title: "invoices",
+        url: "/dashboard/invoices",
+        icon: FileText,
+      },
+    ],
   },
   {
     title: "settings",
@@ -90,7 +119,7 @@ export function UserSidebar({
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)] shadow-[0_0_3px_rgb(0,0,0,.2)] light:border-none"
+      className="top-[55px] h-[calc(100vh-55px)] light:border-none shadow-[0_0_3px_rgb(0,0,0,.2)]"
       collapsible="icon"
       {...props}
     >
@@ -99,14 +128,14 @@ export function UserSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" className="no-ring">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary-500 text-sidebar-primary-foreground">
+                <div className="flex justify-center items-center size-8 aspect-square rounded-lg bg-primary-500 text-sidebar-primary-foreground">
                   <Zap className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
+                <div className="flex-1 grid text-sm text-left leading-tight">
+                  <span className="font-semibold truncate">
                     {t("product genius")}
                   </span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs truncate">
                     {t("user panel")}
                   </span>
                 </div>
@@ -123,12 +152,46 @@ export function UserSidebar({
           <SidebarMenu>
             {navigationData.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={pathname === item.url}>
-                  <Link href={item.url} className="no-ring">
-                    <item.icon />
-                    <span>{t(item.title)}</span>
-                  </Link>
-                </SidebarMenuButton>
+                {item.subItems ? (
+                  <>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={
+                        pathname === item.url ||
+                        item.subItems.some(
+                          (subItem) => pathname === subItem.url
+                        )
+                      }
+                    >
+                      <Link href={item.url} className="no-ring">
+                        <item.icon />
+                        <span>{t(item.title)}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    <SidebarMenuSub>
+                      {item.subItems.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={pathname === subItem.url}
+                          >
+                            <Link href={subItem.url} className="no-ring">
+                              <subItem.icon />
+                              <span>{t(subItem.title)}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </>
+                ) : (
+                  <SidebarMenuButton asChild isActive={pathname === item.url}>
+                    <Link href={item.url} className="no-ring">
+                      <item.icon />
+                      <span>{t(item.title)}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
@@ -144,7 +207,7 @@ export function UserSidebar({
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="w-8 h-8 rounded-lg">
                     <AvatarImage
                       src={session?.user?.image || ""}
                       alt={session?.user?.name || ""}
@@ -153,15 +216,15 @@ export function UserSidebar({
                       {session?.user?.name?.slice(0, 2)?.toUpperCase() || "US"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
+                  <div className="flex-1 grid text-sm text-left leading-tight">
+                    <span className="font-semibold truncate">
                       {session?.user?.name || t("user")}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs truncate">
                       {session?.user?.email}
                     </span>
                   </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
+                  <ChevronsUpDown className="size-4 ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -172,8 +235,8 @@ export function UserSidebar({
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   {/* User info header */}
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
+                    <Avatar className="w-8 h-8 rounded-lg">
                       <AvatarImage
                         src={session?.user?.image || ""}
                         alt={session?.user?.name || ""}
@@ -183,11 +246,11 @@ export function UserSidebar({
                           "US"}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
+                    <div className="flex-1 grid text-sm text-left leading-tight">
+                      <span className="font-semibold truncate">
                         {session?.user?.name || t("user")}
                       </span>
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs truncate">
                         {session?.user?.email}
                       </span>
                     </div>

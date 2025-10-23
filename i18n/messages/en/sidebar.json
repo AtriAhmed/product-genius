@@ -20,5 +20,9 @@
   "log out": "Log out",
   "admin": "Admin",
   "user panel": "User panel",
-  "profile": "Profile"
+  "profile": "Profile",
+  "info": "Info",
+  "invoices": "Invoices",
+  "billing details": "Billing Details",
+  "cart": "Cart"
 }

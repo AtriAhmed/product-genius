@@ -81,7 +81,7 @@ function SortableSupplierRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: supplier.id?.toString() });
+  } = useSortable({ id: supplier.id?.toString() || "" });
   const isMounted = useIsMounted();
 
   const style = {
@@ -126,24 +126,6 @@ function SortableSupplierRow({
       </TableCell>
       <TableCell className="font-semibold text-nowrap">
         {supplier.price ? `${supplier.price} ${supplier.currency || ""}` : "—"}
-      </TableCell>
-      <TableCell>
-        <Badge
-          variant={supplier.available ? "default" : "destructive"}
-          className={supplier.available ? "bg-green-700" : ""}
-        >
-          {!isMounted || supplier.available ? (
-            <>
-              <Check className="w-3 h-3 mr-1" />
-              {t("available")}
-            </>
-          ) : (
-            <>
-              <X className="w-3 h-3 mr-1" />
-              {t("unavailable")}
-            </>
-          )}
-        </Badge>
       </TableCell>
       <TableCell>
         <Badge variant={supplier.isInternal ? "primary" : "secondary"}>
@@ -243,15 +225,16 @@ export default function ProductSuppliers({
       price: undefined,
       currency: "EUR",
       isInternal: false,
-      available: true,
       notes: "",
     },
   });
 
+  console.log("-------------------- errorsAdd --------------------");
+  console.log(errorsAdd);
+
   const isInternalValue = watchAdd("isInternal");
   const marketplaceValue = watchAdd("marketplace");
   const currencyValue = watchAdd("currency");
-  const availableValue = watchAdd("available");
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -296,7 +279,6 @@ export default function ProductSuppliers({
       currency: data.currency,
       isInternal: data.isInternal,
       notes: data.notes,
-      available: data.available,
     };
 
     if (editingId !== null) {
@@ -343,7 +325,6 @@ export default function ProductSuppliers({
     setValueAdd("price", supplier.price || undefined);
     setValueAdd("currency", supplier.currency || "EUR");
     setValueAdd("isInternal", !!supplier.isInternal);
-    setValueAdd("available", supplier.available !== false);
     setValueAdd("notes", supplier.notes || "");
     // Smooth scroll to the supplier form
     setTimeout(() => {
@@ -382,9 +363,6 @@ export default function ProductSuppliers({
                   </TableHead>
                   <TableHead className="font-medium">{t("url")}</TableHead>
                   <TableHead className="font-medium">{t("price")}</TableHead>
-                  <TableHead className="font-medium">
-                    {t("availability")}
-                  </TableHead>
                   <TableHead className="font-medium">{t("type")}</TableHead>
                   <TableHead className="min-w-[150px] font-medium">
                     {t("notes")}
@@ -397,15 +375,15 @@ export default function ProductSuppliers({
               <TableBody>
                 {suppliersWithIds.length > 0 ? (
                   <SortableContext
-                    items={suppliersWithIds.map((field) => field.id)}
+                    items={suppliersWithIds.map((field) => field.id!)}
                     strategy={verticalListSortingStrategy}
                   >
                     {suppliersWithIds.map((field) => (
                       <SortableSupplierRow
                         key={field.id}
                         supplier={field}
-                        onRemove={() => removeSupplier(field.id)}
-                        onEdit={() => editSupplier(field.id)}
+                        onRemove={() => removeSupplier(field.id!)}
+                        onEdit={() => editSupplier(field.id!)}
                       />
                     ))}
                   </SortableContext>
@@ -559,18 +537,6 @@ export default function ProductSuppliers({
                     id="add-notes"
                     placeholder="Optional notes about this supplier"
                     {...registerAdd("notes")}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <Label htmlFor="add-available">{t("available")}</Label>
-                  <Switch
-                    id="add-available"
-                    checked={availableValue}
-                    onCheckedChange={(checked) =>
-                      setValueAdd("available", checked, { shouldDirty: true })
-                    }
-                    className="block"
                   />
                 </div>
 

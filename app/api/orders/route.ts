@@ -197,6 +197,7 @@ export async function POST(request: NextRequest) {
     const products = await prisma.product.findMany({
       where: { id: { in: productIds }, isActive: true },
       include: {
+        suppliers: true,
         translations: {
           where: { locale: "en" },
           select: { title: true },
@@ -219,7 +220,8 @@ export async function POST(request: NextRequest) {
     let totalCents = 0;
     const orderItems = validatedData.items.map((item: any) => {
       const product = products.find((p) => p.id === item.productId)!;
-      const unitPriceCents = Math.round((product.suggestedPrice || 0) * 100);
+      const supplier = product?.suppliers?.find((s) => s.isInternal);
+      const unitPriceCents = Math.round((supplier?.price || 0) * 100);
       const title = product.translations?.[0]?.title || `Product ${product.id}`;
 
       totalCents += unitPriceCents * item.quantity;
@@ -342,7 +344,7 @@ export async function POST(request: NextRequest) {
           where: {
             stripeInvoiceId: invoice.id,
           },
-          update: invoiceData,
+          update: {},
           create: invoiceData,
         });
         // update order to PAID

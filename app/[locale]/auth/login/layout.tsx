@@ -21,7 +21,11 @@ export default async function Layout({
       guestOnly
       getRedirectTo={async (user) => {
         "use server";
-        return user?.role === "USER" ? "/dashboard" : "/admin";
+        return user?.role === "USER"
+          ? "/dashboard"
+          : user?.role === "AGENT"
+          ? "/agent"
+          : "/admin";
       }}
     >
       {children}

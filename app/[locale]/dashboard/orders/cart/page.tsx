@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useLocalStorage from "@/hooks/use-local-storage";
 import equal from "deep-equal";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 type CartProduct = Product & {
   quantity: number;
@@ -33,7 +33,7 @@ async function fetcher(productIds: number[]) {
 const deliveryInfoSchema = z.object({
   deliveryName: z.string().min(1, "Name is required"),
   deliveryPhone: z.string().min(1, "Phone is required"),
-  deliveryEmail: z.string().email("Invalid email"),
+  deliveryEmail: z.email("Invalid email"),
   deliveryAddress1: z.string().min(1, "Address is required"),
   deliveryAddress2: z.string().optional(),
   deliveryCity: z.string().min(1, "City is required"),
@@ -92,8 +92,13 @@ export default function CartPage() {
   // Map products with their quantities from cart
   const cartProducts: CartProduct[] = products
     ? products.map((product: Product) => {
+        const supplier = product?.suppliers?.find((s) => s.isInternal);
         const cartItem = cart.find((item) => item.productId === product.id);
-        return { ...product, quantity: cartItem?.quantity || 0 };
+        return {
+          ...product,
+          quantity: cartItem?.quantity || 0,
+          suggestedPrice: supplier ? supplier.price : product.suggestedPrice,
+        };
       })
     : [];
 
@@ -131,7 +136,7 @@ export default function CartPage() {
     clearCart();
     toast.success(t("order placed successfully"));
     // Optionally redirect to orders page
-    // router.push("/dashboard/orders");
+    router.push("/dashboard/orders");
   };
 
   const cartItemCount = getCartItemCount();

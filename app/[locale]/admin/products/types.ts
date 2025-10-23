@@ -2,14 +2,13 @@ import { MARKETPLACES } from "@/types";
 import z from "zod";
 
 export const supplierSchema = z.object({
-  id: z.union([z.number(), z.string()]),
+  id: z.union([z.number(), z.string()]).optional(),
   url: z.url().optional().or(z.literal("")).nullable(),
   marketplace: z.enum(MARKETPLACES).optional().nullable(),
   price: z.number().optional().nullable(),
   currency: z.string().optional().nullable(),
   isInternal: z.boolean(),
   notes: z.string().optional().nullable(),
-  available: z.boolean(),
 });
 
 // Form validation schema

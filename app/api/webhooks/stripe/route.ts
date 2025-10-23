@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { SubscriptionStatus } from "@/types";
+import { Invoice, SubscriptionStatus } from "@/types";
 import Stripe from "stripe";
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -264,31 +264,27 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
   }
 }
 
-async function handleInvoiceUpdated(invoice: any) {
+async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
   try {
     // Find subscription if invoice is for a subscription
-    let subscription = null;
-    if (invoice.subscription) {
-      subscription = await prisma.subscription.findFirst({
-        where: { stripeSubscriptionId: invoice.subscription as string },
-      });
-    }
+    const subscriptionId = invoice.lines.data[0]?.subscription as string;
 
     // Update invoice in database
-    const updateData: any = {
+    const updateData: Partial<Invoice> = {
+      stripeInvoiceId: invoice.id,
+      stripeSubscriptionId: subscriptionId || undefined,
       amountCents: invoice.amount_paid || 0,
-      taxCents: invoice.tax || 0,
+      taxCents: 0,
       currency: invoice.currency || "usd",
       status: invoice.status || "draft",
-      pdfUrl: invoice.invoice_pdf || null,
-      hostedUrl: invoice.hosted_invoice_url || null,
+      pdfUrl: invoice.invoice_pdf || undefined,
+      hostedUrl: invoice.hosted_invoice_url || undefined,
       paidAt: invoice.status_transitions?.paid_at
         ? new Date(invoice.status_transitions.paid_at * 1000)
-        : null,
-      type: subscription ? "PLAN" : "ORDER",
+        : undefined,
+      type: subscriptionId ? "PLAN" : "ORDER",
       periodStart: new Date(invoice.period_start * 1000),
       periodEnd: new Date(invoice.period_end * 1000),
-      subscriptionId: subscription?.id || null,
     };
 
     const result = await prisma.invoice.updateMany({

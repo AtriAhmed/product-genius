@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { ShoppingCart, Trash2, Plus, Minus, ExternalLink } from "lucide-react";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -14,12 +10,16 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAppProvider } from "@/contexts/AppProvider";
-import { Product } from "@/types";
-import { formatPrice, getMediaUrl } from "@/lib/utils";
-import useSWR from "swr";
-import axios from "axios";
-import { toast } from "sonner";
 import { useIsMounted } from "@/hooks/use-is-mounted";
+import { formatPrice, getMediaUrl } from "@/lib/utils";
+import { Product } from "@/types";
+import axios from "axios";
+import { ExternalLink, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
+import useSWR from "swr";
 
 type CartProduct = Product & {
   quantity: number;
@@ -64,8 +64,13 @@ export default function CartSheet() {
   // Map products with their quantities from cart
   const cartProducts: CartProduct[] = products
     ? products.map((product: Product) => {
+        const supplier = product?.suppliers?.find((s) => s.isInternal);
         const cartItem = cart.find((item) => item.productId === product.id);
-        return { ...product, quantity: cartItem?.quantity || 0 };
+        return {
+          ...product,
+          quantity: cartItem?.quantity || 0,
+          suggestedPrice: supplier ? supplier.price : product.suggestedPrice,
+        };
       })
     : [];
 
@@ -84,7 +89,7 @@ export default function CartSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="relative">
+        <Button variant="outline" className="relative">
           <ShoppingCart className="w-4 h-4" />
           {isMounted && cartItemCount > 0 && (
             <span className="-top-2 -right-2 absolute flex justify-center items-center w-5 h-5 rounded-full bg-primary-500 text-white text-xs">
