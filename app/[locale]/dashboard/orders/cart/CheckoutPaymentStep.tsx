@@ -2,17 +2,18 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentMethod } from "@/types";
 import {
   CreditCard,
   Loader2,
-  Settings,
   Shield,
-  CheckCircle,
+  Check,
+  Sparkles,
+  Link as LinkIcon,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { getCardIconPath } from "@/lib/billingUtils";
 
 type Props = {
   totalPrice: number;
@@ -40,146 +41,108 @@ export default function CheckoutPaymentStep({
 
   if (loadingCards) {
     return (
-      <div className="space-y-4">
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <Card key={i} className="bg-white/80 dark:bg-neutral-800/80">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="w-10 h-6 rounded" />
-                    <div className="space-y-1">
-                      <Skeleton className="w-20 h-4" />
-                      <Skeleton className="w-16 h-3" />
-                    </div>
-                  </div>
-                  <Skeleton className="w-4 h-4 rounded-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex justify-center items-center py-8">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-primary-200 dark:border-primary-800 border-t-primary-600 dark:border-t-primary-400 rounded-full animate-spin"></div>
+          <Loader2 className="top-1/2 left-1/2 absolute w-6 h-6 text-primary-600 dark:text-primary-400 -translate-x-1/2 -translate-y-1/2 transform" />
         </div>
-        <Skeleton className="w-full h-12 rounded-lg" />
       </div>
     );
   }
 
   if (paymentMethods.length === 0) {
     return (
-      <div className="space-y-4 py-8 text-center">
-        <div className="flex justify-center items-center w-16 h-16 mx-auto rounded-full bg-neutral-100 dark:bg-neutral-800">
-          <CreditCard className="w-8 h-8 text-neutral-400" />
+      <div className="space-y-3 py-8 border-2 border-slate-300 dark:border-slate-700 border-dashed rounded-xl bg-gradient-to-br from-white dark:from-slate-800 to-slate-100 dark:to-slate-900 text-center">
+        <div className="flex justify-center items-center w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-primary-500 to-primary-700 shadow-xl">
+          <CreditCard className="w-8 h-8 text-white" />
         </div>
         <div>
-          <h3 className="mb-2 font-semibold text-neutral-900 dark:text-neutral-100">
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
             {tPricing("no payment methods found")}
           </h3>
-          <p className="mb-4 text-neutral-600 dark:text-neutral-400 text-sm">
+          <p className="mt-1 text-slate-600 dark:text-slate-400 text-xs">
             {tPricing("add a payment method to continue")}
           </p>
-          <Button
-            onClick={onNavigateToBilling}
-            variant="outline"
-            className="border-primary-300 dark:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-950"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            {tPricing("go to billing settings")}
-          </Button>
         </div>
+        <Button
+          onClick={onNavigateToBilling}
+          className="bg-gradient-to-r from-primary-600 hover:from-primary-700 to-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl text-white transition-all"
+        >
+          <LinkIcon className="w-4 h-4 mr-2" />
+          {tPricing("go to billing settings")}
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Payment Methods */}
-      <div className="space-y-3">
-        <h3 className="flex items-center gap-2 font-semibold text-primary-700 dark:text-primary-300 text-sm">
-          <Shield className="w-4 h-4" />
-          {tPricing("choose how you'd like to pay")}
-        </h3>
-
-        {paymentMethods.map((method) => (
-          <Card
-            key={method.id}
-            className={cn(
-              "border-2 bg-white/80 dark:bg-neutral-800/80 hover:shadow-lg backdrop-blur-sm transition-all cursor-pointer",
-              selectedPaymentMethod === method.id
-                ? "border-primary-400 dark:border-primary-600 bg-primary-50/80 dark:bg-primary-950/50 shadow-lg"
-                : "border-primary-200 dark:border-primary-800 hover:border-primary-300 dark:hover:border-primary-700"
-            )}
-            onClick={() => onSelectPaymentMethod(method.id)}
-          >
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  {/* Card Brand Icon */}
-                  <div className="flex justify-center items-center w-10 h-6 rounded bg-gradient-to-r from-blue-500 to-purple-600 font-bold text-white text-xs">
-                    {method.card?.brand.toUpperCase() || "CARD"}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900 dark:text-neutral-100 text-sm">
-                        •••• {method.card?.last4 || "****"}
+    <div className="flex flex-col space-y-4 h-full">
+      <div className="grow h-0">
+        <h4 className="flex items-center gap-2 mb-4 font-bold text-primary-900 dark:text-primary-100 text-lg">
+          <Shield className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          {tPricing("select payment method")}
+        </h4>
+        <div className="space-y-3 mb-4">
+          {paymentMethods.map((pm) => (
+            <Card
+              key={pm.id}
+              className={`cursor-pointer transition-all duration-300 border-2 hover:scale-[1.02] active:scale-[0.98] ${
+                selectedPaymentMethod === pm.id
+                  ? "border-primary-500 bg-gradient-to-r from-primary-50 to-primary-50 dark:border-primary-400 dark:from-primary-950/50 dark:to-primary-950/50 shadow-xl"
+                  : "border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-lg"
+              }`}
+              onClick={() => onSelectPaymentMethod(pm.id)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-4">
+                  <Image
+                    src={getCardIconPath(pm.card?.brand || "unknown")}
+                    alt={pm.card?.brand || "Card"}
+                    height={24}
+                    width={24}
+                    className="object-contain rounded-xs"
+                  />
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-slate-900 dark:text-slate-100 capitalize">
+                        {pm.card?.brand}
                       </span>
-                      {method.isDefault && (
-                        <Badge className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs">
+                      <span className="font-mono font-semibold text-slate-600 dark:text-slate-400">
+                        •••• {pm.card?.last4}
+                      </span>
+                      {pm.isDefault && (
+                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 font-semibold text-white text-xs">
                           {tPricing("default")}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-xs">
-                      {tPricing("expires")}{" "}
-                      {method.card?.expMonth.toString().padStart(2, "0")}/
-                      {method.card?.expYear}
-                    </p>
+                    <div className="mt-1 font-medium text-slate-500 dark:text-slate-400 text-sm">
+                      {tPricing("expires")} {pm.card?.expMonth}/
+                      {pm.card?.expYear}
+                    </div>
+                  </div>
+                  <div
+                    className={`w-6 h-6 rounded-full border-3 flex items-center justify-center transition-all ${
+                      selectedPaymentMethod === pm.id
+                        ? "border-primary-500 bg-gradient-to-r from-primary-500 to-primary-500 scale-110 shadow-lg"
+                        : "border-slate-300 dark:border-slate-600"
+                    }`}
+                  >
+                    {selectedPaymentMethod === pm.id && (
+                      <Check className="w-4 h-4 font-bold text-white" />
+                    )}
                   </div>
                 </div>
-
-                <div
-                  className={cn(
-                    "flex justify-center items-center w-4 h-4 border-2 rounded-full transition-all",
-                    selectedPaymentMethod === method.id
-                      ? "border-primary-600 dark:border-primary-400 bg-primary-600 dark:bg-primary-400"
-                      : "border-neutral-300 dark:border-neutral-600"
-                  )}
-                >
-                  {selectedPaymentMethod === method.id && (
-                    <CheckCircle className="w-3 h-3 fill-current text-white" />
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      {/* Billing Summary */}
-      <Card className="border-primary-200 dark:border-primary-800 bg-gradient-to-r from-primary-50 dark:from-primary-950 to-primary-100 dark:to-primary-900">
-        <CardContent className="p-4">
-          <h3 className="mb-3 font-semibold text-primary-700 dark:text-primary-300 text-sm">
-            {tPricing("billing summary")}
-          </h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-neutral-700 dark:text-neutral-300">
-                {t("total")}
-              </span>
-              <span className="font-bold text-primary-900 dark:text-primary-100">
-                {formatPrice(totalPrice)}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Place Order Button */}
       <Button
         onClick={onPlaceOrder}
-        disabled={loading || !selectedPaymentMethod}
-        className="w-full bg-gradient-to-r from-primary-600 hover:from-primary-700 to-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl text-white hover:scale-[1.02] transition-all duration-200"
-        size="lg"
+        disabled={!selectedPaymentMethod || loading}
+        className="w-full py-5 rounded-xl bg-gradient-to-r from-primary-600 hover:from-primary-700 disabled:from-slate-400 via-primary-600 hover:via-primary-700 to-primary-700 hover:to-primary-800 disabled:to-slate-500 shadow-xl hover:shadow-2xl font-bold text-white hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 transition-all duration-300"
       >
         {loading ? (
           <>
@@ -188,15 +151,11 @@ export default function CheckoutPaymentStep({
           </>
         ) : (
           <>
-            <CreditCard className="w-4 h-4 mr-2" />
+            <Sparkles className="w-4 h-4 mr-2" />
             {t("place order")} • {formatPrice(totalPrice)}
           </>
         )}
       </Button>
-
-      <p className="text-neutral-600 dark:text-neutral-400 text-xs text-center">
-        {t("secure checkout powered by stripe")}
-      </p>
     </div>
   );
 }

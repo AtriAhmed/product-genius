@@ -128,37 +128,37 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "max-w-md mx-auto bg-gradient-to-br from-primary-50 via-primary-100 to-primary-200 dark:from-neutral-900 dark:via-primary-950 dark:to-primary-900 border-2 border-primary-300 dark:border-primary-700 shadow-2xl overflow-hidden",
+          "max-w-md overflow-hidden mx-auto border-2 border-primary-300 dark:border-primary-700 bg-gradient-to-br from-primary-50 dark:from-neutral-900 via-primary-100 dark:via-primary-950 to-primary-200 dark:to-primary-900 shadow-2xl",
           step !== "processing" && "h-[calc(100dvh-40px)]"
         )}
       >
         {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
+          <div className="-top-20 -right-20 absolute w-40 h-40 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 blur-3xl animate-pulse"></div>
           <div
-            className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-primary-500 to-primary-700 rounded-full blur-3xl animate-pulse"
+            className="-bottom-20 -left-20 absolute w-40 h-40 rounded-full bg-gradient-to-tr from-primary-500 to-primary-700 blur-3xl animate-pulse"
             style={{ animationDelay: "1s" }}
           ></div>
         </div>
 
         <div className="flex flex-col">
-          <DialogHeader className="space-y-2 relative z-10">
-            <div className="flex items-center justify-between">
+          <DialogHeader className="z-10 relative space-y-2">
+            <div className="flex justify-between items-center">
               {step === "payment" && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleBack}
-                  className="h-8 w-8 p-0 hover:bg-primary-200 dark:hover:bg-primary-900/50 rounded-full transition-all hover:scale-110"
+                  className="w-8 h-8 p-0 rounded-full hover:bg-primary-200 dark:hover:bg-primary-900/50 hover:scale-110 transition-all"
                 >
-                  <ArrowLeft className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                  <ArrowLeft className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                 </Button>
               )}
               <div className="flex-1 text-center">
-                <DialogTitle className="text-lg font-bold bg-gradient-to-r from-primary-600 via-primary-600 to-primary-700 dark:from-primary-400 dark:via-primary-400 dark:to-primary-500 bg-clip-text text-transparent flex items-center justify-center gap-2">
+                <DialogTitle className="flex justify-center items-center gap-2 bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 via-primary-600 dark:via-primary-400 to-primary-700 dark:to-primary-500 font-bold text-transparent text-lg">
                   {step === "review" && (
                     <>
-                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 animate-pulse" />
+                      <Star className="w-5 h-5 fill-yellow-500 text-yellow-500 animate-pulse" />
                       {t("subscribe to plan")}
                     </>
                   )}
@@ -177,7 +177,7 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
                 </DialogTitle>
               </div>
               {plan.mostPopular && (
-                <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white shadow-lg flex items-center gap-1 px-3 py-1 animate-pulse">
+                <Badge className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 shadow-lg text-white animate-pulse">
                   <Crown className="w-3 h-3 fill-yellow-200" />
                   {t("popular")}
                 </Badge>
@@ -185,12 +185,12 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
             </div>
           </DialogHeader>
 
-          <div className="flex-1 space-y-4 relative z-10 mt-6">
+          <div className="z-10 relative flex-1 space-y-4 mt-6">
             {/* Error Alert */}
             {/* {error && (
-              <Alert className="border-2 border-red-300 bg-gradient-to-r from-red-50 to-pink-50 dark:border-red-700 dark:bg-gradient-to-r dark:from-red-950/50 dark:to-pink-950/50 shadow-lg">
-                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-                <AlertDescription className="text-red-900 dark:text-red-200 text-sm font-medium">
+              <Alert className="border-2 border-red-300 dark:border-red-700 bg-gradient-to-r dark:bg-gradient-to-r from-red-50 dark:from-red-950/50 to-pink-50 dark:to-pink-950/50 shadow-lg">
+                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                <AlertDescription className="font-medium text-red-900 dark:text-red-200 text-sm">
                   {error}
                 </AlertDescription>
               </Alert>
@@ -217,19 +217,19 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
 
             {/* Processing Step */}
             {step === "processing" && (
-              <div className="text-center py-8 space-y-4">
+              <div className="space-y-4 py-8 text-center">
                 <div className="relative w-20 h-20 mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-2 bg-white dark:bg-neutral-900 rounded-full flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 animate-pulse"></div>
+                  <div className="absolute inset-2 flex justify-center items-center rounded-full bg-white dark:bg-neutral-900">
                     <Loader2 className="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-primary-900 dark:text-primary-100 flex items-center justify-center gap-2">
+                  <h3 className="flex justify-center items-center gap-2 font-bold text-primary-900 dark:text-primary-100 text-base">
                     <Zap className="w-5 h-5 text-yellow-500 animate-pulse" />
                     {t("creating your subscription")}...
                   </h3>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+                  <p className="mt-1 text-neutral-600 dark:text-neutral-400 text-xs">
                     {t("please don't close this window")}
                   </p>
                 </div>

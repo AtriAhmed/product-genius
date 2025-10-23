@@ -160,7 +160,7 @@ export default function CheckoutDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "max-w-md overflow-hidden mx-auto border-2 border-primary-300 dark:border-primary-700 bg-gradient-to-br from-primary-50 dark:from-neutral-900 via-primary-100 dark:via-primary-950 to-primary-200 dark:to-primary-900 shadow-2xl",
+          "max-w-md overflow-hidden mx-auto dark:border-primary-700 shadow-2xl",
           step !== "processing" && "h-[calc(100dvh-40px)]"
         )}
       >

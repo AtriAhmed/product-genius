@@ -46,10 +46,10 @@ export default function PaymentStep({
 
   if (loadingCards) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="flex justify-center items-center py-8">
         <div className="relative">
           <div className="w-12 h-12 border-4 border-primary-200 dark:border-primary-800 border-t-primary-600 dark:border-t-primary-400 rounded-full animate-spin"></div>
-          <Loader2 className="w-6 h-6 text-primary-600 dark:text-primary-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+          <Loader2 className="top-1/2 left-1/2 absolute w-6 h-6 text-primary-600 dark:text-primary-400 -translate-x-1/2 -translate-y-1/2 transform" />
         </div>
       </div>
     );
@@ -57,21 +57,21 @@ export default function PaymentStep({
 
   if (paymentMethods.length === 0) {
     return (
-      <div className="text-center py-8 space-y-3 bg-gradient-to-br from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-        <div className="w-16 h-16 mx-auto bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center shadow-xl">
+      <div className="space-y-3 py-8 border-2 border-slate-300 dark:border-slate-700 border-dashed rounded-xl bg-gradient-to-br from-white dark:from-slate-800 to-slate-100 dark:to-slate-900 text-center">
+        <div className="flex justify-center items-center w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-primary-500 to-primary-700 shadow-xl">
           <CreditCard className="w-8 h-8 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
             {t("no payment methods found")}
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+          <p className="mt-1 text-slate-600 dark:text-slate-400 text-xs">
             {t("add a payment method to continue")}
           </p>
         </div>
         <Button
           onClick={onNavigateToBilling}
-          className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl transition-all"
+          className="bg-gradient-to-r from-primary-600 hover:from-primary-700 to-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl text-white transition-all"
         >
           <LinkIcon className="w-4 h-4 mr-2" />
           {t("go to billing settings")}
@@ -81,9 +81,9 @@ export default function PaymentStep({
   }
 
   return (
-    <div className="h-full flex flex-col space-y-4">
-      <div className="h-0 grow">
-        <h4 className="font-bold text-lg mb-4 text-primary-900 dark:text-primary-100 flex items-center gap-2">
+    <div className="flex flex-col space-y-4 h-full">
+      <div className="grow h-0">
+        <h4 className="flex items-center gap-2 mb-4 font-bold text-primary-900 dark:text-primary-100 text-lg">
           <Shield className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           {t("select payment method")}
         </h4>
@@ -108,20 +108,20 @@ export default function PaymentStep({
                     className="object-contain rounded-xs"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold capitalize text-slate-900 dark:text-slate-100">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-slate-900 dark:text-slate-100 capitalize">
                         {pm.card?.brand}
                       </span>
-                      <span className="text-slate-600 dark:text-slate-400 font-mono font-semibold">
+                      <span className="font-mono font-semibold text-slate-600 dark:text-slate-400">
                         •••• {pm.card?.last4}
                       </span>
                       {pm.isDefault && (
-                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-semibold">
+                        <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 font-semibold text-white text-xs">
                           {t("default")}
                         </Badge>
                       )}
                     </div>
-                    <div className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                    <div className="mt-1 font-medium text-slate-500 dark:text-slate-400 text-sm">
                       {t("expires")} {pm.card?.expMonth}/{pm.card?.expYear}
                     </div>
                   </div>
@@ -133,7 +133,7 @@ export default function PaymentStep({
                     }`}
                   >
                     {selectedPaymentMethod === pm.id && (
-                      <Check className="w-4 h-4 text-white font-bold" />
+                      <Check className="w-4 h-4 font-bold text-white" />
                     )}
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export default function PaymentStep({
       <Button
         onClick={onSubscribe}
         disabled={!selectedPaymentMethod || loading}
-        className="w-full bg-gradient-to-r from-primary-600 via-primary-600 to-primary-700 hover:from-primary-700 hover:via-primary-700 hover:to-primary-800 disabled:from-slate-400 disabled:to-slate-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 font-bold py-5 rounded-xl hover:scale-[1.02] active:scale-[0.98] disabled:scale-100"
+        className="w-full py-5 rounded-xl bg-gradient-to-r from-primary-600 hover:from-primary-700 disabled:from-slate-400 via-primary-600 hover:via-primary-700 to-primary-700 hover:to-primary-800 disabled:to-slate-500 shadow-xl hover:shadow-2xl font-bold text-white hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 transition-all duration-300"
       >
         {loading ? (
           <>

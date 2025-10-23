@@ -38,9 +38,9 @@ export default function CheckoutReviewStep({
     deliveryInfo.deliveryCountry;
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col space-y-4 h-full">
       {/* Order Summary Card */}
-      <Card className="border-primary-200 dark:border-primary-800 bg-white/80 dark:bg-neutral-800/80 shadow-lg backdrop-blur-sm">
+      <Card className="flex flex-col grow h-0 overflow-y-auto border-primary-200 dark:border-primary-800 bg-white/80 dark:bg-neutral-800/80 shadow-lg backdrop-blur-sm">
         <CardContent className="space-y-3 p-4">
           <div className="flex items-center gap-2 text-primary-700 dark:text-primary-300">
             <Package className="w-4 h-4" />

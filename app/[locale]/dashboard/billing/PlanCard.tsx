@@ -59,14 +59,14 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
       {/* Animated gradient background for popular plans */}
       {plan.mostPopular && (
         <>
-          <div className="rounded-3xl absolute inset-0 bg-gradient-to-r from-primary-400/10 via-primary-500/5 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div className="absolute -top-1 -right-1 w-24 h-24 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500" />
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-400/10 via-primary-500/5 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="-top-1 -right-1 absolute w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 opacity-20 group-hover:opacity-30 blur-3xl transition-opacity duration-500" />
         </>
       )}
 
       {plan.mostPopular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-          <Badge className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-full shadow-lg border-2 border-white dark:border-gray-800 flex items-center backdrop-blur-sm">
+        <div className="-top-4 left-1/2 z-10 absolute -translate-x-1/2">
+          <Badge className="flex items-center px-4 py-2 border-2 border-white dark:border-gray-800 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg backdrop-blur-sm text-white">
             <Crown className="w-4 h-4 mr-2 fill-yellow-300 text-yellow-100" />
             <span className="font-semibold">{t("popular")}</span>
             <Sparkles className="w-4 h-4 ml-2 text-yellow-200" />
@@ -74,47 +74,47 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
         </div>
       )}
 
-      <CardHeader className="text-center space-y-2 relative z-10">
-        <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors duration-300">
+      <CardHeader className="z-10 relative space-y-2 text-center">
+        <CardTitle className="font-bold text-foreground dark:group-hover:text-primary-300 group-hover:text-primary-700 text-xl transition-colors duration-300">
           {plan.name}
         </CardTitle>
 
-        <div className="flex items-baseline justify-center gap-2">
+        <div className="flex justify-center items-baseline gap-2">
           {plan.oldPrice && (
-            <span className="text-muted-foreground line-through text-sm sm:text-lg font-medium">
+            <span className="font-medium text-muted-foreground text-sm sm:text-lg line-through">
               {formatPrice(plan.oldPrice)}
             </span>
           )}
           <div className="flex items-baseline">
-            <span className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 dark:from-primary-400 dark:via-primary-500 dark:to-primary-600 bg-clip-text text-transparent">
+            <span className="bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 via-primary-700 dark:via-primary-500 to-primary-800 dark:to-primary-600 font-black text-transparent text-2xl sm:text-3xl">
               {formatPrice(plan?.price || 0)}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex justify-center items-center gap-2">
           <div className="w-6 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent"></div>
-          <p className="text-xs text-muted-foreground font-semibold px-2 py-1 bg-muted/50 rounded-full capitalize">
+          <p className="px-2 py-1 rounded-full bg-muted/50 font-semibold text-muted-foreground text-xs capitalize">
             / {t(plan?.interval?.toLowerCase() || "")}
           </p>
           <div className="w-6 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent"></div>
         </div>
 
         {plan.description && (
-          <CardDescription className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-sm mx-auto">
+          <CardDescription className="max-w-sm mx-auto mt-2 text-muted-foreground text-sm leading-relaxed">
             {plan.description}
           </CardDescription>
         )}
       </CardHeader>
 
-      <CardContent className="pt-0 flex-1 relative z-10">
+      <CardContent className="z-10 relative flex-1 pt-0">
         {plan.features && plan.features.length > 0 && (
-          <div className="bg-muted/20 dark:bg-muted/10 rounded-xl py-4">
+          <div className="py-4 rounded-xl bg-muted/20 dark:bg-muted/10">
             <ul className="space-y-2">
               {plan.features.map((feature, index) => (
                 <li
                   key={index}
-                  className="flex items-start space-x-3 group/feature"
+                  className="group/feature flex items-start space-x-3"
                 >
                   <div
                     className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
@@ -142,7 +142,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
                       {feature.description}
                     </span>
                     {feature.note && (
-                      <p className="text-xs text-muted-foreground mt-1 italic">
+                      <p className="mt-1 text-muted-foreground text-xs italic">
                         {feature.note}
                       </p>
                     )}
@@ -154,7 +154,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
         )}
       </CardContent>
 
-      <CardFooter className="pt-3 pb-4 px-4 relative z-10">
+      <CardFooter className="z-10 relative px-4 pt-3 pb-4">
         <Button
           className={`w-full h-10 text-sm font-semibold transition-all duration-300 transform shadow-lg ${
             hasActiveSubscription
