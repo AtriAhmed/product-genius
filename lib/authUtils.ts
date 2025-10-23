@@ -41,3 +41,7 @@ export async function isAuthenticatedServerSide(
     return user;
   }
 }
+
+export function isAuthorized(user: any & { role: Role }, roles: Role[]) {
+  return roles.includes(user.role);
+}

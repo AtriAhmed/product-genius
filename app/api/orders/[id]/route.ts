@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide, isAuthorized } from "@/lib/authUtils";
 
 const updateOrderSchema = z.object({
   status: z
@@ -59,7 +59,7 @@ export async function GET(
     const where: any = { id: orderId };
 
     // If user is not admin/owner, only show their orders
-    if (user.role !== "ADMIN" && user.role !== "OWNER") {
+    if (!isAuthorized(user, ["ADMIN", "OWNER", "AGENT"])) {
       where.userId = user.id;
     }
 
@@ -84,7 +84,7 @@ export async function GET(
                   where: { type: "IMAGE" },
                   orderBy: { sortOrder: "asc" },
                   take: 1,
-                  select: { url: true, alt: true },
+                  select: { url: true, alt: true, type: true },
                 },
               },
             },
@@ -97,7 +97,7 @@ export async function GET(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ order });
+    return NextResponse.json(order);
   } catch (error) {
     console.error("Error fetching order:", error);
     return NextResponse.json(
@@ -131,9 +131,7 @@ export async function PATCH(
     const existingOrder = await prisma.order.findFirst({
       where: {
         id: orderId,
-        ...(user.role !== "ADMIN" && user.role !== "OWNER"
-          ? { userId: user.id }
-          : {}),
+        ...(isAuthorized(user, ["ADMIN", "OWNER"]) ? { userId: user.id } : {}),
       },
     });
 
@@ -144,8 +142,7 @@ export async function PATCH(
     // Validate agent assignment (only admins/owners can assign agents)
     if (
       validatedData.agentId &&
-      user.role !== "ADMIN" &&
-      user.role !== "OWNER"
+      !isAuthorized(user, ["ADMIN", "OWNER", "AGENT"])
     ) {
       return NextResponse.json(
         { error: "Only admins can assign agents to orders" },
