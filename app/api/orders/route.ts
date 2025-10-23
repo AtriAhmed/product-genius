@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     const where: any = {};
 
     // If user is not admin/owner, only show their orders
-    if (user.role !== "ADMIN" && user.role !== "OWNER") {
+    if (!["ADMIN", "OWNER", "AGENT"].includes(user?.role || "")) {
       where.userId = user.id;
     } else if (query.userId) {
       where.userId = parseInt(query.userId);
