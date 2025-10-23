@@ -167,7 +167,7 @@ model Invoice {
   pdfUrl               String?
   hostedUrl            String?
   paidAt               DateTime?
-  type                 InvoiceType? // PLAN or PAYMENT
+  type                 InvoiceType? // PLAN or ORDER
   periodStart          DateTime
   periodEnd            DateTime
   createdAt            DateTime     @default(now())
@@ -268,14 +268,14 @@ model Order {
   agent   User? @relation("AgentAssignedOrders", fields: [agentId], references: [id])
   agentId Int?
 
-  invoiceId String? // Stripe Invoice ID
-  invoice   Invoice? @relation(fields: [invoiceId], references: [stripeInvoiceId])
+  invoiceId Int? // Stripe Invoice ID
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
 
   items          OrderItem[]
   totalCents     Int
   currency       String
-  status         OrderStatus     @default(PENDING)
-  shipmentStatus ShipmentStatus?
+  status         OrderStatus    @default(PENDING)
+  shipmentStatus ShipmentStatus @default(PENDING)
 
   // delivery address
   deliveryName     String?

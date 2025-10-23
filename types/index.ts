@@ -244,6 +244,15 @@ export type Order = {
   currency?: string;
   status?: OrderStatus;
   shipmentStatus?: ShipmentStatus;
+  deliveryName?: string;
+  deliveryPhone?: string;
+  deliveryEmail?: string;
+  deliveryAddress1?: string;
+  deliveryAddress2?: string;
+  deliveryCity?: string;
+  deliveryState?: string;
+  deliveryZip?: string;
+  deliveryCountry?: string;
   metadata?: any; // JSON type
   createdAt?: Date;
   updatedAt?: Date;

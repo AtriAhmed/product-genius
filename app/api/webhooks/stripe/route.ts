@@ -285,7 +285,7 @@ async function handleInvoiceUpdated(invoice: any) {
       paidAt: invoice.status_transitions?.paid_at
         ? new Date(invoice.status_transitions.paid_at * 1000)
         : null,
-      type: subscription ? "PLAN" : "PAYMENT",
+      type: subscription ? "PLAN" : "ORDER",
       periodStart: new Date(invoice.period_start * 1000),
       periodEnd: new Date(invoice.period_end * 1000),
       subscriptionId: subscription?.id || null,

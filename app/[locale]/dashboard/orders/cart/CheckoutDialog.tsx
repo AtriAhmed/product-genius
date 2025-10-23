@@ -143,10 +143,6 @@ export default function CheckoutDialog({
   };
 
   const handleNext = () => {
-    if (paymentMethods.length === 0) {
-      setError(tPricing("please add a payment method first"));
-      return;
-    }
     setStep("payment");
   };
 

@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticatedServerSide } from "@/lib/authUtils";
-import type { PaginatedResponse, CreateOrderRequest } from "@/types";
+import type {
+  PaginatedResponse,
+  CreateOrderRequest,
+  InvoiceType,
+} from "@/types";
 import { nanoid } from "nanoid";
 import { stripe } from "@/lib/stripe";
 import Stripe from "stripe";
@@ -50,6 +54,9 @@ const querySchema = z.object({
     ])
     .optional(),
   userId: z.string().optional(),
+  search: z.string().optional(),
+  sortBy: z.string().optional().default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 export async function GET(request: NextRequest) {
@@ -65,6 +72,9 @@ export async function GET(request: NextRequest) {
       limit: searchParams.get("limit") || "10",
       status: searchParams.get("status") || undefined,
       userId: searchParams.get("userId") || undefined,
+      search: searchParams.get("search") || undefined,
+      sortBy: searchParams.get("sortBy") || "createdAt",
+      sortOrder: searchParams.get("sortOrder") || "desc",
     });
 
     const page = parseInt(query.page);
@@ -84,6 +94,37 @@ export async function GET(request: NextRequest) {
     if (query.status) {
       where.status = query.status;
     }
+
+    // Search functionality
+    if (query.search) {
+      where.OR = [
+        {
+          orderNumber: {
+            contains: query.search,
+          },
+        },
+        {
+          user: {
+            OR: [
+              {
+                name: {
+                  contains: query.search,
+                },
+              },
+              {
+                email: {
+                  contains: query.search,
+                },
+              },
+            ],
+          },
+        },
+      ];
+    }
+
+    // Build orderBy object
+    const orderBy: any = {};
+    orderBy[query.sortBy] = query.sortOrder;
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
@@ -114,7 +155,7 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: orderBy,
         skip,
         take: limit,
       }),
@@ -193,7 +234,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate order number
-    const orderNumber = `ORD-${Date.now()}-${nanoid()}`;
+    const orderNumber = `ORD-${nanoid(8)}`;
 
     // Create order first (PENDING)
     const order = await prisma.order.create({
@@ -278,32 +319,38 @@ export async function POST(request: NextRequest) {
         }
       );
 
+      const invoiceData = {
+        stripeInvoiceId: invoice.id,
+        userId: user.id,
+        amountCents: invoice.amount_paid || 0,
+        taxCents: 0,
+        currency: invoice.currency || "usd",
+        status: invoice.status || "paid",
+        pdfUrl: invoice.invoice_pdf || null,
+        hostedUrl: invoice.hosted_invoice_url || null,
+        paidAt: invoice.status_transitions?.paid_at
+          ? new Date(invoice.status_transitions.paid_at * 1000)
+          : null,
+        type: "ORDER" as InvoiceType,
+        periodStart: new Date(invoice.period_start * 1000),
+        periodEnd: new Date(invoice.period_end * 1000),
+      };
+
       // if invoice is paid
       if ((paidInvoice.status || "").toLowerCase() === "paid") {
-        const dbInvoice = await prisma.invoice.create({
-          data: {
+        const dbInvoice = await prisma.invoice.upsert({
+          where: {
             stripeInvoiceId: invoice.id,
-            userId: user.id,
-            amountCents: invoice.amount_paid || 0,
-            taxCents: 0,
-            currency: invoice.currency || "usd",
-            status: invoice.status || "paid",
-            pdfUrl: invoice.invoice_pdf || null,
-            hostedUrl: invoice.hosted_invoice_url || null,
-            paidAt: invoice.status_transitions?.paid_at
-              ? new Date(invoice.status_transitions.paid_at * 1000)
-              : null,
-            type: "ORDER",
-            periodStart: new Date(invoice.period_start * 1000),
-            periodEnd: new Date(invoice.period_end * 1000),
           },
+          update: invoiceData,
+          create: invoiceData,
         });
         // update order to PAID
         try {
           const updatedOrder = await prisma.order.update({
             where: { id: order.id },
             data: {
-              invoiceId: dbInvoice.id?.toString(),
+              invoiceId: dbInvoice.id,
               status: "PAID",
             },
             include: {
@@ -316,6 +363,8 @@ export async function POST(request: NextRequest) {
             { status: 201 }
           );
         } catch (updateErr) {
+          console.log("-------------------- updateErr --------------------");
+          console.log(updateErr);
           // DB update failed after successful payment — DO NOT refund.
           console.error("DB update failed after invoice paid:", updateErr);
 
