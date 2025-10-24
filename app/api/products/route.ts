@@ -286,7 +286,11 @@ export async function GET(request: NextRequest) {
             orderBy: { sortOrder: "asc" },
             take: 1, // Only get the first media item for list view
           },
-          category: true,
+          category: {
+            include: {
+              translations: true,
+            },
+          },
           suppliers: true,
         },
         orderBy: { createdAt: "desc" },

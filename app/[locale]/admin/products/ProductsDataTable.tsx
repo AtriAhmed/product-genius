@@ -35,6 +35,9 @@ export default function ProductsDataTable({
 }: ProductsDataTableProps) {
   const t = useTranslations("products");
 
+  console.log("-------------------- products --------------------");
+  console.log(products);
+
   const getCurrentTranslation = (
     translations: ProductTranslation[],
     locale = "en"
@@ -58,9 +61,9 @@ export default function ProductsDataTable({
 
   if (isLoading) {
     return (
-      <div className="rounded-md border bg-background">
+      <div className="border rounded-md bg-background">
         <div className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="w-8 h-8 mx-auto border-primary border-b-2 rounded-full animate-spin"></div>
           <p className="mt-4 text-muted-foreground">Loading products...</p>
         </div>
       </div>
@@ -69,13 +72,13 @@ export default function ProductsDataTable({
 
   if (products.length === 0) {
     return (
-      <div className="rounded-md border bg-background">
+      <div className="border rounded-md bg-background">
         <div className="p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+          <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
             <Eye className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium mb-2">{t("no products found")}</h3>
-          <p className="text-muted-foreground mb-4">
+          <h3 className="mb-2 font-medium text-lg">{t("no products found")}</h3>
+          <p className="mb-4 text-muted-foreground">
             {t("try adjusting your search or filters")}
           </p>
         </div>
@@ -84,11 +87,11 @@ export default function ProductsDataTable({
   }
 
   return (
-    <div className="w-0 min-w-full rounded-md border bg-background">
+    <div className="w-0 min-w-full border rounded-md bg-background">
       <Table>
         <TableHeader>
           <TableRow className="border-border hover:bg-muted/50">
-            <TableHead className="font-medium w-16">Image</TableHead>
+            <TableHead className="w-16 font-medium">Image</TableHead>
             <TableHead className="font-medium">{t("name")}</TableHead>
             <TableHead className="font-medium">SKU</TableHead>
             <TableHead className="font-medium">Category</TableHead>
@@ -117,7 +120,7 @@ export default function ProductsDataTable({
               >
                 {/* Product Image */}
                 <TableCell>
-                  <div className="w-12 h-12 flex-shrink-0 bg-muted rounded-md overflow-hidden">
+                  <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
                     {primaryMedia?.url ? (
                       primaryMedia.type === "IMAGE" ? (
                         <Image
@@ -145,7 +148,7 @@ export default function ProductsDataTable({
                         />
                       )
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
+                      <div className="flex justify-center items-center w-full h-full">
                         <Eye className="w-4 h-4 text-muted-foreground" />
                       </div>
                     )}
@@ -159,7 +162,7 @@ export default function ProductsDataTable({
                       {translation?.title || `Product #${product.id}`}
                     </span>
                     {translation?.description && (
-                      <span className="text-xs text-muted-foreground truncate max-w-xs">
+                      <span className="max-w-xs text-muted-foreground text-xs truncate">
                         {translation.description}
                       </span>
                     )}
@@ -169,11 +172,11 @@ export default function ProductsDataTable({
                 {/* SKU */}
                 <TableCell>
                   {product.sku ? (
-                    <code className="text-xs bg-muted px-2 py-1 rounded">
+                    <code className="px-2 py-1 rounded bg-muted text-xs">
                       {product.sku}
                     </code>
                   ) : (
-                    <span className="text-xs text-muted-foreground italic">
+                    <span className="text-muted-foreground text-xs italic">
                       No SKU
                     </span>
                   )}
@@ -186,7 +189,7 @@ export default function ProductsDataTable({
                       {categoryTranslation.title}
                     </Badge>
                   ) : (
-                    <span className="text-xs text-muted-foreground italic">
+                    <span className="text-muted-foreground text-xs italic">
                       No category
                     </span>
                   )}
@@ -200,7 +203,7 @@ export default function ProductsDataTable({
                       {product.suggestedPrice.toFixed(2)}
                     </span>
                   ) : (
-                    <span className="text-xs text-muted-foreground italic">
+                    <span className="text-muted-foreground text-xs italic">
                       No price
                     </span>
                   )}
@@ -242,19 +245,19 @@ export default function ProductsDataTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="w-8 h-8 p-0"
                       onClick={() => onEdit(product)}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="w-4 h-4" />
                       <span className="sr-only">Edit product</span>
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      className="w-8 h-8 p-0 hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => onDelete(product)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="w-4 h-4" />
                       <span className="sr-only">Delete product</span>
                     </Button>
                   </div>
