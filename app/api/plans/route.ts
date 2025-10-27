@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: validatedData.name,
         description: validatedData.description,
-        oldPrice: validatedData.oldPrice ?? null,
+        oldPrice: validatedData.oldPrice ?? undefined,
         price: validatedData.price,
         interval: validatedData.interval,
         stripeProductId: stripeProduct.id,
