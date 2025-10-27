@@ -143,7 +143,9 @@ export default function InvoicesDataTable({
         <TableBody>
           {invoices.map((invoice) => (
             <TableRow key={invoice.id}>
-              <TableCell className="font-medium">#{invoice.id}</TableCell>
+              <TableCell className="font-medium">
+                #{invoice.id?.toString()?.padStart(6, "0")}
+              </TableCell>
               <TableCell>
                 {invoice.type && (
                   <Badge className={getTypeColor(invoice.type)}>

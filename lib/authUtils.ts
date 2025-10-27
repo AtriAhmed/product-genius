@@ -30,6 +30,9 @@ export async function isAuthenticatedServerSide(
     // Fetch the user from the database to get the latest info
     user = (await prisma.user.findUnique({
       where: { id: parseInt(session.user.id) },
+      include: {
+        currentSubscription: true,
+      },
     })) as UserType;
   }
 

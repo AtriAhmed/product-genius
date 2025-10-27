@@ -177,7 +177,11 @@ export default function ProductsPage() {
               {t("manage your products and translations")}
             </p>
           </div>
-          <Button onClick={handleAddProduct} className="gap-2">
+          <Button
+            onClick={handleAddProduct}
+            className="gap-2"
+            variant="primary"
+          >
             <Plus className="w-4 h-4" />
             {t("add product")}
           </Button>

@@ -3,7 +3,7 @@ import { PrismaClient, Role } from "../app/generated/prisma";
 
 const prisma = new PrismaClient();
 
-const email = "atri.omar.2003@gmail.com";
+const email = "editor@gmail.com";
 const name = "Atri Omar";
 const password = "password";
 const role = Role.USER;

@@ -11,15 +11,17 @@ import {
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
+import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import DashboardContent from "@/app/[locale]/dashboard/DashboardContent";
 
 export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const user = await isAuthenticatedServerSide(["USER"], true);
 
-  if (!session || !["USER"].includes(session.user?.role)) {
+  if (!user) {
     notFound();
   }
 
@@ -28,15 +30,17 @@ export default async function Layout({
       <SidebarProvider className="min-h-[calc(100vh-55px)]">
         <UserSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <header className="flex items-center gap-2 h-16 group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 transition-[width,height] ease-linear shrink-0">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Separator orientation="vertical" className="h-4 mr-2" />
               <DashboardBreadcrumb />
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 py-4 sm:px-4 pt-0">
-            {children}
+          <div className="flex flex-col flex-1 gap-4 sm:px-4 py-4 pt-0">
+            <DashboardContent hasSubscription={!!user?.currentSubscription}>
+              {children}
+            </DashboardContent>
           </div>
         </SidebarInset>
       </SidebarProvider>

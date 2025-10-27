@@ -25,6 +25,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import ReviewStep from "./ReviewStep";
 import PaymentStep from "./PaymentStep";
 import { cn } from "@/lib/utils";
+import { mutate } from "swr";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 type Props = {
   plan: Plan | null;
@@ -91,8 +94,13 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
       });
 
       // Success - close dialog and refresh
-      onClose();
-      router.refresh();
+
+      setTimeout(() => {
+        router.refresh();
+        mutate("current-user");
+        onClose();
+        toast.success(t("subscription created successfully"));
+      }, 2000);
     } catch (error: any) {
       console.error("Subscription error:", error);
       setError(
@@ -105,10 +113,6 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
   };
 
   const handleNext = () => {
-    if (paymentMethods.length === 0) {
-      setError(t("please add a payment method first"));
-      return;
-    }
     setStep("payment");
   };
 

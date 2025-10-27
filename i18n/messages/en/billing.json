@@ -38,5 +38,6 @@
   "past_due": "Past Due",
   "canceled": "Canceled",
   "incomplete": "Incomplete",
-  "unpaid": "Unpaid"
+  "unpaid": "Unpaid",
+  "subscription created successfully": "Subscription created successfully"
 }

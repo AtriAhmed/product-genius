@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { getCurrentTranslation } from "@/lib/products";
-import { getMediaUrl } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -132,7 +132,12 @@ export default function ProductRow({
       <TableCell>
         <Badge
           variant={product.isActive ? "default" : "secondary"}
-          className="text-xs"
+          className={cn(
+            "text-xs",
+            product.isActive
+              ? "bg-green-400 hover:bg-green-500 text-green-900"
+              : ""
+          )}
         >
           {product.isActive ? t("active") : t("inactive")}
         </Badge>
