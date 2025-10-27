@@ -94,7 +94,7 @@ export default function LanguageSelector({
             const hasError = hasErrors ? hasErrors(languageCode) : false;
 
             return (
-              <div key={languageCode} className="relative group">
+              <div key={languageCode} className="group relative">
                 <Button
                   type="button"
                   variant={
@@ -103,7 +103,7 @@ export default function LanguageSelector({
                   size="sm"
                   onClick={() => onLanguageSelect(languageCode)}
                   className={cn(
-                    "h-9 px-3 gap-2 transition-colors",
+                    "gap-2 h-9 px-3 transition-colors",
                     hasError && "border-destructive text-destructive",
                     activeLanguage === languageCode &&
                       hasError &&
@@ -127,9 +127,9 @@ export default function LanguageSelector({
                   <button
                     type="button"
                     onClick={() => onLanguageRemove(languageCode)}
-                    className="absolute -top-1 -right-1 size-4 rounded-full bg-foreground hover:bg-muted-foreground hover opacity-0 group-hover:opacity-100 duration-200"
+                    className="-top-1 -right-1 absolute size-4 rounded-full bg-foreground hover:bg-muted-foreground opacity-0 focus:opacity-100 group-hover:opacity-100 duration-200 hover"
                   >
-                    <X className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 size-2.5 text-background " />
+                    <X className="top-1/2 left-1/2 absolute size-2.5 text-background -translate-x-1/2 -translate-y-1/2" />
                   </button>
                 )}
               </div>
@@ -141,7 +141,7 @@ export default function LanguageSelector({
         {getAvailableLanguages().length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-2">
+              <Button variant="outline" size="sm" className="gap-2 h-9">
                 <Plus className="w-4 h-4" />
                 Add Language
               </Button>

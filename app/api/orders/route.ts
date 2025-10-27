@@ -53,6 +53,16 @@ const querySchema = z.object({
       "REFUNDED",
     ])
     .optional(),
+  shipmentStatus: z
+    .enum([
+      "PENDING",
+      "PICKED",
+      "IN_TRANSIT",
+      "DELIVERED",
+      "RETURNED",
+      "CANCELLED",
+    ])
+    .optional(),
   userId: z.string().optional(),
   search: z.string().optional(),
   sortBy: z.string().optional().default("createdAt"),
@@ -71,6 +81,7 @@ export async function GET(request: NextRequest) {
       page: searchParams.get("page") || "1",
       limit: searchParams.get("limit") || "10",
       status: searchParams.get("status") || undefined,
+      shipmentStatus: searchParams.get("shipmentStatus") || undefined,
       userId: searchParams.get("userId") || undefined,
       search: searchParams.get("search") || undefined,
       sortBy: searchParams.get("sortBy") || "createdAt",
@@ -93,6 +104,10 @@ export async function GET(request: NextRequest) {
 
     if (query.status) {
       where.status = query.status;
+    }
+
+    if (query.shipmentStatus) {
+      where.shipmentStatus = query.shipmentStatus;
     }
 
     // Search functionality

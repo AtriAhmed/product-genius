@@ -143,7 +143,7 @@ export function AgentSidebar({
                     {t("product genius")}
                   </span>
                   <span className="text-muted-foreground text-xs truncate">
-                    {t("user panel")}
+                    {t("agent panel")}
                   </span>
                 </div>
               </Link>

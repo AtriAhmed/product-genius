@@ -32,7 +32,7 @@ async function fetcher(
   const params: any = { page, limit };
 
   if (search) params.search = search;
-  if (status !== "all") params.status = status;
+  if (status !== "all") params.shipmentStatus = status;
   if (sortBy) params.sortBy = sortBy;
   if (sortOrder) params.sortOrder = sortOrder;
 

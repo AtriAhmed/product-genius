@@ -30,19 +30,19 @@ interface OrdersDataTableProps {
 const getShipmentStatusColor = (status: ShipmentStatus) => {
   switch (status) {
     case "PENDING":
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+      return "bg-yellow-400 text-yellow-900";
     case "PICKED":
-      return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+      return "bg-blue-400 text-blue-900";
     case "IN_TRANSIT":
-      return "bg-purple-100 text-purple-800 hover:bg-purple-200";
+      return "bg-purple-400 text-purple-900";
     case "DELIVERED":
-      return "bg-green-100 text-green-800 hover:bg-green-200";
+      return "bg-green-400 text-green-900";
     case "RETURNED":
-      return "bg-orange-100 text-orange-800 hover:bg-orange-200";
+      return "bg-orange-400 text-orange-900";
     case "CANCELLED":
-      return "bg-red-100 text-red-800 hover:bg-red-200";
+      return "bg-red-400 text-red-900";
     default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+      return "bg-gray-400 text-gray-900";
   }
 };
 
@@ -155,7 +155,9 @@ export default function OrdersDataTable({
                   </Badge>
                   <Select
                     value={order.shipmentStatus}
-                    onValueChange={(value) => onUpdateShipmentStatus(order.id!, value)}
+                    onValueChange={(value) =>
+                      onUpdateShipmentStatus(order.id!, value)
+                    }
                   >
                     <SelectTrigger className="w-[140px] h-8">
                       <Truck className="w-3 h-3 mr-1" />
@@ -164,10 +166,16 @@ export default function OrdersDataTable({
                     <SelectContent>
                       <SelectItem value="PENDING">{t("pending")}</SelectItem>
                       <SelectItem value="PICKED">{t("picked")}</SelectItem>
-                      <SelectItem value="IN_TRANSIT">{t("in_transit")}</SelectItem>
-                      <SelectItem value="DELIVERED">{t("delivered")}</SelectItem>
+                      <SelectItem value="IN_TRANSIT">
+                        {t("in_transit")}
+                      </SelectItem>
+                      <SelectItem value="DELIVERED">
+                        {t("delivered")}
+                      </SelectItem>
                       <SelectItem value="RETURNED">{t("returned")}</SelectItem>
-                      <SelectItem value="CANCELLED">{t("cancelled")}</SelectItem>
+                      <SelectItem value="CANCELLED">
+                        {t("cancelled")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

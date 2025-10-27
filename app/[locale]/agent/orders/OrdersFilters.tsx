@@ -66,13 +66,12 @@ export default function OrdersFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">{t("all statuses")}</SelectItem>
-          <SelectItem value="DRAFT">{t("draft")}</SelectItem>
           <SelectItem value="PENDING">{t("pending")}</SelectItem>
-          <SelectItem value="PAID">{t("paid")}</SelectItem>
-          <SelectItem value="PROCESSING">{t("processing")}</SelectItem>
-          <SelectItem value="COMPLETED">{t("completed")}</SelectItem>
-          <SelectItem value="CANCELED">{t("canceled")}</SelectItem>
-          <SelectItem value="REFUNDED">{t("refunded")}</SelectItem>
+          <SelectItem value="PICKED">{t("picked")}</SelectItem>
+          <SelectItem value="IN_TRANSIT">{t("in_transit")}</SelectItem>
+          <SelectItem value="DELIVERED">{t("delivered")}</SelectItem>
+          <SelectItem value="RETURNED">{t("returned")}</SelectItem>
+          <SelectItem value="CANCELLED">{t("cancelled")}</SelectItem>
         </SelectContent>
       </Select>
 

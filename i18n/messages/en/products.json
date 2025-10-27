@@ -135,5 +135,10 @@
   "add": "Add",
   "available": "Available",
   "availability": "Availability",
-  "unavailable": "Unavailable"
+  "unavailable": "Unavailable",
+  "no suppliers available": "No suppliers available",
+  "add suppliers to your product": "Add suppliers to your product",
+  "no sku": "No SKU",
+  "no category": "No category",
+  "no price": "No price"
 }

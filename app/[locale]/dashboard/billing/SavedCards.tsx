@@ -86,7 +86,7 @@ export default function SavedCards() {
     return (
       <Card className="bg-background">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
               {t("saved cards")}
@@ -98,11 +98,11 @@ export default function SavedCards() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="gap-4 sm:gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-48 bg-muted animate-pulse rounded-lg aspect-[1.6/1]"
+                className="h-48 aspect-[1.6/1] rounded-lg bg-muted animate-pulse"
               />
             ))}
           </div>
@@ -114,7 +114,7 @@ export default function SavedCards() {
   return (
     <Card className="bg-background">
       <CardHeader>
-        <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex flex-wrap justify-between items-center gap-2">
           <div>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5" />
@@ -133,11 +133,11 @@ export default function SavedCards() {
       </CardHeader>
       <CardContent>
         {paymentMethods.length === 0 ? (
-          <div className="text-center py-12">
-            <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">{t("no cards")}</h3>
-            <p className="text-muted-foreground mb-4">{t("add first card")}</p>
-            <Button onClick={() => setShowAddDialog(true)}>
+          <div className="py-12 text-center">
+            <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="mb-2 font-medium text-lg">{t("no cards")}</h3>
+            <p className="mb-4 text-muted-foreground">{t("add first card")}</p>
+            <Button onClick={() => setShowAddDialog(true)} variant="primary">
               <Plus className="w-4 h-4 mr-2" />
               {t("add new card")}
             </Button>

@@ -127,7 +127,7 @@ export default function AddSupplierDialog({
             <Button
               type="button"
               size="sm"
-              variant={isInternalValue ? "default" : "outline"}
+              variant={isInternalValue ? "primary" : "outline"}
               onClick={() => {
                 setValue("isInternal", true, { shouldDirty: true });
                 setValue("url", "", { shouldDirty: true });
@@ -139,7 +139,7 @@ export default function AddSupplierDialog({
             <Button
               type="button"
               size="sm"
-              variant={!isInternalValue ? "default" : "outline"}
+              variant={!isInternalValue ? "primary" : "outline"}
               onClick={() => {
                 setValue("isInternal", false, { shouldDirty: true });
               }}
