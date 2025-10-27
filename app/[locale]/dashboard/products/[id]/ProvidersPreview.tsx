@@ -24,11 +24,11 @@ export function ProvidersPreview({ suppliers }: ProvidersPreviewProps) {
       <>
         {/* Compact Suppliers & Marketplaces */}
         <div className="mt-4">
-          <h3 className="text-lg font-semibold">Available From</h3>
+          <h3 className="font-semibold text-lg">Available From</h3>
 
-          <div className="flex flex-col items-center justify-center py-8 text-center space-y-2">
+          <div className="flex flex-col justify-center items-center space-y-2 py-8 text-center">
             <Search className="w-8 h-8 text-muted-foreground" />
-            <div className="text-sm font-bold text-muted-foreground">
+            <div className="font-bold text-muted-foreground text-sm">
               No providers available for this product.
             </div>
           </div>
@@ -38,17 +38,17 @@ export function ProvidersPreview({ suppliers }: ProvidersPreviewProps) {
   return (
     <>
       {/* Compact Suppliers & Marketplaces */}
-      <div className="mt-4 space-y-4">
-        <h3 className="text-lg font-semibold">Available From</h3>
+      <div className="space-y-4 mt-4">
+        <h3 className="font-semibold text-lg">Available From</h3>
 
         {/* Show first few suppliers */}
         {internalSuppliers.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">
+            <h4 className="font-medium text-muted-foreground text-sm">
               Our Suppliers
             </h4>
-            <div className="grid xl:grid-cols-2 gap-2">
-              {internalSuppliers.slice(0, 2).map((supplier) => (
+            <div className="gap-2 grid xl:grid-cols-2">
+              {internalSuppliers.map((supplier) => (
                 <SupplierCard
                   key={supplier.id}
                   supplier={supplier}
@@ -62,11 +62,11 @@ export function ProvidersPreview({ suppliers }: ProvidersPreviewProps) {
         {/* Show first few marketplaces */}
         {externalSuppliers.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">
+            <h4 className="font-medium text-muted-foreground text-sm">
               Marketplaces
             </h4>
-            <div className="grid xl:grid-cols-2 gap-2">
-              {externalSuppliers.slice(0, 2).map((supplier) => (
+            <div className="gap-2 grid xl:grid-cols-2">
+              {externalSuppliers.map((supplier) => (
                 <MarketplaceCard
                   key={supplier.id}
                   supplier={supplier}
