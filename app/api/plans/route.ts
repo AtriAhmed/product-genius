@@ -20,7 +20,7 @@ const PlanFeatureSchema = z.object({
 const CreatePlanSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  oldPrice: z.number().min(0).optional(),
+  oldPrice: z.number().optional().nullable(),
   price: z.number().min(0),
   interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]),
   active: z.boolean().default(true),
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: validatedData.name,
         description: validatedData.description,
-        oldPrice: validatedData.oldPrice ?? undefined,
+        oldPrice: validatedData.oldPrice ?? null,
         price: validatedData.price,
         interval: validatedData.interval,
         stripeProductId: stripeProduct.id,
