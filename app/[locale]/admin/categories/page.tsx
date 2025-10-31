@@ -148,20 +148,20 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
+      <div className="mx-auto px-4 py-4 container">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="font-bold text-foreground text-3xl">
               {t("categories")}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="mt-2 text-muted-foreground">
               Manage your product categories and translations
             </p>
           </div>
           <Button
             onClick={handleAddCategory}
-            className="gap-2 lg:hidden ms-auto"
+            className="lg:hidden gap-2 ms-auto"
           >
             <Plus className="w-4 h-4" />
             {t("add category")}
@@ -194,7 +194,7 @@ export default function CategoriesPage() {
 
             {/* Results Count */}
             {!isLoading && categories.length > 0 && (
-              <div className="mt-4 text-center text-sm text-muted-foreground">
+              <div className="mt-4 text-muted-foreground text-sm text-center">
                 {t("showing results", {
                   start: 1,
                   end: categories.length,
@@ -205,10 +205,10 @@ export default function CategoriesPage() {
           </div>
 
           {/* Right Column - Category Form (hidden on mobile) */}
-          <div className="hidden lg:block w-96 flex-shrink-0">
-            <div className="bg-background border border-border rounded-lg">
+          <div className="hidden lg:block flex-shrink-0 w-96">
+            <div className="border border-border rounded-lg bg-background">
               <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">
+                <h2 className="mb-4 font-semibold text-xl">
                   {selectedCategory ? t("edit category") : t("add category")}
                 </h2>
                 <CategoryForm
@@ -241,12 +241,12 @@ export default function CategoriesPage() {
         onOpenChange={() => setDeleteCategory(undefined)}
         title={t("delete category")}
         description={t("are you sure delete")}
-        warningTitle={
+        alertTitle={
           deleteCategory?._count?.products && deleteCategory._count.products > 0
             ? "Category has assigned products"
             : undefined
         }
-        warningMessage={
+        alertMessage={
           deleteCategory?._count?.products && deleteCategory._count.products > 0
             ? `This category has ${deleteCategory._count.products} product(s) assigned to it. You cannot delete a category that has products.`
             : t("this action cannot be undone")

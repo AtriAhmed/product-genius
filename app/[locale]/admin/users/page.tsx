@@ -198,7 +198,7 @@ export default function UsersPage() {
         onOpenChange={() => setDeleteUser(undefined)}
         title={t("delete user")}
         description={t("are you sure delete user")}
-        warningMessage={t("this action cannot be undone")}
+        alertMessage={t("this action cannot be undone")}
         confirmText={t("delete")}
         cancelText={t("cancel")}
         onConfirm={confirmDelete}

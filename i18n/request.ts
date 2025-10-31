@@ -24,6 +24,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     "users",
     "orders",
     "invoices",
+    "shopify",
   ];
 
   // Import all message files and organize them by namespace

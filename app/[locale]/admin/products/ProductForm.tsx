@@ -12,7 +12,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
-import { Product } from "@/types";
+import { Marketplace, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { ArrowLeft, Globe, ImageIcon, Save, Trash2 } from "lucide-react";
@@ -69,7 +69,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         { locale: "en", title: "", description: "" },
       ],
       media: [],
-      suppliers: product?.suppliers || [],
+      suppliers:
+        product?.suppliers?.map((s) => ({
+          ...s,
+          marketplace: s.marketplace as Marketplace,
+        })) || [],
     },
   });
 
@@ -87,7 +91,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         isActive: product.isActive ?? true,
         translations: product.translations,
         media: product.media,
-        suppliers: product.suppliers || [],
+        suppliers:
+          product?.suppliers?.map((s) => ({
+            ...s,
+            marketplace: s.marketplace as Marketplace,
+          })) || [],
       });
     } else if (isCreateMode) {
       // Initialize with default values for create mode
@@ -339,7 +347,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           onOpenChange={setShowDeleteDialog}
           title={t("delete product")}
           description={t("are you sure you want to delete this product")}
-          warningMessage={t("this action cannot be undone")}
+          alertMessage={t("this action cannot be undone")}
           confirmText={t("delete product")}
           cancelText={t("cancel")}
           onConfirm={confirmDelete}

@@ -167,7 +167,7 @@ export default function SavedCards() {
         onOpenChange={() => setDeleteCard(undefined)}
         title={t("delete card")}
         description={t("confirm delete")}
-        warningMessage={t("delete warning")}
+        alertMessage={t("delete warning")}
         confirmText={t("delete card")}
         cancelText="Cancel"
         onConfirm={confirmDelete}

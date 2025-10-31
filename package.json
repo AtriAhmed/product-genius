@@ -62,6 +62,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/aos": "^3.0.7",
     "@types/bcrypt": "^6.0.0",

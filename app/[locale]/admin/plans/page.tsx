@@ -127,12 +127,12 @@ export default function PlansPage() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-2">
+      <div className="mx-auto px-4 py-2 container">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">{t("plans")}</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="font-bold text-foreground text-3xl">{t("plans")}</h1>
+            <p className="mt-2 text-muted-foreground">
               {t("manage your plans")}
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function PlansPage() {
 
         {/* Pagination */}
         {!isLoading && plans.length > 0 && pagination.pages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
+          <div className="flex justify-center items-center gap-2 mt-8">
             <Button
               variant="outline"
               size="sm"
@@ -209,7 +209,7 @@ export default function PlansPage() {
 
         {/* Results Count */}
         {!isLoading && plans.length > 0 && (
-          <div className="mt-4 text-center text-sm text-muted-foreground">
+          <div className="mt-4 text-muted-foreground text-sm text-center">
             {t("showing results", {
               start: (page - 1) * limit + 1,
               end: Math.min(page * limit, pagination.total),
@@ -225,7 +225,7 @@ export default function PlansPage() {
         onOpenChange={() => setDeletePlan(undefined)}
         title={t("delete plan")}
         description={t("are you sure delete")}
-        warningMessage="This action cannot be undone."
+        alertMessage="This action cannot be undone."
         confirmText={t("delete plan")}
         cancelText="Cancel"
         onConfirm={confirmDelete}

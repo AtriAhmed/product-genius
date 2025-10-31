@@ -237,7 +237,7 @@ export default function ProductsPage() {
         description={`Are you sure you want to delete "${
           deleteProduct?.translations?.[0]?.title || "this product"
         }"?`}
-        warningMessage="This action cannot be undone."
+        alertMessage="This action cannot be undone."
         confirmText="Delete Product"
         cancelText="Cancel"
         onConfirm={confirmDelete}

@@ -18,7 +18,22 @@ const nextConfig: NextConfig = {
     // If you prefer the simpler form, you could use:
     // domains: ["www.molinel.com"],
   },
-  // other config options...
+  turbopack: {
+    rules: {
+      "*.svg": {
+        // loaders: ["@svgr/webpack"],
+        loaders: [
+          {
+            loader: "@svgr/webpack",
+            options: {
+              dimensions: false,
+            },
+          },
+        ],
+        as: "*.ts",
+      },
+    },
+  },
 };
 
 const withNextIntl = createNextIntlPlugin();

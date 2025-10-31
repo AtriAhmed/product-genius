@@ -50,7 +50,7 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
-import shopifyIcon from "@/assets/images/shopify-outline.svg";
+import ShopifyIcon from "@/assets/images/shopify-outline.svg";
 import Image from "next/image";
 
 // User navigation data
@@ -103,15 +103,13 @@ const navigationData = [
   {
     title: "shopify account",
     url: "/dashboard/shopify",
-    icon: () => (
-      <Image src={shopifyIcon} height={15} width={15} alt="Shopify Icon" />
-    ),
+    icon: () => <ShopifyIcon height={15} alt="Shopify Icon" />,
   },
-  {
-    title: "settings",
-    url: "/dashboard/settings",
-    icon: Settings,
-  },
+  // {
+  //   title: "settings",
+  //   url: "/dashboard/settings",
+  //   icon: Settings,
+  // },
 ];
 
 export function UserSidebar({
