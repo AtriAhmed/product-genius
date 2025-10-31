@@ -1,7 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { prisma } from "@/lib/prisma";
+import { createShopifyClient } from "@/lib/shopify-client";
 import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const user = await isAuthenticatedServerSide(["USER"], true);
+
+  if (!user) {
+    return NextResponse.redirect(
+      new URL("/dashboard/shopify?error=not_authenticated", request.url)
+    );
+  }
+
   try {
     const { searchParams } = request.nextUrl;
     const code = searchParams.get("code");
@@ -9,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     if (!code || !shop) {
       return NextResponse.redirect(
-        new URL("/connect-shopify?error=missing_params", request.url)
+        new URL("/dashboard/shopify?error=missing_params", request.url)
       );
     }
 
@@ -28,33 +39,38 @@ export async function GET(request: NextRequest) {
 
     const { access_token, scope } = response.data;
 
-    console.log(
-      "-------------------- access_token, scope --------------------"
-    );
-    console.log(access_token, scope);
+    const shopifyClient = createShopifyClient(shop, access_token);
 
-    // ✅ Webhooks are now auto-registered via shopify.app.toml
-    // No need to manually register them here!
+    const storeRes = await shopifyClient.get("/shop.json");
 
-    // Store credentials in your database
-    // await prisma.shopifyStore.create({
-    //   data: {
-    //     userId: currentUserId,
-    //     shop,
-    //     accessToken: access_token,
-    //     scopes: scope,
-    //   },
-    // });
+    const existingStore = await prisma.shopifyStore.findUnique({
+      where: { shop },
+    });
+
+    if (existingStore) {
+      return NextResponse.redirect(
+        new URL("/dashboard/shopify?error=store_already_connected", request.url)
+      );
+    } else {
+      const shopifyStore = await prisma.shopifyStore.create({
+        data: {
+          shop,
+          name: storeRes.data.shop.name,
+          userId: user?.id,
+          accessToken: access_token,
+        },
+      });
+    }
 
     console.log("✅ Shopify store connected:", shop);
 
     return NextResponse.redirect(
-      new URL("/dashboard?shopify_connected=true", request.url)
+      new URL("/dashboard/shopify?shopify_connected=true", request.url)
     );
   } catch (error) {
     console.error("Shopify OAuth error:", error);
     return NextResponse.redirect(
-      new URL("/connect-shopify?error=auth_failed", request.url)
+      new URL("/dashboard/shopify?error=auth_failed", request.url)
     );
   }
 }

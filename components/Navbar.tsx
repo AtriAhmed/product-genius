@@ -56,9 +56,6 @@ export default function Navbar() {
               {t("pricing")}
             </Link>
             <div className="flex items-center gap-2">
-              {/* Cart Sheet */}
-              {user?.role === "USER" && <CartSheet />}
-
               {/* Auth */}
               {!isAuthenticated ? (
                 <Link

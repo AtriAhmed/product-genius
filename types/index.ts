@@ -1,3 +1,5 @@
+// Types (kept optionality exactly as in your original file; added new models introduced in Prisma without making fields required)
+
 // String literal types (instead of enums)
 export type Role = "OWNER" | "ADMIN" | "EDITOR" | "AGENT" | "USER";
 
@@ -86,6 +88,7 @@ export type User = {
   assignedOrders?: Order[];
   agentProfile?: AgentProfile;
   invoices?: Invoice[];
+  shopifyStores?: ShopifyStore[];
 };
 
 export type PlanFeature = {
@@ -106,7 +109,7 @@ export type Plan = {
   stripeProductId?: string;
   stripePriceId?: string;
   active?: boolean;
-  features?: PlanFeature[];
+  features?: PlanFeature[] | any;
   mostPopular?: boolean;
   sortOrder?: number;
   createdAt?: Date;
@@ -194,6 +197,19 @@ export type Product = {
   media?: Media[];
   suppliers?: Supplier[];
   orderItems?: OrderItem[];
+  productMappings?: ProductMapping[];
+};
+
+export type ProductMapping = {
+  id: number;
+  productId?: number;
+  shopifyProductId?: string;
+  shopifyStoreId?: number;
+  shop?: string;
+  createdAt?: Date;
+  // Relations
+  product?: Product;
+  shopifyStore?: ShopifyStore;
 };
 
 export type ProductTranslation = {
@@ -224,7 +240,7 @@ export type Supplier = {
   id: number;
   productId?: number;
   url?: string;
-  marketplace?: Marketplace;
+  marketplace?: Marketplace | string;
   price?: number;
   currency?: string;
   isInternal?: boolean;
@@ -257,6 +273,8 @@ export type Order = {
   user?: User;
   agent?: User;
   items?: OrderItem[];
+  shopifyStore?: ShopifyStore;
+  invoice?: Invoice;
 };
 
 export type OrderItem = {
@@ -281,6 +299,20 @@ export type AgentProfile = {
   updatedAt?: Date;
   // Relations
   user?: User;
+};
+
+export type ShopifyStore = {
+  id: number;
+  userId?: number;
+  shop?: string;
+  name?: string;
+  accessToken?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  user?: User;
+  productMappings?: ProductMapping[];
+  orders?: Order[];
 };
 
 // Utility types for creating/updating records

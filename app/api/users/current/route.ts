@@ -47,6 +47,14 @@ export async function GET(request: NextRequest) {
             },
           },
         },
+        shopifyStores: {
+          select: {
+            id: true,
+            shop: true,
+            name: true,
+            createdAt: true,
+          },
+        },
         // orders: {
         //   select: {
         //     id: true,

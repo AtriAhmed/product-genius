@@ -19,4 +19,4 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ "https://gn2ngl9j-3000.uks1.devtunnels.ms/api/shopify/callback" ]
+redirect_urls = [ "https://gn2ngl9j-3000.uks1.devtunnels.ms/api/shopify/callback", "http://localhost:3000/api/shopify/callback" ]

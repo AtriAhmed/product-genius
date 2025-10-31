@@ -99,8 +99,8 @@ model User {
   orders         Order[]        @relation("UserOrders")
   assignedOrders Order[]        @relation("AgentAssignedOrders")
   agentProfile   AgentProfile?  @relation("AgentProfileUser")
-  Invoice        Invoice[]
-  ShopifyStore   ShopifyStore[]
+  invoices        Invoice[]
+  shopifyStores   ShopifyStore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -329,6 +329,7 @@ model ShopifyStore {
   id          Int      @id @default(autoincrement())
   userId      Int
   shop        String   @unique
+  name        String?
   accessToken String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
