@@ -24,17 +24,18 @@ export const USER_ROLES: Record<Role, { label: string; access: number }> = {
 export type LanguageOption = {
   code: string;
   name: string;
+  countryCode: string;
 };
 
 export const LANGUAGES: LanguageOption[] = [
-  { code: "en", name: "english" },
-  { code: "fr", name: "french" },
-  { code: "es", name: "spanish" },
-  { code: "de", name: "german" },
-  { code: "it", name: "italian" },
-  { code: "pt", name: "portuguese" },
-  { code: "ru", name: "russian" },
-  { code: "ja", name: "japanese" },
-  { code: "ko", name: "korean" },
-  { code: "zh", name: "chinese" },
+  { code: "en", name: "english", countryCode: "US" },
+  { code: "fr", name: "french", countryCode: "FR" },
+  { code: "es", name: "spanish", countryCode: "ES" },
+  { code: "de", name: "german", countryCode: "DE" },
+  { code: "it", name: "italian", countryCode: "IT" },
+  { code: "pt", name: "portuguese", countryCode: "PT" },
+  { code: "ru", name: "russian", countryCode: "RU" },
+  { code: "ja", name: "japanese", countryCode: "JP" },
+  { code: "ko", name: "korean", countryCode: "KR" },
+  { code: "zh", name: "chinese", countryCode: "CN" },
 ];

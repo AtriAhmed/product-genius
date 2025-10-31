@@ -179,7 +179,7 @@ export default function TranslationDropdown({
                     <div className="flex flex-1 items-center gap-2">
                       {langInfo && (
                         <img
-                          src={`https://flagsapi.com/${langInfo.code?.toUpperCase()}/flat/24.png`}
+                          src={`https://flagsapi.com/${langInfo.countryCode}/flat/24.png`}
                           alt={`${language.code} flag`}
                           className="w-4 h-3 object-cover rounded-sm"
                         />

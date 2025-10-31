@@ -175,9 +175,9 @@ export default function MultiLanguageForm({
         <div className="space-y-3 pt-3 border-border border-t">
           <div className="flex items-center gap-2">
             <img
-              src={`https://flagsapi.com/${getLanguageInfo(
-                activeTab
-              ).code?.toUpperCase()}/flat/24.png`}
+              src={`https://flagsapi.com/${
+                getLanguageInfo(activeTab).countryCode
+              }/flat/24.png`}
               alt={`${activeTab} flag`}
               className="w-4 h-3 object-cover rounded-sm"
             />

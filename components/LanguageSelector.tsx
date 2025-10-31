@@ -93,7 +93,7 @@ export default function LanguageSelector({
                   )}
                 >
                   <img
-                    src={`https://flagsapi.com/${langInfo.code?.toUpperCase()}/flat/24.png`}
+                    src={`https://flagsapi.com/${langInfo.countryCode}/flat/24.png`}
                     alt={`${langInfo.name} flag`}
                     className="w-4 h-3 object-cover rounded-sm"
                   />
@@ -137,7 +137,7 @@ export default function LanguageSelector({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={`https://flagsapi.com/${language.code?.toUpperCase()}/flat/24.png`}
+                      src={`https://flagsapi.com/${language.countryCode}/flat/24.png`}
                       alt={`${language.name} flag`}
                       className="w-4 h-3 object-cover rounded-sm"
                     />

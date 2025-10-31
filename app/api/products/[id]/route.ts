@@ -9,6 +9,11 @@ import {
 } from "@/lib/file-upload";
 import { z } from "zod";
 import { MARKETPLACES } from "@/types";
+import {
+  generateVariants,
+  validateVariants,
+  type OptionDefinition,
+} from "@/lib/variant-generator";
 
 // Validation schemas for updates
 const translationSchema = z.object({
@@ -33,14 +38,20 @@ export const supplierSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
+const productOptionSchema = z.object({
+  name: z.string().min(1),
+  values: z.array(z.string().min(1)).min(1).max(50), // Max 50 values per option
+});
+
 const updateProductSchema = z.object({
-  suggestedPrice: z.number().positive().optional(),
+  suggestedPrice: z.number().positive().optional().nullable(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional(),
   isActive: z.boolean(),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
   suppliers: z.array(supplierSchema).optional().default([]),
+  productOptions: z.array(productOptionSchema).max(3).optional().default([]), // Max 3 options per product (Shopify limit)
 });
 
 export async function GET(
@@ -81,6 +92,8 @@ export async function GET(
           },
         },
         suppliers: true,
+        productOptions: true,
+        productVariants: true,
       },
     });
 
@@ -245,6 +258,90 @@ export async function PUT(
         .map((m) => m.poster!),
     ];
 
+    // Handle product options and variants update
+    if (validatedData.productOptions.length > 0) {
+      // Remove existing options and variants
+      await prisma.productOption.deleteMany({
+        where: { productId },
+      });
+      await prisma.productVariant.deleteMany({
+        where: { productId },
+      });
+
+      // Create new product options
+      await Promise.all(
+        validatedData.productOptions.map((option, index) =>
+          prisma.productOption.create({
+            data: {
+              productId: productId,
+              name: option.name,
+              position: index + 1,
+              values: option.values,
+            },
+          })
+        )
+      );
+
+      // Generate and create new variants
+      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const productCode = `PROD${productId}`;
+
+      const optionDefinitions: OptionDefinition[] =
+        validatedData.productOptions.map((opt) => ({
+          name: opt.name,
+          values: opt.values,
+        }));
+
+      // Validate variant combinations
+      const generatedVariants = generateVariants(
+        optionDefinitions,
+        basePrice,
+        productCode,
+        true
+      );
+      const validation = validateVariants(generatedVariants, optionDefinitions);
+
+      if (!validation.valid) {
+        throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+      }
+
+      // Create variants in database
+      await prisma.productVariant.createMany({
+        data: generatedVariants.map((variant) => ({
+          productId: productId,
+          option1: variant.option1 || null,
+          option2: variant.option2 || null,
+          option3: variant.option3 || null,
+          price: variant.price,
+          sku: variant.sku || null,
+          inventory: 0,
+          trackInventory: false,
+        })),
+      });
+    } else {
+      // Remove all options and variants, create a single default variant
+      await prisma.productOption.deleteMany({
+        where: { productId },
+      });
+      await prisma.productVariant.deleteMany({
+        where: { productId },
+      });
+
+      // Create a single default variant for products without options
+      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const productCode = `PROD${productId}`;
+
+      await prisma.productVariant.create({
+        data: {
+          productId: productId,
+          price: basePrice,
+          sku: `PG-${productCode}`,
+          inventory: 0,
+          trackInventory: false,
+        },
+      });
+    }
+
     // Update product in database with transaction
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
@@ -298,6 +395,8 @@ export async function PUT(
           },
         },
         suppliers: true,
+        productOptions: true,
+        productVariants: true,
       },
     });
 

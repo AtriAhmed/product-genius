@@ -4,6 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { uploadFile, getMediaType } from "@/lib/file-upload";
+import {
+  generateVariants,
+  validateVariants,
+  type OptionDefinition,
+} from "@/lib/variant-generator";
 
 // Validation schemas
 const mediaSchema = z.object({
@@ -29,25 +34,21 @@ const supplierSchema = z.object({
   notes: z.string().optional(),
 });
 
+const productOptionSchema = z.object({
+  name: z.string().min(1),
+  values: z.array(z.string().min(1)).min(1).max(50), // Max 50 values per option
+});
+
 const createProductSchema = z.object({
-  suggestedPrice: z.number().positive().optional(),
+  suggestedPrice: z.number().positive().optional().nullable(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional(),
   isActive: z.boolean().default(true),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
   suppliers: z.array(supplierSchema).optional().default([]),
+  productOptions: z.array(productOptionSchema).max(3).optional().default([]), // Max 3 options per product (Shopify limit)
 });
-
-// Helper function to generate slug from title
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -195,6 +196,74 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Create product options and variants
+    if (validatedData.productOptions.length > 0) {
+      // Create product options
+      await Promise.all(
+        validatedData.productOptions.map((option, index) =>
+          prisma.productOption.create({
+            data: {
+              productId: product.id,
+              name: option.name,
+              position: index + 1,
+              values: option.values,
+            },
+          })
+        )
+      );
+
+      // Generate and create variants
+      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const productCode = `PROD${product.id}`;
+
+      const optionDefinitions: OptionDefinition[] =
+        validatedData.productOptions.map((opt) => ({
+          name: opt.name,
+          values: opt.values,
+        }));
+
+      // Validate variant combinations
+      const generatedVariants = generateVariants(
+        optionDefinitions,
+        basePrice,
+        productCode,
+        true
+      );
+      const validation = validateVariants(generatedVariants, optionDefinitions);
+
+      if (!validation.valid) {
+        throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+      }
+
+      // Create variants in database
+      await prisma.productVariant.createMany({
+        data: generatedVariants.map((variant) => ({
+          productId: product.id,
+          option1: variant.option1 || null,
+          option2: variant.option2 || null,
+          option3: variant.option3 || null,
+          price: variant.price,
+          sku: variant.sku || null,
+          inventory: 0,
+          trackInventory: false,
+        })),
+      });
+    } else {
+      // Create a single default variant for products without options
+      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const productCode = `PROD${product.id}`;
+
+      await prisma.productVariant.create({
+        data: {
+          productId: product.id,
+          price: basePrice,
+          sku: `PG-${productCode}`,
+          inventory: 0,
+          trackInventory: false,
+        },
+      });
+    }
+
     // Fetch the complete product with all relations
     const completeProduct = await prisma.product.findUnique({
       where: { id: product.id },
@@ -205,6 +274,8 @@ export async function POST(request: NextRequest) {
         },
         category: true,
         suppliers: true,
+        productOptions: true,
+        productVariants: true,
       },
     });
 
@@ -292,6 +363,10 @@ export async function GET(request: NextRequest) {
             },
           },
           suppliers: true,
+          productOptions: true,
+          productVariants: {
+            take: 5, // Limit variants in list view
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,
