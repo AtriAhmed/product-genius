@@ -156,6 +156,7 @@ export type Invoice = {
   createdAt?: Date;
   // Relations
   user?: User;
+  orders?: Order[]; // Invoice has relation to Order[] in schema
 };
 
 export type Category = {
@@ -197,7 +198,57 @@ export type Product = {
   media?: Media[];
   suppliers?: Supplier[];
   orderItems?: OrderItem[];
-  productMappings?: ProductMapping[];
+  productOptions?: ProductOption[]; // new
+  productVariants?: ProductVariant[]; // new
+  productsMapping?: ProductMapping[]; // matches schema name
+  variantsMapping?: VariantMapping[]; // new
+};
+
+export type ProductOption = {
+  id: number;
+  productId?: number;
+  name?: string; // "Color", "Size", "Material"
+  position?: number; // 1,2,3
+  values?: any; // Json, e.g., ["Red","Blue"] or ["S","M","L"]
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  product?: Product;
+};
+
+export type ProductVariant = {
+  id: number;
+  productId?: number;
+  option1?: string;
+  option2?: string;
+  option3?: string;
+  price?: string;
+  compareAtPrice?: string;
+  costPrice?: string;
+  sku?: string;
+  inventory?: number;
+  trackInventory?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  product?: Product;
+  variantMappings?: VariantMapping[];
+  orderItems?: OrderItem[];
+};
+
+export type VariantMapping = {
+  id: number;
+  variantId?: number;
+  productId?: number;
+  shopifyVariantId?: string;
+  shopifyProductId?: string;
+  shop?: string;
+  sku?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  variant?: ProductVariant;
+  product?: Product;
 };
 
 export type ProductMapping = {
@@ -284,6 +335,8 @@ export type OrderItem = {
   title?: string;
   unitPriceCents?: number;
   quantity?: number;
+  productVariantId?: number; // new
+  productVariant?: ProductVariant; // new
   // Relations
   order?: Order;
   product?: Product;
@@ -367,6 +420,7 @@ export type CreateOrderRequest = {
   items: {
     productId: number;
     quantity: number;
+    productVariantId?: number;
   }[];
   currency?: string;
 };
