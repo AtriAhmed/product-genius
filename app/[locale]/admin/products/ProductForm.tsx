@@ -1,31 +1,26 @@
 "use client";
 
-import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
-import MultiLanguageForm, {
-  Translation,
-} from "@/app/[locale]/admin/products/ProductContentForm";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Globe, ImageIcon, Save, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import axios from "axios";
 import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
-import PricingSection from "@/app/[locale]/admin/products/PricingSection";
-import { Product } from "@/types";
+import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
+import MultiLanguageForm from "@/app/[locale]/admin/products/ProductContentForm";
+import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import {
   ProductFormData,
   productFormSchema,
 } from "@/app/[locale]/admin/products/types";
-import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
+import { Product } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { ArrowLeft, Globe, ImageIcon, Save, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type ProductFormProps = {
   product?: Product | null;

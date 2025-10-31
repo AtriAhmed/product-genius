@@ -20,3 +20,21 @@ export const USER_ROLES: Record<Role, { label: string; access: number }> = {
   AGENT: { label: "agent", access: 3 },
   USER: { label: "user", access: 1 },
 };
+
+export type LanguageOption = {
+  code: string;
+  name: string;
+};
+
+export const LANGUAGES: LanguageOption[] = [
+  { code: "en", name: "english" },
+  { code: "fr", name: "french" },
+  { code: "es", name: "spanish" },
+  { code: "de", name: "german" },
+  { code: "it", name: "italian" },
+  { code: "pt", name: "portuguese" },
+  { code: "ru", name: "russian" },
+  { code: "ja", name: "japanese" },
+  { code: "ko", name: "korean" },
+  { code: "zh", name: "chinese" },
+];

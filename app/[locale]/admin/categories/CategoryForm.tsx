@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getCurrentTranslation } from "@/lib/products";
 
 interface CategoryTranslation {
   locale: string;
@@ -175,16 +176,6 @@ export default function CategoryForm({
     );
   };
 
-  const getCurrentTranslation = () => {
-    return (
-      translations.find((t) => t.locale === activeLanguage) || {
-        locale: activeLanguage,
-        title: "",
-        description: "",
-      }
-    );
-  };
-
   const hasErrors = (languageCode: string) => {
     const translation = translations.find((t) => t.locale === languageCode);
     return !translation || !translation.title.trim();
@@ -320,30 +311,22 @@ export default function CategoryForm({
       <div className="flex gap-2">
         <LanguageSelector
           selectedLanguages={selectedLanguages}
-          availableLanguages={languageOptions}
           onLanguageAdd={handleLanguageAdd}
           onLanguageRemove={handleLanguageRemove}
           onLanguageSelect={handleLanguageSelect}
           activeLanguage={activeLanguage}
-          requiredLanguages={[]}
           hasErrors={hasErrors}
-          translationButton={
-            translations.length > 0 && (
-              <CategoryTranslationDropdown
-                availableLanguages={languageOptions}
-                selectedLanguages={selectedLanguages}
-                activeLanguage={activeLanguage}
-                currentTranslation={getCurrentTranslation()}
-                onTranslate={handleAutoTranslate}
-              />
-            )
-          }
+          currentTranslation={getCurrentTranslation(
+            translations,
+            activeLanguage
+          )}
+          handleAutoTranslate={handleAutoTranslate}
         />
       </div>
 
       {/* Translation Form */}
       {translations.length > 0 && (
-        <div className="space-y-3 pt-3 border-t border-border">
+        <div className="space-y-3 pt-3 border-border border-t">
           <div className="flex items-center gap-2">
             <img
               src={`https://flagsapi.com/${
@@ -364,13 +347,16 @@ export default function CategoryForm({
           </div>
 
           {(() => {
-            const currentTranslation = getCurrentTranslation();
+            const currentTranslation = getCurrentTranslation(
+              translations,
+              activeLanguage
+            );
 
             return (
               <>
                 {/* Title */}
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">
+                  <label className="font-medium text-sm">
                     {t("category name")}{" "}
                     <span className="text-destructive">*</span>
                   </label>
@@ -381,11 +367,11 @@ export default function CategoryForm({
                     }
                     placeholder={t("category name placeholder")}
                     className={cn(
-                      !currentTranslation.title.trim() && "border-destructive"
+                      !currentTranslation.title?.trim() && "border-destructive"
                     )}
                   />
-                  {!currentTranslation.title.trim() && (
-                    <p className="text-sm text-destructive">
+                  {!currentTranslation.title?.trim() && (
+                    <p className="text-destructive text-sm">
                       {t("title is required")}
                     </p>
                   )}
@@ -393,7 +379,7 @@ export default function CategoryForm({
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">
+                  <label className="font-medium text-sm">
                     {t("category description")}
                   </label>
                   <Textarea
@@ -417,7 +403,7 @@ export default function CategoryForm({
 
       {/* Summary */}
       {translations.some((t) => hasErrors(t.locale)) && (
-        <div className="text-sm text-destructive pt-2">
+        <div className="pt-2 text-destructive text-sm">
           ⚠️ Some translations are incomplete
         </div>
       )}

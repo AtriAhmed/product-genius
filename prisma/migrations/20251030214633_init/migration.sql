@@ -85,7 +85,7 @@ CREATE TABLE `Invoice` (
     `pdfUrl` VARCHAR(191) NULL,
     `hostedUrl` VARCHAR(191) NULL,
     `paidAt` DATETIME(3) NULL,
-    `type` ENUM('PLAN', 'PAYMENT') NULL,
+    `type` ENUM('PLAN', 'ORDER') NULL,
     `periodStart` DATETIME(3) NOT NULL,
     `periodEnd` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -128,11 +128,23 @@ CREATE TABLE `Product` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `isActive` BOOLEAN NOT NULL DEFAULT true,
-    `metadata` JSON NULL,
     `views` INTEGER NOT NULL DEFAULT 0,
     `likes` INTEGER NOT NULL DEFAULT 0,
 
     UNIQUE INDEX `Product_sku_key`(`sku`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProductMapping` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `productId` INTEGER NOT NULL,
+    `shopifyProductId` VARCHAR(191) NOT NULL,
+    `shopifyStoreId` INTEGER NOT NULL,
+    `shop` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `ProductMapping_productId_shop_key`(`productId`, `shop`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -158,7 +170,6 @@ CREATE TABLE `Media` (
     `type` ENUM('IMAGE', 'VIDEO') NOT NULL,
     `alt` VARCHAR(191) NULL,
     `sortOrder` INTEGER NOT NULL DEFAULT 0,
-    `metadata` JSON NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
@@ -183,12 +194,23 @@ CREATE TABLE `Supplier` (
 CREATE TABLE `Order` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `orderNumber` VARCHAR(191) NOT NULL,
+    `shopifyOrderId` VARCHAR(191) NULL,
+    `shopifyStoreId` INTEGER NULL,
     `userId` INTEGER NOT NULL,
     `agentId` INTEGER NULL,
+    `invoiceId` INTEGER NULL,
     `totalCents` INTEGER NOT NULL,
     `currency` VARCHAR(191) NOT NULL,
     `status` ENUM('DRAFT', 'PENDING', 'PAID', 'PROCESSING', 'COMPLETED', 'CANCELED', 'REFUNDED') NOT NULL DEFAULT 'PENDING',
-    `metadata` JSON NULL,
+    `deliveryName` VARCHAR(191) NULL,
+    `deliveryPhone` VARCHAR(191) NULL,
+    `deliveryEmail` VARCHAR(191) NULL,
+    `deliveryAddress1` VARCHAR(191) NULL,
+    `deliveryAddress2` VARCHAR(191) NULL,
+    `deliveryCity` VARCHAR(191) NULL,
+    `deliveryState` VARCHAR(191) NULL,
+    `deliveryZip` VARCHAR(191) NULL,
+    `deliveryCountry` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -204,7 +226,6 @@ CREATE TABLE `OrderItem` (
     `title` VARCHAR(191) NOT NULL,
     `unitPriceCents` INTEGER NOT NULL,
     `quantity` INTEGER NOT NULL,
-    `metadata` JSON NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -217,9 +238,22 @@ CREATE TABLE `AgentProfile` (
     `contactNumber` VARCHAR(191) NULL,
     `details` JSON NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `AgentProfile_userId_key`(`userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ShopifyStore` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `shop` VARCHAR(191) NOT NULL,
+    `accessToken` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `ShopifyStore_shop_key`(`shop`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -242,6 +276,12 @@ ALTER TABLE `CategoryTranslation` ADD CONSTRAINT `CategoryTranslation_categoryId
 ALTER TABLE `Product` ADD CONSTRAINT `Product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `ProductMapping` ADD CONSTRAINT `ProductMapping_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductMapping` ADD CONSTRAINT `ProductMapping_shopifyStoreId_fkey` FOREIGN KEY (`shopifyStoreId`) REFERENCES `ShopifyStore`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `ProductTranslation` ADD CONSTRAINT `ProductTranslation_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -251,16 +291,25 @@ ALTER TABLE `Media` ADD CONSTRAINT `Media_productId_fkey` FOREIGN KEY (`productI
 ALTER TABLE `Supplier` ADD CONSTRAINT `Supplier_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Order` ADD CONSTRAINT `Order_shopifyStoreId_fkey` FOREIGN KEY (`shopifyStoreId`) REFERENCES `ShopifyStore`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `Order` ADD CONSTRAINT `Order_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Order` ADD CONSTRAINT `Order_agentId_fkey` FOREIGN KEY (`agentId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Order` ADD CONSTRAINT `Order_invoiceId_fkey` FOREIGN KEY (`invoiceId`) REFERENCES `Invoice`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `AgentProfile` ADD CONSTRAINT `AgentProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ShopifyStore` ADD CONSTRAINT `ShopifyStore_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

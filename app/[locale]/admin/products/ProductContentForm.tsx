@@ -4,42 +4,29 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getCurrentTranslation } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import { ProductTranslation } from "@/types";
+import { LANGUAGES } from "@/types/constants";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
-import TranslationDropdown from "./TranslationDropdown";
 
-export interface Translation {
+type Translation = {
   locale: string;
   title: string;
   description: string;
-}
+};
 
 interface MultiLanguageFormProps {
   value: Translation[];
   onChange: (translations: Translation[]) => void;
-  supportedLanguages?: { code: string; name: string; countryCode: string }[];
   requiredLanguages?: string[];
   className?: string;
 }
 
-const defaultLanguages = [
-  { code: "en", name: "english", countryCode: "US" },
-  { code: "fr", name: "french", countryCode: "FR" },
-  { code: "es", name: "spanish", countryCode: "ES" },
-  { code: "de", name: "german", countryCode: "DE" },
-  { code: "it", name: "italian", countryCode: "IT" },
-  { code: "pt", name: "portuguese", countryCode: "PT" },
-  { code: "ru", name: "russian", countryCode: "RU" },
-  { code: "ja", name: "japanese", countryCode: "JP" },
-  { code: "ko", name: "korean", countryCode: "KR" },
-  { code: "zh", name: "chinese", countryCode: "CN" },
-];
-
 export default function MultiLanguageForm({
   value = [],
   onChange,
-  supportedLanguages = defaultLanguages,
   requiredLanguages = [],
   className,
 }: MultiLanguageFormProps) {
@@ -49,7 +36,7 @@ export default function MultiLanguageForm({
   // Update activeTab when value changes (for edit mode)
   React.useEffect(() => {
     if (value.length > 0 && !value.find((t) => t.locale === activeTab)) {
-      setActiveTab(value[0].locale);
+      setActiveTab(value[0].locale!);
     }
   }, [value, activeTab]);
 
@@ -81,7 +68,7 @@ export default function MultiLanguageForm({
 
   const updateTranslation = (
     locale: string,
-    field: keyof Translation,
+    field: keyof ProductTranslation,
     fieldValue: string
   ) => {
     const newTranslations = value.map((translation) => {
@@ -94,19 +81,9 @@ export default function MultiLanguageForm({
     onChange(newTranslations);
   };
 
-  const getCurrentTranslation = () => {
-    return (
-      value.find((t) => t.locale === activeTab) || {
-        locale: activeTab,
-        title: "",
-        description: "",
-      }
-    );
-  };
-
   const getLanguageInfo = (code: string) => {
     return (
-      supportedLanguages.find((lang) => lang.code === code) || {
+      LANGUAGES.find((lang) => lang.code === code) || {
         code,
         name: code.toUpperCase(),
         countryCode: "UN",
@@ -118,8 +95,8 @@ export default function MultiLanguageForm({
     return requiredLanguages.includes(languageCode);
   };
 
-  const hasErrors = (translation: Translation) => {
-    return !translation.title.trim() || !translation.description.trim();
+  const hasErrors = (translation: ProductTranslation) => {
+    return !translation.title?.trim() || !translation.description?.trim();
   };
 
   const hasLanguageErrors = (languageCode: string) => {
@@ -176,41 +153,31 @@ export default function MultiLanguageForm({
     onChange(newTranslations);
   };
 
-  const selectedLanguages = value.map((t) => t.locale);
+  const selectedLanguages = value.map((t) => t.locale || "");
 
   return (
     <div className={cn("space-y-4", className)}>
       {/* Language Selector with Translation Button */}
       <LanguageSelector
         selectedLanguages={selectedLanguages}
-        availableLanguages={supportedLanguages}
         onLanguageAdd={addLanguage}
         onLanguageRemove={removeLanguage}
         onLanguageSelect={setActiveTab}
         activeLanguage={activeTab}
         requiredLanguages={requiredLanguages}
         hasErrors={hasLanguageErrors}
-        translationButton={
-          value.length > 0 ? (
-            <TranslationDropdown
-              availableLanguages={supportedLanguages}
-              selectedLanguages={selectedLanguages}
-              activeLanguage={activeTab}
-              currentTranslation={getCurrentTranslation()}
-              onTranslate={handleAutoTranslate}
-            />
-          ) : null
-        }
+        currentTranslation={getCurrentTranslation(value, activeTab)}
+        handleAutoTranslate={handleAutoTranslate}
       />
 
       {/* Translation Form */}
       {value.length > 0 && (
-        <div className="space-y-3 pt-3 border-t border-border">
+        <div className="space-y-3 pt-3 border-border border-t">
           <div className="flex items-center gap-2">
             <img
-              src={`https://flagsapi.com/${
-                getLanguageInfo(activeTab).countryCode
-              }/flat/24.png`}
+              src={`https://flagsapi.com/${getLanguageInfo(
+                activeTab
+              ).code?.toUpperCase()}/flat/24.png`}
               alt={`${activeTab} flag`}
               className="w-4 h-3 object-cover rounded-sm"
             />
@@ -225,13 +192,13 @@ export default function MultiLanguageForm({
           </div>
 
           {(() => {
-            const currentTranslation = getCurrentTranslation();
+            const currentTranslation = getCurrentTranslation(value, activeTab);
 
             return (
               <div className="space-y-4">
                 {/* Title */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="font-medium text-sm">
                     Title <span className="text-destructive">*</span>
                   </label>
                   <Input
@@ -243,11 +210,11 @@ export default function MultiLanguageForm({
                       getLanguageInfo(activeTab).name
                     }`}
                     className={cn(
-                      !currentTranslation.title.trim() && "border-destructive"
+                      !currentTranslation.title?.trim() && "border-destructive"
                     )}
                   />
-                  {!currentTranslation.title.trim() && (
-                    <p className="text-sm text-destructive">
+                  {!currentTranslation.title?.trim() && (
+                    <p className="text-destructive text-sm">
                       Title is required
                     </p>
                   )}
@@ -255,7 +222,7 @@ export default function MultiLanguageForm({
 
                 {/* Description */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label className="font-medium text-sm">
                     Description <span className="text-destructive">*</span>
                   </label>
                   <Textarea
@@ -272,12 +239,12 @@ export default function MultiLanguageForm({
                     }`}
                     rows={4}
                     className={cn(
-                      !currentTranslation.description.trim() &&
+                      !currentTranslation.description?.trim() &&
                         "border-destructive"
                     )}
                   />
-                  {!currentTranslation.description.trim() && (
-                    <p className="text-sm text-destructive">
+                  {!currentTranslation.description?.trim() && (
+                    <p className="text-destructive text-sm">
                       Description is required
                     </p>
                   )}

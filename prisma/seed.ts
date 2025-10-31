@@ -3,10 +3,10 @@ import { PrismaClient, Role } from "../app/generated/prisma";
 
 const prisma = new PrismaClient();
 
-const email = "editor@gmail.com";
+const email = "atriomar00@gmail.com";
 const name = "Atri Omar";
 const password = "password";
-const role = Role.USER;
+const role = Role.OWNER;
 
 async function main() {
   console.log("🌱 Starting seed...");

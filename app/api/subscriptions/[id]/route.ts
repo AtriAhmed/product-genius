@@ -12,8 +12,9 @@ const updateSubscriptionSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/subscriptions/[id]">
 ) {
+  const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

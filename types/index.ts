@@ -186,7 +186,6 @@ export type Product = {
   createdAt?: Date;
   updatedAt?: Date;
   isActive?: boolean;
-  metadata?: any; // JSON type
   views?: number;
   likes?: number;
   // Relations
@@ -198,7 +197,7 @@ export type Product = {
 };
 
 export type ProductTranslation = {
-  id: number;
+  id?: number;
   productId?: number;
   locale?: string;
   title?: string;
@@ -216,7 +215,6 @@ export type Media = {
   type?: MediaType;
   alt?: string;
   sortOrder?: number;
-  metadata?: any; // JSON type
   createdAt?: Date;
   // Relations
   product?: Product;
@@ -253,7 +251,6 @@ export type Order = {
   deliveryState?: string;
   deliveryZip?: string;
   deliveryCountry?: string;
-  metadata?: any; // JSON type
   createdAt?: Date;
   updatedAt?: Date;
   // Relations
@@ -269,7 +266,6 @@ export type OrderItem = {
   title?: string;
   unitPriceCents?: number;
   quantity?: number;
-  metadata?: any; // JSON type
   // Relations
   order?: Order;
   product?: Product;
@@ -341,7 +337,6 @@ export type CreateOrderRequest = {
     quantity: number;
   }[];
   currency?: string;
-  metadata?: any;
 };
 
 export type CreateOrderResponse = {
@@ -438,3 +433,5 @@ export type DeliveryInfo = {
   deliveryZip: string;
   deliveryCountry: string;
 };
+
+export type Translation = ProductTranslation | CategoryTranslation;

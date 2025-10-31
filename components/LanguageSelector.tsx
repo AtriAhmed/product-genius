@@ -1,27 +1,22 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
+import TranslationDropdown from "@/app/[locale]/admin/products/TranslationDropdown";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductTranslation } from "@/types";
+import { LANGUAGES } from "@/types/constants";
+import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-export interface LanguageOption {
-  code: string;
-  name: string;
-  countryCode: string; // For the flag API
-}
 
 interface LanguageSelectorProps {
   selectedLanguages: string[];
-  availableLanguages?: LanguageOption[];
   onLanguageAdd: (languageCode: string) => void;
   onLanguageRemove: (languageCode: string) => void;
   onLanguageSelect: (languageCode: string) => void;
@@ -29,26 +24,14 @@ interface LanguageSelectorProps {
   requiredLanguages?: string[];
   hasErrors?: (languageCode: string) => boolean;
   className?: string;
-  // New prop for translation button
-  translationButton?: React.ReactNode;
+  currentTranslation: ProductTranslation;
+  handleAutoTranslate: (translations: {
+    [key: string]: { title: string; description: string };
+  }) => void;
 }
-
-const defaultLanguages: LanguageOption[] = [
-  { code: "en", name: "english", countryCode: "US" },
-  { code: "fr", name: "french", countryCode: "FR" },
-  { code: "es", name: "spanish", countryCode: "ES" },
-  { code: "de", name: "german", countryCode: "DE" },
-  { code: "it", name: "italian", countryCode: "IT" },
-  { code: "pt", name: "portuguese", countryCode: "PT" },
-  { code: "ru", name: "russian", countryCode: "RU" },
-  { code: "ja", name: "japanese", countryCode: "JP" },
-  { code: "ko", name: "korean", countryCode: "KR" },
-  { code: "zh", name: "chinese", countryCode: "CN" },
-];
 
 export default function LanguageSelector({
   selectedLanguages,
-  availableLanguages = defaultLanguages,
   onLanguageAdd,
   onLanguageRemove,
   onLanguageSelect,
@@ -56,13 +39,14 @@ export default function LanguageSelector({
   requiredLanguages = [],
   hasErrors,
   className,
-  translationButton,
+  currentTranslation,
+  handleAutoTranslate,
 }: LanguageSelectorProps) {
   const t = useTranslations("categories");
 
   const getLanguageInfo = (code: string) => {
     return (
-      availableLanguages.find((lang) => lang.code === code) || {
+      LANGUAGES.find((lang) => lang.code === code) || {
         code,
         name: code.toUpperCase(),
         countryCode: "UN", // Default flag
@@ -71,9 +55,7 @@ export default function LanguageSelector({
   };
 
   const getAvailableLanguages = () => {
-    return availableLanguages.filter(
-      (lang) => !selectedLanguages.includes(lang.code)
-    );
+    return LANGUAGES.filter((lang) => !selectedLanguages.includes(lang.code));
   };
 
   const isRequired = (languageCode: string) => {
@@ -111,7 +93,7 @@ export default function LanguageSelector({
                   )}
                 >
                   <img
-                    src={`https://flagsapi.com/${langInfo.countryCode}/flat/24.png`}
+                    src={`https://flagsapi.com/${langInfo.code?.toUpperCase()}/flat/24.png`}
                     alt={`${langInfo.name} flag`}
                     className="w-4 h-3 object-cover rounded-sm"
                   />
@@ -155,7 +137,7 @@ export default function LanguageSelector({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={`https://flagsapi.com/${language.countryCode}/flat/24.png`}
+                      src={`https://flagsapi.com/${language.code?.toUpperCase()}/flat/24.png`}
                       alt={`${language.name} flag`}
                       className="w-4 h-3 object-cover rounded-sm"
                     />
@@ -170,8 +152,12 @@ export default function LanguageSelector({
           </DropdownMenu>
         )}
 
-        {/* Translation Button */}
-        {translationButton}
+        <TranslationDropdown
+          selectedLanguages={selectedLanguages}
+          activeLanguage={activeLanguage}
+          currentTranslation={currentTranslation}
+          onTranslate={handleAutoTranslate}
+        />
       </div>
     </div>
   );

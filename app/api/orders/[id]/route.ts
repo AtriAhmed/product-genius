@@ -26,7 +26,6 @@ const updateOrderSchema = z.object({
     ])
     .optional(),
   agentId: z.number().int().positive().optional(),
-  metadata: z.any().optional(),
   deliveryName: z.string().optional(),
   deliveryPhone: z.string().optional(),
   deliveryEmail: z.string().email().optional(),

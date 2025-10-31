@@ -20,13 +20,11 @@ const createOrderSchema = z.object({
         productId: z.number().int().positive(),
         quantity: z.number().int().positive(),
         // optional per-item metadata (e.g. selected options, SKU info)
-        metadata: z.any().optional(),
       })
     )
     .min(1),
 
   currency: z.string().optional().default("USD"),
-  metadata: z.any().optional(),
 
   deliveryName: z.string().optional(),
   deliveryPhone: z.string().optional(),
@@ -246,7 +244,6 @@ export async function POST(request: NextRequest) {
         title,
         unitPriceCents,
         quantity: item.quantity,
-        metadata: item.metadata || {},
       };
     });
 
@@ -261,7 +258,6 @@ export async function POST(request: NextRequest) {
         totalCents,
         currency: validatedData.currency,
         status: "PENDING",
-        metadata: validatedData.metadata || {},
         deliveryName: validatedData.deliveryName,
         deliveryPhone: validatedData.deliveryPhone,
         deliveryEmail: validatedData.deliveryEmail,

@@ -53,15 +53,6 @@ enum OrderStatus {
   REFUNDED
 }
 
-enum ShipmentStatus {
-  PENDING
-  PICKED
-  IN_TRANSIT
-  DELIVERED
-  RETURNED
-  CANCELLED
-}
-
 enum PlanInterval {
   DAY
   WEEK
@@ -109,6 +100,7 @@ model User {
   assignedOrders Order[]        @relation("AgentAssignedOrders")
   agentProfile   AgentProfile?  @relation("AgentProfileUser")
   Invoice        Invoice[]
+  ShopifyStore   ShopifyStore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,16 +197,30 @@ model Product {
   category   Category? @relation(fields: [categoryId], references: [id])
   categoryId Int?
 
-  translations ProductTranslation[]
-  media        Media[]
-  suppliers    Supplier[]
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-  isActive     Boolean              @default(true)
-  metadata     Json?
-  views        Int                  @default(0)
-  likes        Int                  @default(0)
-  OrderItem    OrderItem[]
+  translations   ProductTranslation[]
+  media          Media[]
+  suppliers      Supplier[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  isActive       Boolean              @default(true)
+  views          Int                  @default(0)
+  likes          Int                  @default(0)
+  OrderItem      OrderItem[]
+  ProductMapping ProductMapping[]
+}
+
+model ProductMapping {
+  id               Int      @id @default(autoincrement())
+  productId        Int
+  shopifyProductId String
+  shopifyStoreId   Int
+  shop             String
+  createdAt        DateTime @default(now())
+
+  product      Product      @relation(fields: [productId], references: [id])
+  shopifyStore ShopifyStore @relation(fields: [shopifyStoreId], references: [id])
+
+  @@unique([productId, shop])
 }
 
 model ProductTranslation {
@@ -238,7 +244,6 @@ model Media {
   type      MediaType
   alt       String?
   sortOrder Int       @default(0)
-  metadata  Json?
   createdAt DateTime  @default(now())
 }
 
@@ -257,8 +262,12 @@ model Supplier {
 }
 
 model Order {
-  id          Int    @id @default(autoincrement())
-  orderNumber String @unique
+  id             Int     @id @default(autoincrement())
+  orderNumber    String  @unique
+  shopifyOrderId String?
+
+  shopifyStoreId Int?
+  shopifyStore   ShopifyStore? @relation(fields: [shopifyStoreId], references: [id])
 
   // relation to buyer (explicit relation name)
   user   User @relation("UserOrders", fields: [userId], references: [id])
@@ -271,11 +280,10 @@ model Order {
   invoiceId Int? // Stripe Invoice ID
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
 
-  items          OrderItem[]
-  totalCents     Int
-  currency       String
-  status         OrderStatus    @default(PENDING)
-  shipmentStatus ShipmentStatus @default(PENDING)
+  items      OrderItem[]
+  totalCents Int
+  currency   String
+  status     OrderStatus @default(PENDING)
 
   // delivery address
   deliveryName     String?
@@ -288,7 +296,6 @@ model Order {
   deliveryZip      String?
   deliveryCountry  String?
 
-  metadata  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -302,7 +309,6 @@ model OrderItem {
   title          String
   unitPriceCents Int
   quantity       Int
-  metadata       Json?
 }
 
 model AgentProfile {
@@ -316,5 +322,18 @@ model AgentProfile {
   contactNumber String?
   details       Json?
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ShopifyStore {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  shop        String   @unique
+  accessToken String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id])
+  ProductMapping ProductMapping[]
+  Order          Order[]
 }

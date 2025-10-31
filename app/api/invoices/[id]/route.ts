@@ -9,8 +9,10 @@ const paramsSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/invoices/[id]">
 ) {
+  const params = await ctx.params;
+  const id = params.id;
   try {
     // Check authentication - allow ADMIN, OWNER, and USER (users can see their own invoices)
     const user = await isAuthenticatedServerSide(

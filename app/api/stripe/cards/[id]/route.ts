@@ -4,8 +4,10 @@ import { isAuthenticatedServerSide } from "@/lib/authUtils";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/stripe/cards/[id]">
 ) {
+  const params = await ctx.params;
+  const id = params.id;
   try {
     const user = await isAuthenticatedServerSide([], true);
     if (!user) {

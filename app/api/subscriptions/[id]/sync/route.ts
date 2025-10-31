@@ -6,8 +6,9 @@ import { stripe } from "@/lib/stripe";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/categories/[id]">
 ) {
+  const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

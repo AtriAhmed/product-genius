@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { translateText } from "@/actions/translate";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -16,20 +16,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, Languages, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Translation } from "@/types";
+import { LANGUAGES } from "@/types/constants";
+import { Check, Languages, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { translateText } from "@/actions/translate";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface TranslationDropdownProps {
-  availableLanguages: { code: string; name: string; countryCode: string }[];
   selectedLanguages: string[];
   activeLanguage: string;
-  currentTranslation: {
-    title: string;
-    description: string;
-  };
+  currentTranslation: Translation;
   onTranslate: (translations: {
     [key: string]: { title: string; description: string };
   }) => void;
@@ -37,7 +35,6 @@ interface TranslationDropdownProps {
 }
 
 export default function TranslationDropdown({
-  availableLanguages,
   selectedLanguages,
   activeLanguage,
   currentTranslation,
@@ -52,7 +49,7 @@ export default function TranslationDropdown({
   const t = useTranslations("products");
 
   // Get languages that can be translated to (exclude active language)
-  const availableTargetLanguages = availableLanguages.filter(
+  const availableTargetLanguages = LANGUAGES.filter(
     (lang) => lang.code !== activeLanguage
   );
 
@@ -70,8 +67,8 @@ export default function TranslationDropdown({
       return;
     }
 
-    const trimmedTitle = currentTranslation.title.trim();
-    const trimmedDescription = currentTranslation.description.trim();
+    const trimmedTitle = currentTranslation?.title?.trim();
+    const trimmedDescription = currentTranslation?.description?.trim();
 
     if (!trimmedTitle || !trimmedDescription) {
       toast.error(
@@ -132,12 +129,12 @@ export default function TranslationDropdown({
   };
 
   const getLanguageName = (code: string) => {
-    const lang = availableLanguages.find((l) => l.code === code);
+    const lang = LANGUAGES.find((l) => l.code === code);
     return lang ? t(lang.name) : code.toUpperCase();
   };
 
   const getLanguageInfo = (code: string) => {
-    return availableLanguages.find((lang) => lang.code === code);
+    return LANGUAGES.find((lang) => lang.code === code);
   };
 
   return (
@@ -147,13 +144,13 @@ export default function TranslationDropdown({
           type="button"
           variant="outline"
           size="sm"
-          className={cn("h-9 gap-2", className)}
+          className={cn("gap-2 h-9", className)}
           disabled={
-            !currentTranslation.title.trim() ||
-            !currentTranslation.description.trim()
+            !currentTranslation.title?.trim() ||
+            !currentTranslation.description?.trim()
           }
         >
-          <Languages className="h-4 w-4" />
+          <Languages className="w-4 h-4" />
           Auto translate from {getLanguageName(activeLanguage)}
         </Button>
       </PopoverTrigger>
@@ -179,10 +176,10 @@ export default function TranslationDropdown({
                     onSelect={() => toggleLanguageSelection(language.code)}
                     className="flex items-center gap-2 cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 flex-1">
+                    <div className="flex flex-1 items-center gap-2">
                       {langInfo && (
                         <img
-                          src={`https://flagsapi.com/${langInfo.countryCode}/flat/24.png`}
+                          src={`https://flagsapi.com/${langInfo.code?.toUpperCase()}/flat/24.png`}
                           alt={`${language.code} flag`}
                           className="w-4 h-3 object-cover rounded-sm"
                         />
@@ -196,7 +193,7 @@ export default function TranslationDropdown({
                     </div>
                     <Check
                       className={cn(
-                        "h-4 w-4",
+                        "w-4 h-4",
                         isSelected ? "opacity-100" : "opacity-0"
                       )}
                     />
@@ -207,8 +204,8 @@ export default function TranslationDropdown({
           </CommandList>
 
           {/* Translation Controls */}
-          <div className="flex items-center justify-between p-3 border-t bg-muted/50">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex justify-between items-center p-3 border-t bg-muted/50">
+            <div className="text-muted-foreground text-sm">
               {selectedTargetLanguages.length} language
               {selectedTargetLanguages.length !== 1 ? "s" : ""} selected
             </div>
@@ -218,7 +215,7 @@ export default function TranslationDropdown({
               size="sm"
               className="gap-2"
             >
-              {isTranslating && <Loader2 className="h-3 w-3 animate-spin" />}
+              {isTranslating && <Loader2 className="w-3 h-3 animate-spin" />}
               {isTranslating ? "Translating..." : "Translate"}
             </Button>
           </div>
