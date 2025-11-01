@@ -51,10 +51,10 @@ export default function ProductFilters({
   //     sortOrder !== "desc";
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 pb-6">
+    <div className="flex lg:flex-row flex-col gap-4 pb-2">
       {/* Search */}
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
         <Input
           placeholder={t("search products")}
           value={search}

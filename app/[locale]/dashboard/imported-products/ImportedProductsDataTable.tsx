@@ -99,7 +99,11 @@ export default function ImportedProductsDataTable({
                     {mapping.product?.media?.[0]?.url ? (
                       <div className="w-10 h-10 overflow-hidden rounded">
                         <Image
-                          src={getMediaUrl(mapping.product.media[0].url)}
+                          src={getMediaUrl(
+                            mapping.product.media[0].type === "IMAGE"
+                              ? mapping.product.media[0].url
+                              : mapping.product.media[0].poster
+                          )}
                           alt={
                             mapping.product.translations?.[0]?.title ||
                             "Product image"

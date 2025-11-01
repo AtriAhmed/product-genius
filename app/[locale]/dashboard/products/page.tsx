@@ -137,11 +137,11 @@ export default function UserProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4">
+      <div className="">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">{t("products")}</h1>
-          <p className="text-muted-foreground mt-2">
+        <div className="mb-4">
+          <h1 className="font-bold text-3xl tracking-tight">{t("products")}</h1>
+          <p className="mt-2 text-muted-foreground">
             {t("discover our amazing collection of products")}
           </p>
         </div>
@@ -161,17 +161,17 @@ export default function UserProductsPage() {
         {/* Products Grid */}
         {isLoading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <div className="w-8 h-8 mx-auto border-primary border-b-2 rounded-full animate-spin"></div>
             <p className="mt-4 text-muted-foreground">
               {t("loading products")}
             </p>
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <div className="py-16 text-center">
+            <div className="flex justify-center items-center w-24 h-24 mx-auto mb-4 rounded-full bg-gray-100">
               <Search className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">
+            <h3 className="mb-2 font-semibold text-lg">
               {t("no products found")}
             </h3>
             <p className="text-muted-foreground">
@@ -181,7 +181,7 @@ export default function UserProductsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
               <ProductCard
                 key={product.id}
@@ -194,7 +194,7 @@ export default function UserProductsPage() {
 
         {/* Pagination */}
         {!isLoading && products.length > 0 && pagination.pages > 1 && (
-          <div className="flex justify-center mt-12 gap-2">
+          <div className="flex justify-center gap-2 mt-12">
             <Button
               variant="outline"
               disabled={page === 1}
@@ -238,7 +238,7 @@ export default function UserProductsPage() {
 
         {/* Results Count */}
         {!isLoading && products.length > 0 && (
-          <div className="mt-8 text-center text-sm text-muted-foreground">
+          <div className="mt-8 text-muted-foreground text-sm text-center">
             {t("showing results", {
               start: (page - 1) * limit + 1,
               end: Math.min(page * limit, pagination.total),
