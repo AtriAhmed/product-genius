@@ -317,35 +317,62 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const getProductsSchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  categoryId: z.coerce.number().optional(),
+  isActive: z.enum(["true", "false"]).optional(),
+  sortBy: z
+    .enum(["createdAt", "updatedAt", "suggestedPrice"])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const search = searchParams.get("search") || "";
-    const categoryId = searchParams.get("categoryId");
-    const isActive = searchParams.get("isActive");
+    const query = getProductsSchema.parse({
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      search: searchParams.get("search") || undefined,
+      categoryId: searchParams.get("categoryId") || undefined,
+      isActive: searchParams.get("isActive") || undefined,
+      sortBy: searchParams.get("sortBy") || undefined,
+      sortOrder: searchParams.get("sortOrder") || undefined,
+    });
 
-    const skip = (page - 1) * limit;
+    const skip = (query.page - 1) * query.limit;
 
     const where: any = {};
 
-    if (search) {
+    if (query.search) {
       where.OR = [
         {
           translations: {
-            some: { title: { contains: search } },
+            some: { title: { contains: query.search } },
           },
         },
       ];
     }
 
-    if (categoryId) {
-      where.categoryId = parseInt(categoryId);
+    if (query.categoryId) {
+      where.categoryId = query.categoryId;
     }
 
-    if (!["", null, undefined].includes(isActive)) {
-      where.isActive = isActive === "true";
+    if (query.isActive) {
+      where.isActive = query.isActive === "true";
+    }
+
+    // Build orderBy based on sortBy and sortOrder
+    let orderBy: any = { createdAt: "desc" };
+
+    if (query.sortBy === "updatedAt") {
+      orderBy = { updatedAt: query.sortOrder };
+    } else if (query.sortBy === "suggestedPrice") {
+      orderBy = { suggestedPrice: query.sortOrder };
+    } else if (query.sortBy === "createdAt") {
+      orderBy = { createdAt: query.sortOrder };
     }
 
     const [products, total] = await Promise.all([
@@ -368,9 +395,9 @@ export async function GET(request: NextRequest) {
             take: 5, // Limit variants in list view
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip,
-        take: limit,
+        take: query.limit,
       }),
       prisma.product.count({ where }),
     ]);
@@ -378,11 +405,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: products,
       total,
-      page,
-      limit,
-      pages: Math.ceil(total / limit),
+      page: query.page,
+      limit: query.limit,
+      pages: Math.ceil(total / query.limit),
     });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid query parameters", details: error.issues },
+        { status: 400 }
+      );
+    }
+
     console.error("Products fetch error:", error);
     return NextResponse.json(
       {

@@ -13,6 +13,7 @@ import useSWR from "swr";
 import axios from "axios";
 import ProductsDataTable from "./ProductsDataTable";
 import ProductFilters from "@/app/[locale]/admin/products/ProductsFilter";
+import { getCurrentTranslation } from "@/lib/products";
 
 interface ProductsResponse {
   data: Product[];
@@ -58,16 +59,6 @@ export default function ProductsPage() {
     }
   );
 
-  // Helper function for client-side sorting
-  const getCurrentTranslation = (
-    translations: ProductTranslation[],
-    locale = "en"
-  ) => {
-    return (
-      translations.find((t) => t.locale === locale) || translations[0] || null
-    );
-  };
-
   // Process and sort products from SWR data
   const getProcessedProducts = (): Product[] => {
     if (!data?.data) return [];
@@ -108,22 +99,6 @@ export default function ProductsPage() {
     toast.error("Failed to load products");
   }
 
-  const handleAddProduct = () => {
-    router.push("/admin/products/new");
-  };
-
-  const handleViewProduct = (product: Product) => {
-    router.push(`/admin/products/${product.id}`);
-  };
-
-  const handleEditProduct = (product: Product) => {
-    router.push(`/admin/products/${product.id}`);
-  };
-
-  const handleDeleteProduct = (product: Product) => {
-    setDeleteProduct(product);
-  };
-
   const confirmDelete = async () => {
     if (!deleteProduct) return;
 
@@ -149,21 +124,6 @@ export default function ProductsPage() {
     setPage(1);
   };
 
-  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
-    setSortBy(newSortBy);
-    setSortOrder(newSortOrder);
-  };
-
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
-
-  const handleFilterChange = (newFilter: string) => {
-    setFilter(newFilter);
-    setPage(1);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto px-4 py-2 container">
@@ -178,7 +138,7 @@ export default function ProductsPage() {
             </p>
           </div>
           <Button
-            onClick={handleAddProduct}
+            onClick={() => router.push("/admin/products/new")}
             className="gap-2"
             variant="primary"
           >
@@ -193,18 +153,27 @@ export default function ProductsPage() {
           filter={filter}
           sortBy={sortBy}
           sortOrder={sortOrder}
-          onSearchChange={handleSearchChange}
-          onFilterChange={handleFilterChange}
-          onSortChange={handleSortChange}
+          onSearchChange={(newSearch) => {
+            setSearch(newSearch);
+            setPage(1);
+          }}
+          onFilterChange={(newFilter) => {
+            setFilter(newFilter);
+            setPage(1);
+          }}
+          onSortChange={(newSortBy, newSortOrder) => {
+            setSortBy(newSortBy);
+            setSortOrder(newSortOrder);
+          }}
           onClearFilters={clearFilters}
         />
 
         {/* Products Data Table */}
         <ProductsDataTable
           products={products}
-          onView={handleViewProduct}
-          onEdit={handleEditProduct}
-          onDelete={handleDeleteProduct}
+          onView={(product) => router.push(`/admin/products/${product.id}`)}
+          onEdit={(product) => router.push(`/admin/products/${product.id}`)}
+          onDelete={setDeleteProduct}
           isLoading={isLoading}
         />
 

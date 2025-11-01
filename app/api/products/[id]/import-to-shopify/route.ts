@@ -52,7 +52,7 @@ export async function GET(
           orderBy: { position: "asc" },
         },
         productVariants: true,
-        productsMapping: {
+        productMappings: {
           where: { shopifyStoreId },
         },
       },
@@ -63,7 +63,7 @@ export async function GET(
     }
 
     // Check if product is already imported to this store
-    if (product.productsMapping.length > 0) {
+    if (product.productMappings.length > 0) {
       return NextResponse.json(
         { error: "Product already imported to this Shopify store" },
         { status: 409 }
@@ -213,6 +213,7 @@ export async function GET(
     // Create product mapping
     await prisma.productMapping.create({
       data: {
+        userId: user.id,
         productId: product.id,
         shopifyProductId,
         shopifyStoreId,
@@ -255,6 +256,7 @@ export async function GET(
 
         if (matchingLocalVariant) {
           variantMappings.push({
+            userId: user.id,
             variantId: matchingLocalVariant.id,
             productId: product.id,
             shopifyVariantId: shopifyVariant.id.replace(

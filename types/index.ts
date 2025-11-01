@@ -200,8 +200,8 @@ export type Product = {
   orderItems?: OrderItem[];
   productOptions?: ProductOption[]; // new
   productVariants?: ProductVariant[]; // new
-  productsMapping?: ProductMapping[]; // matches schema name
-  variantsMapping?: VariantMapping[]; // new
+  productMappings?: ProductMapping[]; // matches schema name
+  variantMappings?: VariantMapping[]; // new
 };
 
 export type ProductOption = {

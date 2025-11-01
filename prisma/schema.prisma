@@ -102,8 +102,10 @@ model User {
   invoices       Invoice[]
   shopifyStores  ShopifyStore[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  productMappings ProductMapping[]
+  variantMappings VariantMapping[]
 }
 
 model Plan {
@@ -208,8 +210,8 @@ model Product {
   orderItems      OrderItem[]
   productOptions  ProductOption[]
   productVariants ProductVariant[]
-  productsMapping ProductMapping[]
-  variantsMapping VariantMapping[]
+  productMappings ProductMapping[]
+  variantMappings VariantMapping[]
 }
 
 model ProductOption {
@@ -263,6 +265,7 @@ model ProductVariant {
 // Mapping between Product Genius variants and Shopify variants
 model VariantMapping {
   id               Int    @id @default(autoincrement())
+  userId           Int
   variantId        Int // Your variant ID
   productId        Int // Your product ID (for easier queries)
   shopifyVariantId String // Shopify's variant ID
@@ -276,6 +279,7 @@ model VariantMapping {
 
   variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id])
 
   @@unique([shopifyVariantId, shop])
   @@index([variantId])
@@ -285,6 +289,7 @@ model VariantMapping {
 
 model ProductMapping {
   id               Int      @id @default(autoincrement())
+  userId           Int
   productId        Int
   shopifyProductId String
   shopifyStoreId   Int
@@ -293,6 +298,7 @@ model ProductMapping {
 
   product      Product      @relation(fields: [productId], references: [id])
   shopifyStore ShopifyStore @relation(fields: [shopifyStoreId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
 
   @@unique([productId, shop])
 }

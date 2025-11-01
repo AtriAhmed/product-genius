@@ -31,65 +31,64 @@ export default function ProductsDataTable({
 }: ProductsDataTableProps) {
   const t = useTranslations("products");
 
-  const renderSkeletonRows = () =>
-    Array.from({ length: 4 }).map((_, idx) => (
-      <TableRow
-        key={`skeleton-${idx}`}
-        className="border-border transition-colors"
-      >
-        {/* Image */}
-        <TableCell>
-          <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
-            <Skeleton className="w-full h-full rounded-md" />
-          </div>
-        </TableCell>
+  const skeletonRows = Array.from({ length: 4 }).map((_, idx) => (
+    <TableRow
+      key={`skeleton-${idx}`}
+      className="border-border transition-colors"
+    >
+      {/* Image */}
+      <TableCell>
+        <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
+          <Skeleton className="w-full h-full rounded-md" />
+        </div>
+      </TableCell>
 
-        {/* Name + description */}
-        <TableCell className="font-medium">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="w-40 h-4 rounded" />
-            <Skeleton className="w-60 max-w-xs h-3 rounded" />
-          </div>
-        </TableCell>
+      {/* Name + description */}
+      <TableCell className="font-medium">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="w-40 h-4 rounded" />
+          <Skeleton className="w-60 max-w-xs h-3 rounded" />
+        </div>
+      </TableCell>
 
-        {/* SKU */}
-        <TableCell>
-          <Skeleton className="w-20 h-4 rounded" />
-        </TableCell>
+      {/* SKU */}
+      <TableCell>
+        <Skeleton className="w-20 h-4 rounded" />
+      </TableCell>
 
-        {/* Category */}
-        <TableCell>
-          <Skeleton className="w-20 h-6 rounded-md" />
-        </TableCell>
+      {/* Category */}
+      <TableCell>
+        <Skeleton className="w-20 h-6 rounded-md" />
+      </TableCell>
 
-        {/* Price */}
-        <TableCell>
-          <Skeleton className="w-24 h-4 rounded" />
-        </TableCell>
+      {/* Price */}
+      <TableCell>
+        <Skeleton className="w-24 h-4 rounded" />
+      </TableCell>
 
-        {/* Status */}
-        <TableCell>
-          <Skeleton className="w-16 h-6 rounded-full" />
-        </TableCell>
+      {/* Status */}
+      <TableCell>
+        <Skeleton className="w-16 h-6 rounded-full" />
+      </TableCell>
 
-        {/* Translations */}
-        <TableCell>
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="w-8 h-6 rounded-md" />
-            <Skeleton className="w-8 h-6 rounded-md" />
-            <Skeleton className="w-8 h-6 rounded-md" />
-          </div>
-        </TableCell>
+      {/* Translations */}
+      <TableCell>
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="w-8 h-6 rounded-md" />
+          <Skeleton className="w-8 h-6 rounded-md" />
+          <Skeleton className="w-8 h-6 rounded-md" />
+        </div>
+      </TableCell>
 
-        {/* Actions */}
-        <TableCell>
-          <div className="flex justify-center gap-2">
-            <Skeleton className="w-8 h-8 rounded-full" />
-            <Skeleton className="w-8 h-8 rounded-full" />
-          </div>
-        </TableCell>
-      </TableRow>
-    ));
+      {/* Actions */}
+      <TableCell>
+        <div className="flex justify-center gap-2">
+          <Skeleton className="w-8 h-8 rounded-full" />
+          <Skeleton className="w-8 h-8 rounded-full" />
+        </div>
+      </TableCell>
+    </TableRow>
+  ));
 
   const emptyStateRow = (
     <TableRow>
@@ -126,7 +125,7 @@ export default function ProductsDataTable({
         </TableHeader>
         <TableBody>
           {isLoading
-            ? renderSkeletonRows()
+            ? skeletonRows
             : products.length > 0
             ? products.map((p) => (
                 <ProductRow

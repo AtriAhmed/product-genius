@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   Sparkles,
   Truck,
+  Upload,
   Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -64,6 +65,11 @@ const navigationData = [
     title: "products",
     url: "/dashboard/products",
     icon: Package,
+  },
+  {
+    title: "imported products",
+    url: "/dashboard/imported-products",
+    icon: Upload,
   },
   {
     title: "orders",

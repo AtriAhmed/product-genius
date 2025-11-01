@@ -77,12 +77,12 @@ export default function UsersFilters({
           <SelectValue placeholder={t("sort by")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="createdAt-desc">Newest First</SelectItem>
-          <SelectItem value="createdAt-asc">Oldest First</SelectItem>
-          <SelectItem value="name-asc">Name A-Z</SelectItem>
-          <SelectItem value="name-desc">Name Z-A</SelectItem>
-          <SelectItem value="email-asc">Email A-Z</SelectItem>
-          <SelectItem value="email-desc">Email Z-A</SelectItem>
+          <SelectItem value="createdAt-desc">{t("newest first")}</SelectItem>
+          <SelectItem value="createdAt-asc">{t("oldest first")}</SelectItem>
+          <SelectItem value="name-asc">{t("name a-z")}</SelectItem>
+          <SelectItem value="name-desc">{t("name z-a")}</SelectItem>
+          <SelectItem value="email-asc">{t("email a-z")}</SelectItem>
+          <SelectItem value="email-desc">{t("email z-a")}</SelectItem>
         </SelectContent>
       </Select>
 
