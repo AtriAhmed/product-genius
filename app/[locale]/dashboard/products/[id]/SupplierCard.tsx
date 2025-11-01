@@ -1,10 +1,14 @@
-import { Building2, ExternalLink, ShoppingCart, Star } from "lucide-react";
+import { Building2, ExternalLink, Store, Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Supplier } from "@/types";
 import { formatPrice } from "@/lib/utils";
-import { useAppProvider } from "@/contexts/AppProvider";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface SupplierCardProps {
   supplier: Supplier;
@@ -15,17 +19,35 @@ export default function SupplierCard({
   supplier,
   compact = true,
 }: SupplierCardProps) {
-  const { addToCart } = useAppProvider();
-  const handleVisit = () => toast(`Opening ${supplier.marketplace}`);
+  const router = useRouter();
+  const t = useTranslations("shopify");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
-  const handleAddToCart = () => {
-    if (supplier.productId) {
-      addToCart(supplier.productId, 1);
-      toast.success("Product added to cart!");
-    }
+  const handleImportToShopify = () => {
+    setShowConfirmDialog(true);
   };
 
-  const domain = supplier.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const handleConfirmImport = async () => {
+    if (!supplier.productId) return;
+
+    setIsImporting(true);
+
+    try {
+      const response = await axios.get(
+        `/api/products/${supplier.productId}/import-to-shopify`
+      );
+      toast.success("Product successfully imported to Shopify!");
+      router.push("/dashboard/imported-products");
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.error || "Failed to import product to Shopify"
+      );
+    } finally {
+      setIsImporting(false);
+      setShowConfirmDialog(false);
+    }
+  };
 
   return (
     <Card className="flex flex-col overflow-hidden !p-2 bg-gradient-to-br from-white dark:from-gray-900 via-primary/5 dark:via-primary/10 to-primary/10 dark:to-primary/20 shadow-sm transition-shadow duration-300">
@@ -57,10 +79,6 @@ export default function SupplierCard({
 
         {/* Price & Domain Row */}
         <div className="flex justify-between items-center gap-2 mt-auto">
-          <div className="min-w-0 px-2 py-1 text-muted-foreground text-xs truncate">
-            {domain}
-          </div>
-
           {/* Enhanced Price Badge */}
           <div
             className={`rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40`}
@@ -73,17 +91,36 @@ export default function SupplierCard({
           </div>
         </div>
 
-        {/* Compact Button */}
+        {/* Import to Shopify Button */}
         <Button
           size="sm"
           variant="primary"
-          onClick={handleAddToCart}
+          onClick={handleImportToShopify}
+          disabled={isImporting}
           className="w-full h-7 px-3 bg-gradient-to-r from-primary-600 to-primary-700 shadow-md hover:shadow-lg hover:saturate-75 text-xs transition-all duration-200"
         >
-          <ShoppingCart className="w-3 h-3" />
-          Add to cart
+          {isImporting ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Store className="w-3 h-3" />
+          )}
+          {isImporting ? "Importing..." : "Import to Shopify"}
         </Button>
       </CardContent>
+
+      <ConfirmationDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        title="Import to Shopify"
+        description="Are you sure you want to import this product to your Shopify store?"
+        alertTitle="Product Import"
+        alertMessage="This action will create a new product in your connected Shopify store."
+        confirmText="Import Product"
+        cancelText="Cancel"
+        onConfirm={handleConfirmImport}
+        variant="info"
+        isLoading={isImporting}
+      />
     </Card>
   );
 }

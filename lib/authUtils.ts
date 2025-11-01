@@ -29,7 +29,7 @@ export async function isAuthenticatedServerSide(
     if (returnDatabaseUser) {
       user = (await prisma.user.findUnique({
         where: { id: parseInt(session.user.id) },
-        include: { currentSubscription: true },
+        include: { currentSubscription: true, shopifyStores: true },
       })) as UserType;
 
       if (!user) return null;
