@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentTranslation } from "@/lib/products";
 import { createShopifyClient } from "@/lib/shopify-client";
 import { getMediaUrl } from "@/lib/utils";
+import { CategoryTranslation } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -95,6 +96,11 @@ export async function POST(
       "en"
     );
 
+    const categoryTranslation = getCurrentTranslation(
+      (product.category?.translations as CategoryTranslation[]) || [],
+      "en"
+    );
+
     if (!primaryTranslation) {
       return NextResponse.json(
         { error: "No product translations found" },
@@ -123,9 +129,7 @@ export async function POST(
     const productData: any = {
       title: primaryTranslation.title,
       descriptionHtml: primaryTranslation.description,
-      productType:
-        product.category?.translations.find((t) => t.locale === "en")?.title ||
-        "",
+      productType: categoryTranslation?.title,
       vendor: "Product Genius",
       status: product.isActive ? "ACTIVE" : "DRAFT",
       tags: [],

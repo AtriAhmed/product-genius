@@ -68,17 +68,17 @@ export default function ProductCard({
 
   return (
     <Card
-      className="group cursor-pointer hover:shadow-lg transition-all duration-300 overflow-hidden pt-0 pb-2 gap-2"
+      className="group gap-2 overflow-hidden pt-0 pb-2 hover:shadow-lg transition-all duration-300 cursor-pointer"
       onClick={() => onView(product)}
     >
-      <div className="h-[200px] relative overflow-hidden bg-gray-100">
+      <div className="relative h-[200px] overflow-hidden bg-gray-100">
         {mainMedia ? (
           mainMedia?.type === "IMAGE" ? (
             <Image
               src={getMediaUrl(mainMedia.url)}
               alt={translation?.title || "Product"}
               fill
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
             <div
@@ -105,12 +105,12 @@ export default function ProductCard({
                     src={getMediaUrl(mainMedia.poster)}
                     alt={translation?.title || "Video thumbnail"}
                     fill
-                    className="object-cover w-full h-full"
+                    className="w-full h-full object-cover"
                   />
                   {/* Video Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors duration-300">
-                    <div className="bg-black/60 rounded-full p-3 hover:bg-black/80 transition-all duration-300 backdrop-blur-sm">
-                      <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+                  <div className="absolute inset-0 flex justify-center items-center bg-black/20 hover:bg-black/30 transition-colors duration-300">
+                    <div className="p-3 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm transition-all duration-300">
+                      <Play className="w-6 h-6 ml-0.5 fill-white text-white" />
                     </div>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export default function ProductCard({
             </div>
           )
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+          <div className="flex justify-center items-center w-full h-full bg-gray-200">
             <span className="text-gray-400">No Image</span>
           </div>
         )}
@@ -126,8 +126,8 @@ export default function ProductCard({
 
       <CardContent className="p-4 pt-0">
         <div className="space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+          <div className="flex justify-between items-start gap-2">
+            <h3 className="font-semibold group-hover:text-primary text-lg line-clamp-2 transition-colors">
               {translation?.title || "Untitled"}
             </h3>
           </div>
@@ -138,20 +138,20 @@ export default function ProductCard({
             </Badge>
           )}
 
-          <p className="text-sm text-muted-foreground line-clamp-3">
+          <p className="text-muted-foreground text-sm line-clamp-3">
             {translation?.description}
           </p>
 
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            {product.suggestedPrice && (
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-primary">
+          <div className="flex flex-wrap justify-between items-center gap-2">
+            {product.sellingPrice && (
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-primary text-lg">
                   {currencyMap[product.currency!]?.symbol || product.currency}
-                  {product.suggestedPrice}
+                  {product.sellingPrice}
                 </span>
               </div>
             )}
-            <span className="ms-auto px-2 py-1 rounded-sm bg-primary-500 hover:bg-primary-500/90 text-white text-[11px] font-medium">
+            <span className="ms-auto px-2 py-1 rounded-sm bg-primary-500 hover:bg-primary-500/90 font-medium text-[11px] text-white">
               {t("view supplier")}
             </span>
           </div>

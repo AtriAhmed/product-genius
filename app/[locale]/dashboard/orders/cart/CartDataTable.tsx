@@ -123,7 +123,7 @@ export default function CartDataTable({
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {formatPrice(product.suggestedPrice || 0)}
+                      {formatPrice(product.sellingPrice || 0)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -155,7 +155,7 @@ export default function CartDataTable({
                     </TableCell>
                     <TableCell className="font-medium">
                       {formatPrice(
-                        (product.suggestedPrice || 0) * product.quantity
+                        (product.sellingPrice || 0) * product.quantity
                       )}
                     </TableCell>
                     <TableCell>

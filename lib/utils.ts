@@ -25,3 +25,10 @@ export function formatPrice(price: number) {
     currency: "EUR",
   }).format(price);
 }
+
+export function getInternalSupplierPrice(
+  suppliers: { price?: number | null; isInternal?: boolean }[]
+) {
+  const internalSupplier = suppliers.find((s) => s.isInternal);
+  return internalSupplier?.price || null;
+}

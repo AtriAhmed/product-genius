@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { ProductMapping } from "@/types";
 import { useTranslations } from "next-intl";
 import Pagination from "@/components/Pagination";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import useSWR from "swr";
 import axios from "axios";
 import { toast } from "sonner";
@@ -39,9 +38,6 @@ async function fetcher(
 
 export default function ImportedProductsPage() {
   const t = useTranslations("imported-products");
-  const [deleteMapping, setDeleteMapping] = useState<
-    ProductMapping | undefined
-  >();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -82,27 +78,6 @@ export default function ImportedProductsPage() {
       toast.error(t("failed to load product mappings"));
     }
   }, [error, t]);
-
-  const handleDeleteMapping = (mapping: ProductMapping) => {
-    setDeleteMapping(mapping);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteMapping) return;
-
-    try {
-      await axios.delete(`/api/product-mappings/${deleteMapping.id}`);
-      toast.success(t("product mapping deleted successfully"));
-      mutate();
-    } catch (error: any) {
-      console.error("Error deleting product mapping:", error);
-      toast.error(
-        error.response?.data?.error || t("failed to delete product mapping")
-      );
-    } finally {
-      setDeleteMapping(undefined);
-    }
-  };
 
   const clearFilters = () => {
     setSearch("");
@@ -146,7 +121,7 @@ export default function ImportedProductsPage() {
         {/* Product Mappings Data Table */}
         <ImportedProductsDataTable
           productMappings={productMappings}
-          onDelete={handleDeleteMapping}
+          onRefresh={mutate}
           isLoading={isLoading}
         />
 
@@ -170,19 +145,6 @@ export default function ImportedProductsPage() {
           </div>
         )}
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
-        open={!!deleteMapping}
-        onOpenChange={() => setDeleteMapping(undefined)}
-        title={t("delete product mapping")}
-        description={t("are you sure delete mapping")}
-        alertMessage={t("this action cannot be undone")}
-        confirmText={t("delete")}
-        cancelText={t("cancel")}
-        onConfirm={confirmDelete}
-        variant="destructive"
-      />
     </div>
   );
 }

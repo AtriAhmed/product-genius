@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -16,19 +17,49 @@ import { ProductMapping } from "@/types";
 import Image from "next/image";
 import { format } from "date-fns";
 import { getMediaUrl } from "@/lib/utils";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import axios from "axios";
+import { toast } from "sonner";
 
 type ImportedProductsDataTableProps = {
   productMappings: ProductMapping[];
-  onDelete: (mapping: ProductMapping) => void;
+  onRefresh: () => void;
   isLoading: boolean;
 };
 
 export default function ImportedProductsDataTable({
   productMappings,
-  onDelete,
+  onRefresh,
   isLoading,
 }: ImportedProductsDataTableProps) {
   const t = useTranslations("imported-products");
+  const [deleteMapping, setDeleteMapping] = useState<
+    ProductMapping | undefined
+  >();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteMapping = (mapping: ProductMapping) => {
+    setDeleteMapping(mapping);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteMapping) return;
+
+    setIsDeleting(true);
+    try {
+      await axios.delete(`/api/product-mappings/${deleteMapping.id}`);
+      toast.success(t("product mapping deleted successfully"));
+      onRefresh();
+    } catch (error: any) {
+      console.error("Error deleting product mapping:", error);
+      toast.error(
+        error.response?.data?.error || t("failed to delete product mapping")
+      );
+    } finally {
+      setIsDeleting(false);
+      setDeleteMapping(undefined);
+    }
+  };
 
   const skeletonRows = Array.from({ length: 5 }).map((_, index) => (
     <TableRow key={`skeleton-${index}`}>
@@ -194,7 +225,7 @@ export default function ImportedProductsDataTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onDelete(mapping)}
+                      onClick={() => handleDeleteMapping(mapping)}
                       className="hover:bg-destructive/10 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -205,6 +236,20 @@ export default function ImportedProductsDataTable({
             : emptyStateRow}
         </TableBody>
       </Table>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={!!deleteMapping}
+        onOpenChange={() => setDeleteMapping(undefined)}
+        title={t("delete product mapping")}
+        description={t("are you sure delete mapping")}
+        alertMessage={t("this action cannot be undone")}
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
+        onConfirm={confirmDelete}
+        variant="destructive"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -216,9 +216,6 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
       return;
     }
 
-    // Find subscription if invoice is for a subscription
-    const stripeSubscriptionId = invoice.lines.data[0]?.subscription as string;
-
     // Check if invoice already exists
     const existingInvoice = await prisma.invoice.findFirst({
       where: { stripeInvoiceId: invoice.id },
@@ -229,12 +226,22 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
       return;
     }
 
+    // Determine invoice type by checking metadata and subscription
+    const stripeSubscriptionId = invoice.lines.data[0]?.subscription as string;
+    const orderId = invoice.metadata?.orderId;
+
+    // Check if it's a subscription invoice
+    const isSubscriptionInvoice = !!stripeSubscriptionId;
+    const invoiceType = isSubscriptionInvoice ? "PLAN" : "ORDER";
+
     // Create invoice in database
     const dbInvoice = await prisma.invoice.create({
       data: {
         stripeInvoiceId: invoice.id,
         userId: user.id,
-        stripeSubscriptionId,
+        stripeSubscriptionId: isSubscriptionInvoice
+          ? stripeSubscriptionId
+          : undefined,
         amountCents: invoice.amount_paid || 0,
         taxCents: 0,
         currency: invoice.currency || "usd",
@@ -244,20 +251,42 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
         paidAt: invoice.status_transitions?.paid_at
           ? new Date(invoice.status_transitions.paid_at * 1000)
           : null,
-        type: stripeSubscriptionId ? "PLAN" : "ORDER",
+        type: invoiceType,
         periodStart: new Date(invoice.period_start * 1000),
         periodEnd: new Date(invoice.period_end * 1000),
       },
     });
 
-    await prisma.subscription.updateMany({
-      where: { stripeSubscriptionId: stripeSubscriptionId as string },
-      data: {
-        latestStripeInvoiceId: invoice.id,
-      },
-    });
+    // Update subscription if this is a subscription invoice
+    if (isSubscriptionInvoice) {
+      await prisma.subscription.updateMany({
+        where: { stripeSubscriptionId },
+        data: {
+          latestStripeInvoiceId: invoice.id,
+        },
+      });
+    }
 
-    console.log("Invoice created in database:", invoice.id);
+    // Update order if this is an order invoice
+    if (orderId && !isSubscriptionInvoice) {
+      const orderIdInt = parseInt(orderId);
+      if (!isNaN(orderIdInt)) {
+        await prisma.order.updateMany({
+          where: { id: orderIdInt },
+          data: {
+            invoiceId: dbInvoice.id,
+          },
+        });
+        console.log("Order updated with invoice ID:", orderIdInt);
+      }
+    }
+
+    console.log(
+      "Invoice created in database:",
+      invoice.id,
+      "Type:",
+      invoiceType
+    );
   } catch (error) {
     console.error("Error handling invoice.created:", error);
     throw error;
@@ -266,14 +295,24 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
 
 async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
   try {
-    // Find subscription if invoice is for a subscription
+    // Determine invoice type by checking metadata and subscription
     const subscriptionId = invoice.lines.data[0]?.subscription as string;
+    const orderId = invoice.metadata?.orderId;
+
+    // Check if it's a subscription invoice
+    const isSubscriptionInvoice = !!subscriptionId;
+    const invoiceType = isSubscriptionInvoice ? "PLAN" : "ORDER";
+
+    console.log(
+      "-------------------- JSON.stringify(invoice, null, 2) --------------------"
+    );
+    console.log(JSON.stringify(invoice, null, 2));
 
     // Update invoice in database
     const updateData: Partial<Invoice> = {
       stripeInvoiceId: invoice.id,
-      stripeSubscriptionId: subscriptionId || undefined,
-      amountCents: invoice.amount_paid || 0,
+      stripeSubscriptionId: isSubscriptionInvoice ? subscriptionId : undefined,
+      amountCents: invoice.total || 0,
       taxCents: 0,
       currency: invoice.currency || "usd",
       status: invoice.status || "draft",
@@ -282,7 +321,7 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
       paidAt: invoice.status_transitions?.paid_at
         ? new Date(invoice.status_transitions.paid_at * 1000)
         : undefined,
-      type: subscriptionId ? "PLAN" : "ORDER",
+      type: invoiceType,
       periodStart: new Date(invoice.period_start * 1000),
       periodEnd: new Date(invoice.period_end * 1000),
     };
@@ -295,7 +334,26 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
     if (result.count === 0) {
       console.warn("No invoice found for update:", invoice.id);
     } else {
-      console.log("Invoice updated in database:", invoice.id);
+      console.log(
+        "Invoice updated in database:",
+        invoice.id,
+        "Type:",
+        invoiceType
+      );
+
+      // Update order status if this is an order invoice and it's paid
+      if (orderId && !isSubscriptionInvoice && invoice.status === "paid") {
+        const orderIdInt = parseInt(orderId);
+        if (!isNaN(orderIdInt)) {
+          await prisma.order.updateMany({
+            where: { id: orderIdInt },
+            data: {
+              status: "PAID",
+            },
+          });
+          console.log("Order status updated to PAID:", orderIdInt);
+        }
+      }
     }
   } catch (error) {
     console.error("Error handling invoice.updated:", error);

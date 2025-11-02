@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     // Create the product first
     const product = await prisma.product.create({
       data: {
-        suggestedPrice: validatedData.suggestedPrice,
+        sellingPrice: validatedData.suggestedPrice,
         currency: validatedData.currency,
         categoryId: validatedData.categoryId,
         isActive: validatedData.isActive,

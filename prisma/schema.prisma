@@ -346,7 +346,7 @@ model Supplier {
 model Order {
   id             Int     @id @default(autoincrement())
   orderNumber    String  @unique
-  shopifyOrderId String?
+  shopifyOrderId String? @unique
 
   shopifyStoreId Int?
   shopifyStore   ShopifyStore? @relation(fields: [shopifyStoreId], references: [id])

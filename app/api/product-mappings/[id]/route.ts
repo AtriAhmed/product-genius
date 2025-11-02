@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isAuthenticatedServerSide, isAuthorized } from "@/lib/authUtils";
 
 // Validation schemas
 const updateProductMappingSchema = z.object({
@@ -232,23 +233,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = await isAuthenticatedServerSide([], false);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check user role (ADMIN or OWNER only)
-    const user = await prisma.user.findUnique({
-      where: { id: parseInt(session.user.id) },
-      select: { role: true },
-    });
-
-    if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
     }
 
     const id = parseInt(params.id);
@@ -264,9 +251,9 @@ export async function DELETE(
     const whereCondition: any = { id };
 
     // If user is not ADMIN or OWNER, only allow access to their own mappings
-    if (!["ADMIN", "OWNER"].includes(user.role)) {
+    if (!isAuthorized(user, ["ADMIN", "OWNER"])) {
       whereCondition.shopifyStore = {
-        userId: parseInt(session.user.id),
+        userId: parseInt(user.id),
       };
     }
 

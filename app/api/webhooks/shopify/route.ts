@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
     }
 
     const shopifyOrder: ShopifyOrder = JSON.parse(body);
-    console.log("Processing Shopify order:", shopifyOrder.order_number);
+    console.log(
+      "Processing Shopify order:",
+      shopifyOrder.order_number,
+      shopifyOrder.id
+    );
 
     // Find the Shopify store owner
     const shopifyStore = await prisma.shopifyStore.findUnique({
@@ -95,14 +99,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if order already exists (prevent duplicates)
-    const existingOrder = await prisma.order.findFirst({
+    const existingOrder = await prisma.order.findUnique({
       where: {
         shopifyOrderId: shopifyOrder.id.toString(),
       },
     });
 
     if (existingOrder) {
-      console.log("Order already exists:", shopifyOrder.order_number);
+      console.log("Order already exists:", shopifyOrder.id);
       return NextResponse.json({ success: true });
     }
 
@@ -132,6 +136,9 @@ export async function POST(request: NextRequest) {
           },
           product: {
             include: {
+              suppliers: {
+                where: { isInternal: true },
+              },
               translations: {
                 where: { locale: "en" },
                 select: { title: true },
@@ -142,7 +149,8 @@ export async function POST(request: NextRequest) {
       });
 
       if (variantMapping) {
-        const unitPriceCents = Math.round(parseFloat(lineItem.price) * 100);
+        const supplierPrice = variantMapping.product.suppliers[0]?.price || 0;
+        const unitPriceCents = Math.round(supplierPrice * 100);
         const itemTotal = unitPriceCents * lineItem.quantity;
         totalCents += itemTotal;
 
@@ -230,7 +238,7 @@ export async function POST(request: NextRequest) {
     const invoiceResult = await createAndPayInvoice(
       {
         id: order.id,
-        orderNumber: order.orderNumber,
+        shopifyOrderId: shopifyOrder.id.toString(),
         totalCents: order.totalCents,
         currency: order.currency,
         userId: order.userId,
@@ -245,69 +253,15 @@ export async function POST(request: NextRequest) {
       defaultPaymentMethod
     );
 
-    if (invoiceResult.success && invoiceResult.invoice) {
-      // Payment successful - update order to PAID
-      const invoiceData = {
-        stripeInvoiceId: invoiceResult.invoice.id,
-        userId: order.userId,
-        amountCents: invoiceResult.invoice.amount_paid || 0,
-        taxCents: 0,
-        currency: invoiceResult.invoice.currency || "usd",
-        status: invoiceResult.invoice.status || "paid",
-        pdfUrl: invoiceResult.invoice.invoice_pdf || null,
-        hostedUrl: invoiceResult.invoice.hosted_invoice_url || null,
-        paidAt: invoiceResult.invoice.status_transitions?.paid_at
-          ? new Date(invoiceResult.invoice.status_transitions.paid_at * 1000)
-          : null,
-        type: "ORDER" as InvoiceType,
-        periodStart: new Date(invoiceResult.invoice.period_start * 1000),
-        periodEnd: new Date(invoiceResult.invoice.period_end * 1000),
-      };
+    if (invoiceResult.success) {
+      console.log("Order invoice created and paid:", order.orderNumber);
+    } else {
+      console.log(
+        "Order invoice created but payment failed:",
+        order.orderNumber
+      );
 
-      const dbInvoice = await prisma.invoice.upsert({
-        where: { stripeInvoiceId: invoiceResult.invoice.id },
-        update: {},
-        create: invoiceData,
-      });
-
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          invoiceId: dbInvoice.id,
-          status: "PAID",
-        },
-      });
-
-      console.log("Order payment successful:", order.orderNumber);
-    } else if (invoiceResult.invoice) {
-      // Payment failed or requires action - create unpaid invoice and send email
-      const invoiceData = {
-        stripeInvoiceId: invoiceResult.invoice.id,
-        userId: order.userId,
-        amountCents: invoiceResult.invoice.amount_due || 0,
-        taxCents: 0,
-        currency: invoiceResult.invoice.currency || "usd",
-        status: invoiceResult.invoice.status || "open",
-        pdfUrl: invoiceResult.invoice.invoice_pdf || null,
-        hostedUrl: invoiceResult.invoice.hosted_invoice_url || null,
-        paidAt: null,
-        type: "ORDER" as InvoiceType,
-        periodStart: new Date(invoiceResult.invoice.period_start * 1000),
-        periodEnd: new Date(invoiceResult.invoice.period_end * 1000),
-      };
-
-      const dbInvoice = await prisma.invoice.upsert({
-        where: { stripeInvoiceId: invoiceResult.invoice.id },
-        update: {},
-        create: invoiceData,
-      });
-
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { invoiceId: dbInvoice.id },
-      });
-
-      // Send payment notification email
+      // Send payment notification email for failed payments
       const customerName =
         order.user.name ||
         (shopifyOrder.customer
@@ -320,7 +274,7 @@ export async function POST(request: NextRequest) {
       }).format(order.totalCents / 100);
 
       const paymentUrl =
-        invoiceResult.invoice.hosted_invoice_url ||
+        invoiceResult.invoice?.hosted_invoice_url ||
         `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/orders`;
 
       await sendOrderPaymentNotification(
@@ -335,9 +289,10 @@ export async function POST(request: NextRequest) {
         }
       );
 
-      console.log("Order created with payment required:", order.orderNumber);
-    } else {
-      console.error("Failed to create invoice for order:", order.orderNumber);
+      console.log(
+        "Payment notification email sent for order:",
+        order.orderNumber
+      );
     }
 
     return NextResponse.json({

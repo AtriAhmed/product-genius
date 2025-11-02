@@ -41,9 +41,9 @@ export function ProductInfo({
     <div className="space-y-6">
       {/* Title and Status */}
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="font-bold text-3xl tracking-tight">
               {translation?.title || "Untitled Product"}
             </h1>
             {categoryTranslation && (
@@ -70,19 +70,19 @@ export function ProductInfo({
 
       {/* Price and SKU */}
       <div className="space-y-2">
-        {product.suggestedPrice && (
+        {product.sellingPrice && (
           <div>
-            <div className="text-sm text-muted-foreground mb-1">
+            <div className="mb-1 text-muted-foreground text-sm">
               Suggested Price
             </div>
-            <div className="text-3xl font-bold text-primary">
+            <div className="font-bold text-primary text-3xl">
               {currencyMap[product.currency!]?.symbol || product.currency}
-              {product.suggestedPrice}
+              {product.sellingPrice}
             </div>
           </div>
         )}
         {product.sku && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             SKU: {product.sku}
           </div>
         )}
@@ -90,7 +90,7 @@ export function ProductInfo({
 
       {/* Description */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Description</h3>
+        <h3 className="font-semibold text-lg">Description</h3>
         <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
           {translation?.description || "No description available."}
         </p>

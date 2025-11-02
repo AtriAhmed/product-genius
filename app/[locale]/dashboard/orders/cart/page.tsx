@@ -97,14 +97,13 @@ export default function CartPage() {
         return {
           ...product,
           quantity: cartItem?.quantity || 0,
-          suggestedPrice: supplier ? supplier.price : product.suggestedPrice,
+          suggestedPrice: supplier ? supplier.price : product.sellingPrice,
         };
       })
     : [];
 
   const totalPrice = cartProducts.reduce(
-    (total, product) =>
-      total + (product.suggestedPrice || 0) * product.quantity,
+    (total, product) => total + (product.sellingPrice || 0) * product.quantity,
     0
   );
 

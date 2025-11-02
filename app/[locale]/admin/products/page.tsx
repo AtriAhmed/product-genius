@@ -77,8 +77,8 @@ export default function ProductsPage() {
       });
     } else if (sortBy === "suggestedPrice") {
       sortedProducts = sortedProducts.sort((a, b) => {
-        const aPrice = a.suggestedPrice || 0;
-        const bPrice = b.suggestedPrice || 0;
+        const aPrice = a.sellingPrice || 0;
+        const bPrice = b.sellingPrice || 0;
         return sortOrder === "asc" ? aPrice - bPrice : bPrice - aPrice;
       });
     }

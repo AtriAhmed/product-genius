@@ -181,7 +181,9 @@ export type CategoryTranslation = {
 export type Product = {
   id: number;
   sku?: string;
-  suggestedPrice?: number;
+  sellingPrice?: number;
+  price?: number;
+  compareAtPrice?: number;
   currency?: string;
   popularityScore?: number;
   shopifyId?: string;

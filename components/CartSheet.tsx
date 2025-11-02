@@ -69,14 +69,13 @@ export default function CartSheet() {
         return {
           ...product,
           quantity: cartItem?.quantity || 0,
-          suggestedPrice: supplier ? supplier.price : product.suggestedPrice,
+          suggestedPrice: supplier ? supplier.price : product.sellingPrice,
         };
       })
     : [];
 
   const totalPrice = cartProducts.reduce(
-    (total, product) =>
-      total + (product.suggestedPrice || 0) * product.quantity,
+    (total, product) => total + (product.sellingPrice || 0) * product.quantity,
     0
   );
 
@@ -161,7 +160,7 @@ export default function CartSheet() {
                         {product.translations?.[0]?.title || t("product")}
                       </h4>
                       <p className="text-muted-foreground text-sm">
-                        {formatPrice(product.suggestedPrice || 0)}
+                        {formatPrice(product.sellingPrice || 0)}
                       </p>
 
                       {/* Quantity Controls */}

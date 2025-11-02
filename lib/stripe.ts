@@ -118,7 +118,7 @@ export async function getCustomerDefaultPaymentMethod(
 export async function createAndPayInvoice(
   order: {
     id: number;
-    orderNumber: string;
+    shopifyOrderId: string;
     totalCents: number;
     currency: string;
     userId: number;
@@ -144,14 +144,14 @@ export async function createAndPayInvoice(
     const invoice = await stripe.invoices.create({
       customer: customerId,
       currency: order.currency.toLowerCase(),
-      collection_method: "charge_automatically",
+      collection_method: "send_invoice",
+      days_until_due: 5,
       metadata: {
         orderId: order.id.toString(),
-        orderNumber: order.orderNumber,
+        shopifyOrderId: order.shopifyOrderId,
         userId: order.userId.toString(),
         type: "ORDER",
       },
-      auto_advance: true,
     });
 
     // Add invoice items

@@ -61,7 +61,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      suggestedPrice: product?.suggestedPrice || undefined,
+      suggestedPrice: product?.sellingPrice || undefined,
       currency: "EUR",
       categoryId: product?.categoryId || undefined,
       isActive: product?.isActive ?? true,
@@ -85,7 +85,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     if (isEditMode && product) {
       // Reset form with product data
       reset({
-        suggestedPrice: product.suggestedPrice,
+        suggestedPrice: product.sellingPrice,
         currency: product.currency || "EUR",
         categoryId: product.categoryId,
         isActive: product.isActive ?? true,

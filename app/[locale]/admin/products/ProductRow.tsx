@@ -116,10 +116,10 @@ export default function ProductRow({
 
       {/* Price */}
       <TableCell>
-        {product.suggestedPrice ? (
+        {product.sellingPrice ? (
           <span className="font-medium">
             {product.currency || "$"}
-            {product.suggestedPrice.toFixed(2)}
+            {product.sellingPrice.toFixed(2)}
           </span>
         ) : (
           <span className="text-muted-foreground text-xs italic">
