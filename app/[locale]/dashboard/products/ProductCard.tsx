@@ -2,12 +2,18 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { getMediaUrl } from "@/lib/utils";
+import { getCurrentTranslation } from "@/lib/products";
+import {
+  formatPriceCents,
+  getInternalSupplierPrice,
+  getMediaUrl,
+} from "@/lib/utils";
 import { Product, ProductTranslation } from "@/types";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import ShopifyIcon from "@/assets/images/shopify.svg";
 
 const currencies = [
   { code: "USD", name: "US Dollar", symbol: "$" },
@@ -36,15 +42,6 @@ export default function ProductCard({
   const [isVideoHovered, setIsVideoHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const getCurrentTranslation = (
-    translations: ProductTranslation[],
-    locale = "en"
-  ) => {
-    return (
-      translations.find((t) => t.locale === locale) || translations[0] || null
-    );
-  };
-
   const translation = getCurrentTranslation(product?.translations || []);
   const mainMedia = product?.media?.[0];
 
@@ -62,16 +59,36 @@ export default function ProductCard({
       }
     }
   }, [isVideoHovered, mainMedia?.type]);
-  const categoryTranslation =
-    product.category?.translations?.find((t) => t.locale === "en") ||
-    product.category?.translations?.[0];
+  const categoryTranslation = getCurrentTranslation(
+    product?.category?.translations || []
+  );
+
+  const sellingPrice = getInternalSupplierPrice(product?.suppliers || []);
+
+  const isImported = (product.productMappings || []).length > 0;
 
   return (
     <Card
-      className="group gap-2 overflow-hidden pt-0 pb-2 hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className="group flex flex-col gap-2 overflow-hidden pt-0 pb-2 hover:shadow-lg transition-all duration-300 cursor-pointer"
       onClick={() => onView(product)}
     >
       <div className="relative h-[200px] overflow-hidden bg-gray-100">
+        {isImported && (
+          <div
+            className="top-3 right-3 z-20 absolute flex items-center gap-2 px-2.5 py-1.5 rounded-full shadow-sm backdrop-blur-sm select-none"
+            // Make sure it doesn't block card click — pointer-events none so click passes through
+            style={{ background: "rgba(15, 185, 100, 0.95)" }}
+            aria-hidden
+          >
+            <div className="w-4 h-4">
+              <ShopifyIcon className="text-white" height={15} />
+            </div>
+            <span className="font-semibold text-[12px] text-white">
+              {t("imported") || "Imported"}
+            </span>
+          </div>
+        )}
+
         {mainMedia ? (
           mainMedia?.type === "IMAGE" ? (
             <Image
@@ -124,8 +141,8 @@ export default function ProductCard({
         )}
       </div>
 
-      <CardContent className="p-4 pt-0">
-        <div className="space-y-2">
+      <CardContent className="grow p-4 pt-0">
+        <div className="flex flex-col space-y-2 h-full">
           <div className="flex justify-between items-start gap-2">
             <h3 className="font-semibold group-hover:text-primary text-lg line-clamp-2 transition-colors">
               {translation?.title || "Untitled"}
@@ -133,7 +150,10 @@ export default function ProductCard({
           </div>
 
           {categoryTranslation && (
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="!bg-yellow-500 text-white text-xs"
+            >
               {categoryTranslation.title}
             </Badge>
           )}
@@ -142,18 +162,15 @@ export default function ProductCard({
             {translation?.description}
           </p>
 
-          <div className="flex flex-wrap justify-between items-center gap-2">
-            {product.sellingPrice && (
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-primary text-lg">
-                  {currencyMap[product.currency!]?.symbol || product.currency}
-                  {product.sellingPrice}
-                </span>
-              </div>
+          <div className="flex flex-wrap justify-between items-center gap-2 mt-auto ml-auto">
+            {sellingPrice && (
+              <Badge className="px-3 py-1 border-0 bg-gradient-to-r from-primary-700 to-primary-500 font-semibold text-white text-sm transition-all duration-300 transform">
+                {formatPriceCents(
+                  sellingPrice * 100,
+                  product.currency || "USD"
+                )}
+              </Badge>
             )}
-            <span className="ms-auto px-2 py-1 rounded-sm bg-primary-500 hover:bg-primary-500/90 font-medium text-[11px] text-white">
-              {t("view supplier")}
-            </span>
           </div>
         </div>
       </CardContent>

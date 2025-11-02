@@ -14,7 +14,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
   if (media.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+        <div className="flex justify-center items-center aspect-square rounded-lg bg-gray-200">
           <Package className="w-16 h-16 text-gray-400" />
         </div>
       </div>
@@ -26,7 +26,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
   return (
     <div className="space-y-4">
       {/* Main Display */}
-      <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-muted-background">
         {selectedMedia.type === "IMAGE" ? (
           <Image
             src={getMediaUrl(selectedMedia.url!)}
@@ -49,13 +49,15 @@ export function ImageGallery({ media }: ImageGalleryProps) {
 
       {/* Thumbnails */}
       {media.length > 1 && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           {media.map((item, index) => (
             <button
               key={item.id}
               onClick={() => setSelectedIndex(index)}
               className={`relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
-                selectedIndex === index ? "border-primary" : "border-gray-200"
+                selectedIndex === index
+                  ? "border-primary"
+                  : "border-muted-background"
               }`}
             >
               {item.type === "IMAGE" ? (
@@ -80,7 +82,7 @@ export function ImageGallery({ media }: ImageGalleryProps) {
                       className="w-full h-full object-cover"
                     />
                   )}
-                  <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                  <div className="absolute inset-0 flex justify-center items-center bg-black/25">
                     <Play className="size-5 text-white" />
                   </div>
                 </div>

@@ -1,4 +1,11 @@
-import { Building2, ExternalLink, Store, Star, Loader2 } from "lucide-react";
+import {
+  Building2,
+  ExternalLink,
+  Store,
+  Star,
+  Loader2,
+  CheckCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,11 +20,13 @@ import { useTranslations } from "next-intl";
 interface SupplierCardProps {
   supplier: Supplier;
   compact?: boolean;
+  isImported?: boolean;
 }
 
 export default function SupplierCard({
   supplier,
   compact = true,
+  isImported = false,
 }: SupplierCardProps) {
   const router = useRouter();
   const t = useTranslations("shopify");
@@ -94,17 +103,27 @@ export default function SupplierCard({
         {/* Import to Shopify Button */}
         <Button
           size="sm"
-          variant="primary"
+          variant={isImported ? "secondary" : "primary"}
           onClick={handleImportToShopify}
-          disabled={isImporting}
-          className="w-full h-7 px-3 bg-gradient-to-r from-primary-600 to-primary-700 shadow-md hover:shadow-lg hover:saturate-75 text-xs transition-all duration-200"
+          disabled={isImporting || isImported}
+          className={`disabled:opacity-90 w-full h-7 px-3 text-xs transition-all duration-200 ${
+            isImported
+              ? "bg-primary-700 text-white cursor-not-allowed"
+              : "bg-gradient-to-r from-primary-600 to-primary-700 shadow-md hover:shadow-lg hover:saturate-75"
+          }`}
         >
           {isImporting ? (
             <Loader2 className="w-3 h-3 animate-spin" />
+          ) : isImported ? (
+            <CheckCircle className="w-3 h-3" />
           ) : (
             <Store className="w-3 h-3" />
           )}
-          {isImporting ? "Importing..." : "Import to Shopify"}
+          {isImporting
+            ? "Importing..."
+            : isImported
+            ? "Already Imported"
+            : "Import to Shopify"}
         </Button>
       </CardContent>
 

@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Order, ShipmentStatus } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import useSWR from "swr";
 import axios from "axios";
 import { toast } from "sonner";
@@ -36,7 +36,7 @@ async function fetcher(orderId: string) {
   return response.data;
 }
 
-const getShipmentStatusColor = (status: ShipmentStatus) => {
+const getShipmentStatusColor = (status: string) => {
   switch (status) {
     case "PENDING":
       return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
@@ -202,15 +202,11 @@ export default function AgentOrderDetailsPage() {
                   <div className="flex justify-between items-center">
                     <span className="font-medium">{t("shipment status")}:</span>
                     <div className="flex items-center gap-2">
-                      <Badge
-                        className={getShipmentStatusColor(
-                          order.shipmentStatus!
-                        )}
-                      >
-                        {t(order.shipmentStatus?.toLowerCase() || "pending")}
+                      <Badge className={getShipmentStatusColor(order.status!)}>
+                        {t(order.status?.toLowerCase() || "pending")}
                       </Badge>
                       <Select
-                        value={order.shipmentStatus}
+                        value={order.status}
                         onValueChange={handleUpdateShipmentStatus}
                         disabled={isUpdating}
                       >

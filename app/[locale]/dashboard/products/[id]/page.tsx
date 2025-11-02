@@ -103,7 +103,7 @@ export default function ProductPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-0 sm:px-4">
+        <div className="mx-auto px-0 sm:px-4 container">
           <div className="mb-6">
             <Button
               variant="outline"
@@ -131,7 +131,7 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-0 sm:px-4">
+      <div className="mx-auto px-0 sm:px-4 container">
         {/* Header */}
         <div className="mb-6">
           <Button
@@ -145,7 +145,7 @@ export default function ProductPage() {
         </div>
 
         {/* Product Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="gap-8 grid grid-cols-1 lg:grid-cols-2">
           {/* Left Column - Images */}
           <div>
             <ImageGallery media={product?.media || []} />
@@ -164,6 +164,7 @@ export default function ProductPage() {
 
             <ProvidersPreview
               suppliers={product?.suppliers || []}
+              isImported={product?.productMappings?.length! > 0}
               onScrollToProviders={scrollToProviders}
             />
           </div>

@@ -14,6 +14,7 @@ import {
   validateVariants,
   type OptionDefinition,
 } from "@/lib/variant-generator";
+import { isAuthorized } from "@/lib/authUtils";
 
 // Validation schemas for updates
 const translationSchema = z.object({
@@ -94,6 +95,14 @@ export async function GET(
         suppliers: true,
         productOptions: true,
         productVariants: true,
+        productMappings: {
+          where: {
+            userId: parseInt(session.user.id),
+          },
+          include: {
+            shopifyStore: true,
+          },
+        },
       },
     });
 

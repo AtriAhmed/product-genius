@@ -5,13 +5,14 @@ import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceC
 
 interface ProvidersPreviewProps {
   suppliers: Supplier[];
+  isImported: boolean;
   onScrollToProviders: () => void;
 }
 
-export function ProvidersPreview({ suppliers }: ProvidersPreviewProps) {
-  console.log("-------------------- suppliers --------------------");
-  console.log(suppliers);
-
+export function ProvidersPreview({
+  suppliers,
+  isImported,
+}: ProvidersPreviewProps) {
   const externalSuppliers = suppliers.filter(
     (supplier) => supplier.isInternal === false
   );
@@ -53,6 +54,7 @@ export function ProvidersPreview({ suppliers }: ProvidersPreviewProps) {
                   key={supplier.id}
                   supplier={supplier}
                   compact={true}
+                  isImported={isImported}
                 />
               ))}
             </div>

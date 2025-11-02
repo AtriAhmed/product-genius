@@ -9,6 +9,7 @@ import {
   validateVariants,
   type OptionDefinition,
 } from "@/lib/variant-generator";
+import { isAuthenticatedServerSide } from "@/lib/authUtils";
 
 // Validation schemas
 const mediaSchema = z.object({
@@ -330,6 +331,11 @@ const getProductsSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const user = await isAuthenticatedServerSide([], false);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const query = getProductsSchema.parse({
@@ -393,6 +399,11 @@ export async function GET(request: NextRequest) {
           productOptions: true,
           productVariants: {
             take: 5, // Limit variants in list view
+          },
+          productMappings: {
+            where: {
+              userId: parseInt(user.id),
+            },
           },
         },
         orderBy,

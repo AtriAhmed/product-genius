@@ -1,9 +1,12 @@
-import { Heart, Share2 } from "lucide-react";
+import { Heart, Share2, ExternalLink, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Product, ProductTranslation } from "@/types";
+import ShopifyIcon from "@/assets/images/shopify.svg";
 
 interface ProductInfoProps {
   product: Product;
@@ -37,8 +40,62 @@ export function ProductInfo({
   onLike,
   onShare,
 }: ProductInfoProps) {
+  const t = useTranslations("products");
+  const isImportedToShopify =
+    product.productMappings && product.productMappings.length > 0;
+  const shopifyMapping = product.productMappings?.[0];
+
   return (
     <div className="space-y-6">
+      {/* Shopify Import Alert */}
+      {isImportedToShopify && (
+        <div className="p-4 border border-green-200 dark:border-gray-700 rounded-lg bg-green-50 dark:bg-gray-800/50">
+          <div className="flex items-start gap-4">
+            <div className="flex flex-shrink-0 justify-center items-center w-16 h-16 rounded-lg bg-green-100 dark:bg-gray-700">
+              <ShopifyIcon
+                className="text-green-600 dark:text-gray-300"
+                width={40}
+                height={40}
+              />
+            </div>
+            <div className="flex-1 pt-1">
+              <h3 className="mb-2 font-semibold text-green-800 dark:text-gray-200 text-base">
+                {t("product imported to shopify")}
+              </h3>
+              <p className="text-green-700 dark:text-gray-400 text-sm">
+                {t("product imported to shopify description")}
+              </p>
+              {shopifyMapping?.shopifyProductId &&
+                shopifyMapping?.shopifyStore?.shop && (
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="border-green-300 dark:border-gray-600 hover:bg-green-100 dark:hover:bg-gray-700 text-green-700 dark:text-gray-300"
+                    >
+                      <a
+                        href={`https://${shopifyMapping.shopifyStore.shop}/admin/products/${shopifyMapping.shopifyProductId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2"
+                      >
+                        <ShopifyIcon
+                          className="text-green-600 dark:text-gray-300"
+                          width={16}
+                          height={16}
+                        />
+                        {t("view in shopify admin")}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </Button>
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Title and Status */}
       <div className="space-y-4">
         <div className="flex justify-between items-start gap-4">

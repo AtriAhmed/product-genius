@@ -32,3 +32,10 @@ export function getInternalSupplierPrice(
   const internalSupplier = suppliers.find((s) => s.isInternal);
   return internalSupplier?.price || null;
 }
+
+export function formatPriceCents(cents: number, currency: string = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency,
+  }).format(cents / 100);
+}

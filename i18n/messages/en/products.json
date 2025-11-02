@@ -140,5 +140,9 @@
   "add suppliers to your product": "Add suppliers to your product",
   "no sku": "No SKU",
   "no category": "No category",
-  "no price": "No price"
+  "no price": "No price",
+  "product imported to shopify": "Product Imported to Shopify",
+  "product imported to shopify description": "This product has been successfully imported to your Shopify store.",
+  "view in shopify admin": "View in Shopify Admin",
+  "imported": "Imported"
 }
