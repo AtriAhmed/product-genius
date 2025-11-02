@@ -111,6 +111,7 @@ export default function ImportedProductsDataTable({
                           width={40}
                           height={40}
                           className="w-full h-full object-cover"
+                          sizes="(max-width: 640px) 40px, 10vw"
                         />
                       </div>
                     ) : (

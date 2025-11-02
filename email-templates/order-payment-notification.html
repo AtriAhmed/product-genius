@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Payment Required - Product Genius</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: #f9fafb;
+        line-height: 1.6;
+        color: #374151;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        padding: 40px 30px;
+        text-align: center;
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+      }
+
+      .logo img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .header h1 {
+        color: white;
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 15px;
+      }
+
+      .content {
+        padding: 36px 28px;
+      }
+
+      .alert-banner {
+        background-color: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+      }
+
+      .alert-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 12px;
+        color: #f59e0b;
+      }
+
+      .alert-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: #92400e;
+      }
+
+      .greeting {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #111827;
+      }
+
+      .description {
+        font-size: 16px;
+        color: #4b5563;
+        margin-bottom: 28px;
+        line-height: 1.7;
+      }
+
+      .order-details {
+        background-color: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 24px 0;
+      }
+
+      .order-details h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 12px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .detail-label {
+        color: #6b7280;
+      }
+
+      .detail-value {
+        color: #111827;
+        font-weight: 500;
+      }
+
+      .total-amount {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 12px;
+        margin-top: 12px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .pay-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: white;
+        text-decoration: none;
+        padding: 16px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        text-align: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(234, 88, 12, 0.25);
+      }
+
+      .pay-button:hover {
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 10px rgba(234, 88, 12, 0.35);
+      }
+
+      .button-container {
+        text-align: center;
+        margin: 32px 0;
+      }
+
+      .alternative-link {
+        margin-top: 24px;
+        padding: 18px;
+        background-color: #fff7ed;
+        border-radius: 8px;
+        border-left: 4px solid #f97316;
+      }
+
+      .alternative-link p {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 8px;
+      }
+
+      .alternative-link a {
+        color: #ea580c;
+        word-break: break-all;
+        text-decoration: none;
+      }
+
+      .footer {
+        background-color: #f9fafb;
+        padding: 28px;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+      }
+
+      .footer p {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 6px;
+      }
+
+      .footer-links {
+        margin-top: 14px;
+      }
+
+      .footer-links a {
+        color: #ea580c;
+        text-decoration: none;
+        margin: 0 10px;
+        font-size: 14px;
+      }
+
+      .footer-links a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          margin: 20px;
+          border-radius: 12px;
+        }
+
+        .header,
+        .content,
+        .footer {
+          padding: 24px 18px;
+        }
+
+        .header h1 {
+          font-size: 22px;
+        }
+
+        .pay-button {
+          padding: 14px 28px;
+          font-size: 15px;
+        }
+
+        .detail-row {
+          flex-direction: column;
+          gap: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">
+          <img src="{{APP_URL}}/logo.png" alt="Product Genius Logo" />
+        </div>
+        <h1>Product Genius</h1>
+        <p>Your order needs payment</p>
+      </div>
+
+      <div class="content">
+        <div class="alert-banner">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-text">Payment Required for Your Order</div>
+        </div>
+
+        <h2 class="greeting">Hello {{CUSTOMER_NAME}},</h2>
+
+        <p class="description">
+          Your order <strong>{{ORDER_NUMBER}}</strong> has been created from
+          your Shopify store, but we were unable to process the payment
+          automatically. Please complete the payment to ensure your order can be
+          fulfilled promptly.
+        </p>
+
+        <div class="order-details">
+          <h3>Order Details</h3>
+          <div class="detail-row">
+            <span class="detail-label">Order Number:</span>
+            <span class="detail-value">{{ORDER_NUMBER}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Order Date:</span>
+            <span class="detail-value">{{ORDER_DATE}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Items:</span>
+            <span class="detail-value">{{ITEM_COUNT}} item(s)</span>
+          </div>
+          <div class="detail-row total-amount">
+            <span class="detail-label">Total Amount:</span>
+            <span class="detail-value">{{TOTAL_AMOUNT}}</span>
+          </div>
+        </div>
+
+        <div class="button-container">
+          <a href="{{PAYMENT_URL}}" class="pay-button">Pay Invoice Now</a>
+        </div>
+
+        <div class="alternative-link">
+          <p><strong>Alternative Payment Method</strong></p>
+          <p>You can also pay by visiting your dashboard:</p>
+          <a href="{{DASHBOARD_URL}}">{{DASHBOARD_URL}}</a>
+        </div>
+
+        <p class="description">
+          <strong>Important:</strong> Your order will remain pending until
+          payment is completed. If you have any questions or need assistance,
+          please don't hesitate to contact our support team.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>&copy; 2025 Product Genius. All rights reserved.</p>
+        <p>This email was sent regarding your order payment.</p>
+
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Contact Support</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -10,7 +10,7 @@ const importProductSchema = z.object({
   shopifyStoreId: z.number().int().positive(),
 });
 
-export async function GET(
+export async function POST(
   request: NextRequest,
   ctx: RouteContext<"/api/products/[id]/import-to-shopify">
 ) {

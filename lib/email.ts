@@ -88,3 +88,49 @@ export async function sendVerificationEmail(
     text: `Please verify your email address by clicking this link: ${verificationUrl}`,
   });
 }
+
+/**
+ * Send order payment notification email to customer
+ * @param email Customer's email address
+ * @param orderData Order information
+ * @returns Promise<boolean> indicating success/failure
+ */
+export async function sendOrderPaymentNotification(
+  email: string,
+  orderData: {
+    customerName: string;
+    orderNumber: string;
+    orderDate: string;
+    itemCount: number;
+    totalAmount: string;
+    paymentUrl: string;
+  }
+): Promise<boolean> {
+  const templatePath = join(
+    process.cwd(),
+    "email-templates",
+    "order-payment-notification.html"
+  );
+  const emailTemplate = readFileSync(templatePath, "utf-8");
+
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/orders`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+
+  // Replace placeholders in template
+  let htmlContent = emailTemplate
+    .replaceAll("{{CUSTOMER_NAME}}", orderData.customerName)
+    .replaceAll("{{ORDER_NUMBER}}", orderData.orderNumber)
+    .replaceAll("{{ORDER_DATE}}", orderData.orderDate)
+    .replaceAll("{{ITEM_COUNT}}", orderData.itemCount.toString())
+    .replaceAll("{{TOTAL_AMOUNT}}", orderData.totalAmount)
+    .replaceAll("{{PAYMENT_URL}}", orderData.paymentUrl)
+    .replaceAll("{{DASHBOARD_URL}}", dashboardUrl)
+    .replaceAll("{{APP_URL}}", appUrl);
+
+  return sendEmail({
+    to: email,
+    subject: `Payment Required for Order ${orderData.orderNumber} - Product Genius`,
+    html: htmlContent,
+    text: `Your order ${orderData.orderNumber} requires payment. Please visit ${orderData.paymentUrl} to complete your payment.`,
+  });
+}

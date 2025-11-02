@@ -34,7 +34,7 @@ export default function SupplierCard({
     setIsImporting(true);
 
     try {
-      const response = await axios.get(
+      const response = await axios.post(
         `/api/products/${supplier.productId}/import-to-shopify`
       );
       toast.success("Product successfully imported to Shopify!");
