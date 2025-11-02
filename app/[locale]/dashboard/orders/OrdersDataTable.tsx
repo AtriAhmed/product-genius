@@ -1,7 +1,6 @@
-import { useTranslations } from "next-intl";
-import { Eye, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -10,8 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Order, ShipmentStatus } from "@/types";
+import { Order, OrderStatus } from "@/types";
+import { Eye, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface OrdersDataTableProps {
   orders: Order[];
@@ -19,22 +19,24 @@ interface OrdersDataTableProps {
   isLoading: boolean;
 }
 
-const getShipmentStatusColor = (status: ShipmentStatus) => {
+const getStatusColor = (status: OrderStatus) => {
   switch (status) {
-    case "PENDING":
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-    case "PICKED":
-      return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-    case "IN_TRANSIT":
-      return "bg-purple-100 text-purple-800 hover:bg-purple-200";
-    case "DELIVERED":
-      return "bg-green-100 text-green-800 hover:bg-green-200";
-    case "RETURNED":
-      return "bg-orange-100 text-orange-800 hover:bg-orange-200";
-    case "CANCELLED":
-      return "bg-red-100 text-red-800 hover:bg-red-200";
+    case "DRAFT":
+      return "!bg-gray-300 text-gray-900";
+    case "PENDING": // unpaid, waiting for payment so a red color
+      return "!bg-red-500 text-white";
+    case "PAID":
+      return "!bg-green-300 text-green-900";
+    case "PROCESSING":
+      return "!bg-blue-300 text-blue-900";
+    case "COMPLETED":
+      return "!bg-purple-300 text-purple-900";
+    case "CANCELED":
+      return "!bg-red-300 text-red-900";
+    case "REFUNDED":
+      return "!bg-orange-300 text-orange-900";
     default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+      return "!bg-gray-100 text-gray-800";
   }
 };
 
@@ -64,7 +66,7 @@ export default function OrdersDataTable({
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg bg-card">
+      <div className="w-0 min-w-full border rounded-lg bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -106,7 +108,7 @@ export default function OrdersDataTable({
   }
 
   return (
-    <div className="border rounded-lg bg-card">
+    <div className="w-0 min-w-full border rounded-lg bg-card">
       <Table>
         <TableHeader>
           <TableRow>
@@ -138,10 +140,8 @@ export default function OrdersDataTable({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge
-                  className={getShipmentStatusColor(order.shipmentStatus!)}
-                >
-                  {t(order.shipmentStatus?.toLowerCase() || "pending")}
+                <Badge className={getStatusColor(order.status!)}>
+                  {t(order.status?.toLowerCase() || "unavailable")}
                 </Badge>
               </TableCell>
               <TableCell>

@@ -31,5 +31,8 @@
   "failed to download invoice": "Failed to download invoice",
   "opened invoice": "Invoice opened in new tab",
   "no pdf available": "No PDF available for this invoice",
-  "no hosted url available": "No hosted URL available for this invoice"
+  "no hosted url available": "No hosted URL available for this invoice",
+  "unpaid": "Unpaid",
+  "paid": "Paid",
+  "unavailable": "Unavailable"
 }

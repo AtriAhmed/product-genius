@@ -34,14 +34,6 @@ export type OrderStatus =
   | "CANCELED"
   | "REFUNDED";
 
-export type ShipmentStatus =
-  | "PENDING"
-  | "PICKED"
-  | "IN_TRANSIT"
-  | "DELIVERED"
-  | "RETURNED"
-  | "CANCELLED";
-
 export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
 
 export type InvoiceType = "PLAN" | "ORDER";
@@ -305,12 +297,12 @@ export type Supplier = {
 export type Order = {
   id: number;
   orderNumber?: string;
+  shopifyOrderId?: string;
   userId?: number;
   agentId?: number;
   totalCents?: number;
   currency?: string;
   status?: OrderStatus;
-  shipmentStatus?: ShipmentStatus;
   deliveryName?: string;
   deliveryPhone?: string;
   deliveryEmail?: string;

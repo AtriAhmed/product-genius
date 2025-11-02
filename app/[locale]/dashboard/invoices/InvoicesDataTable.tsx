@@ -48,34 +48,39 @@ export default function InvoicesDataTable({
   const getStatusColor = (status?: string) => {
     switch (status?.toLowerCase()) {
       case "paid":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "!bg-green-600 text-white !dark:bg-green-900 dark:text-green-300";
       case "open":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "draft":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      case "void":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
-      case "uncollectible":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+        return "!bg-red-500 text-white !dark:bg-red-900 dark:text-red-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "!bg-gray-100 text-gray-800 !dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const getStatusText = (status?: string) => {
+    switch (status) {
+      case "paid":
+        return t("paid");
+      case "open":
+        return t("unpaid");
+      default:
+        return "unavailable";
     }
   };
 
   const getTypeColor = (type?: string) => {
     switch (type) {
       case "PLAN":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        return "!bg-purple-100 text-purple-800 !dark:bg-purple-900 dark:text-purple-300";
       case "ORDER":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300";
+        return "!bg-emerald-100 text-emerald-800 !dark:bg-emerald-900 dark:text-emerald-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "!bg-gray-100 text-gray-800 !dark:bg-gray-900 dark:text-gray-300";
     }
   };
 
   if (isLoading) {
     return (
-      <div className="overflow-hidden border rounded-lg bg-card shadow-sm">
+      <div className="w-0 min-w-full overflow-hidden border rounded-lg bg-card shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -129,7 +134,7 @@ export default function InvoicesDataTable({
   }
 
   return (
-    <div className="overflow-hidden border rounded-lg bg-card shadow-sm">
+    <div className="w-0 min-w-full overflow-hidden border rounded-lg bg-card shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
@@ -156,7 +161,7 @@ export default function InvoicesDataTable({
               <TableCell>
                 {invoice.status && (
                   <Badge className={getStatusColor(invoice.status)}>
-                    {invoice.status}
+                    {getStatusText(invoice.status)}
                   </Badge>
                 )}
               </TableCell>
