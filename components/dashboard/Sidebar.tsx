@@ -54,8 +54,15 @@ import { signOut, useSession } from "next-auth/react";
 import ShopifyIcon from "@/assets/images/shopify-outline.svg";
 import Image from "next/image";
 
+type NavigationItem = {
+  title: string;
+  url: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  subItems?: NavigationItem[];
+};
+
 // User navigation data
-const navigationData = [
+const navigationData: NavigationItem[] = [
   {
     title: "overview",
     url: "/dashboard",
@@ -75,36 +82,17 @@ const navigationData = [
     title: "orders",
     url: "/dashboard/orders",
     icon: ShoppingCart,
-    subItems: [
-      {
-        title: "orders",
-        url: "/dashboard/orders",
-        icon: Truck,
-      },
-      {
-        title: "cart",
-        url: "/dashboard/orders/cart",
-        icon: ShoppingCart,
-      },
-    ],
   },
   {
-    title: "billing",
+    title: "billing details",
     url: "/dashboard/billing",
+    // suitable icon
     icon: CreditCard,
-    subItems: [
-      {
-        title: "billing details",
-        url: "/dashboard/billing",
-        // suitable icon
-        icon: CreditCard,
-      },
-      {
-        title: "invoices",
-        url: "/dashboard/invoices",
-        icon: FileText,
-      },
-    ],
+  },
+  {
+    title: "invoices",
+    url: "/dashboard/invoices",
+    icon: FileText,
   },
   {
     title: "shopify account",
