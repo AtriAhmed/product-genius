@@ -79,6 +79,8 @@ export default function Private({
     session?.user?.role === "EDITOR" &&
     !pathname.includes("/products") &&
     !pathname.includes("/categories") &&
+    !pathname.includes("/login") &&
+    !pathname.includes("/register") &&
     pathname !== "/admin"
   ) {
     return notFound();
