@@ -5,12 +5,13 @@ import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
 const updateShipmentSchema = z.object({
   status: z.enum([
-    "PENDING",
-    "PICKED",
-    "IN_TRANSIT",
-    "DELIVERED",
-    "RETURNED",
-    "CANCELLED",
+    "DRAFT",
+    "UNPAID",
+    "PAID",
+    "PROCESSING",
+    "COMPLETED",
+    "CANCELED",
+    "REFUNDED",
   ]),
 });
 
@@ -39,7 +40,7 @@ export async function PATCH(
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, shipmentStatus: true },
+      select: { id: true, status: true },
     });
 
     if (!existingOrder) {
@@ -50,7 +51,7 @@ export async function PATCH(
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
-        shipmentStatus: status,
+        status,
         updatedAt: new Date(),
       },
       include: {
