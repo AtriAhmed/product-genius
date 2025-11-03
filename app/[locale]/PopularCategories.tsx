@@ -42,16 +42,6 @@ export default function PopularCategories() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const handleCategoryClick = (category?: Category) => {
-    if (status === "loading") return;
-
-    if (session) {
-      router.push("/dashboard/products");
-    } else {
-      router.push("/auth/login");
-    }
-  };
-
   const getFallbackCategories = (): FallbackCategory[] => [
     {
       id: "trending",
@@ -79,73 +69,56 @@ export default function PopularCategories() {
   return (
     <section
       id="niches"
-      className="py-12 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+      className="py-12 bg-gradient-to-br from-slate-50 dark:from-gray-900 via-blue-50 dark:via-gray-800 to-indigo-100 dark:to-gray-900"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-xs font-semibold text-primary-600 dark:text-primary-400 tracking-wide uppercase mb-2">
-            {t("popular categories")}
-          </h2>
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+          <h3 className="mb-3 font-bold text-gray-900 dark:text-white text-2xl md:text-3xl">
             {t("find products in categories")}
           </h3>
-          <p className="text-base text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="max-w-2xl mx-auto text-gray-600 dark:text-gray-300 text-base">
             {t("categories description")}
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="gap-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-10">
           {fallbackCategories.map((category, index) => {
             const IconComponent = category.icon;
 
             return (
               <div
                 key={category.id}
-                onClick={() => handleCategoryClick()}
-                className="relative group bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-500 cursor-pointer overflow-hidden transform hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-500 cursor-pointer transform"
                 data-aos="fade-up"
                 data-aos-delay={index * 100}
               >
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-purple-500/5 dark:from-primary-400/10 dark:to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 dark:from-primary-400/10 to-purple-500/5 dark:to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                 {/* Glowing border effect */}
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
 
                 <div className="relative p-6">
                   {/* Icon with enhanced styling */}
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300 mb-4">
+                  <div className="inline-flex justify-center items-center w-12 h-12 mb-4 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg group-hover:shadow-xl text-white group-hover:scale-110 transition-all duration-300">
                     <IconComponent className="w-6 h-6" />
                   </div>
 
                   {/* Content section */}
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                    <h3 className="font-bold text-gray-900 dark:group-hover:text-primary-400 dark:text-white group-hover:text-primary-600 text-lg transition-colors duration-300">
                       {category.title}
                     </h3>
 
-                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                       {category.description}
                     </p>
 
                     {/* Action area */}
-                    <div className="flex items-center justify-between pt-3">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
-                        <span className="text-xs font-semibold text-primary-600 dark:text-primary-400">
-                          {t("explore category")}
-                        </span>
-                      </div>
-
-                      {/* Arrow icon */}
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 group-hover:bg-primary-500 group-hover:text-white transition-all duration-300">
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                      </div>
-                    </div>
                   </div>
 
                   {/* Floating elements */}
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="top-3 right-3 absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></div>
                   </div>
                 </div>

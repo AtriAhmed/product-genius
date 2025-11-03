@@ -249,6 +249,19 @@ export default function CategoryForm({
             : "category created successfully"
         )
       );
+
+      // Reset form after creating a new category
+      if (!category) {
+        reset({
+          translations: [],
+        });
+        const initialTranslations = [
+          { locale: "en", title: "", description: "" },
+        ];
+        setTranslations(initialTranslations);
+        setActiveLanguage("en");
+      }
+
       onSuccess();
     } catch (error) {
       console.error("Category form error:", error);
