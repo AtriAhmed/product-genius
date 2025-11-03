@@ -314,7 +314,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                     value={watch("translations") || []}
                     onChange={(newTranslations) => {
                       setValue("translations", newTranslations, {
-                        shouldValidate: true,
                         shouldDirty: true,
                       });
                     }}
@@ -344,7 +343,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                     value={watch("media") || []}
                     onChange={(newMedia) => {
                       setValue("media", newMedia, {
-                        shouldValidate: true,
                         shouldDirty: true,
                       });
                     }}
@@ -359,11 +357,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 value={watch("productOptions") || []}
                 onChange={(newOptions) => {
                   setValue("productOptions", newOptions, {
-                    shouldValidate: true,
                     shouldDirty: true,
                   });
                 }}
                 error={errors.productOptions?.message}
+                fieldErrors={errors.productOptions}
               />
             </div>
           </form>

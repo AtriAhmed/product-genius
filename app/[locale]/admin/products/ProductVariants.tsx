@@ -7,6 +7,7 @@ import { Plus, Package, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ProductOptionFormData } from "./types";
 import ProductOptionItem from "./ProductOptionItem";
+import { cn } from "@/lib/utils";
 
 type ProductVariantsProps = {
   value: ProductOptionFormData[];
@@ -14,6 +15,7 @@ type ProductVariantsProps = {
   maxOptions?: number;
   maxValuesPerOption?: number;
   error?: string;
+  fieldErrors?: any; // React Hook Form field errors
 };
 
 export default function ProductVariants({
@@ -22,6 +24,7 @@ export default function ProductVariants({
   maxOptions = 3,
   maxValuesPerOption = 50,
   error,
+  fieldErrors,
 }: ProductVariantsProps) {
   const t = useTranslations("products");
 
@@ -63,8 +66,25 @@ export default function ProductVariants({
     onChange(newOptions);
   };
 
+  const reorderValues = (optionIndex: number, newValues: string[]) => {
+    const newOptions = [...value];
+    newOptions[optionIndex].values = newValues;
+    onChange(newOptions);
+  };
+
+  const hasErrors =
+    error ||
+    (fieldErrors &&
+      Array.isArray(fieldErrors) &&
+      fieldErrors.some((optionError) => optionError));
+
   return (
-    <Card className="bg-background">
+    <Card
+      className={cn(
+        "bg-background",
+        hasErrors && "border-red-200 dark:border-red-800"
+      )}
+    >
       <CardContent>
         <div className="space-y-4">
           {/* Header */}
@@ -100,7 +120,7 @@ export default function ProductVariants({
                 <div className="flex justify-center items-center w-12 h-12 mx-auto rounded-full bg-muted">
                   <Package className="w-6 h-6 text-muted-foreground" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 mb-3">
                   <h3 className="font-medium text-sm">
                     {t("no options configured")}
                   </h3>
@@ -149,7 +169,9 @@ export default function ProductVariants({
                   onRemoveOption={removeOption}
                   onAddValue={addValue}
                   onRemoveValue={removeValue}
+                  onReorderValues={reorderValues}
                   maxValuesPerOption={maxValuesPerOption}
+                  fieldError={fieldErrors?.[optionIndex]}
                 />
               ))}
 
@@ -163,7 +185,6 @@ export default function ProductVariants({
             </div>
           )}
         </div>
-        {error && <p className="mt-2 text-destructive text-sm">{error}</p>}
       </CardContent>
     </Card>
   );

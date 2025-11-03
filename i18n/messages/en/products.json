@@ -167,5 +167,8 @@
   "no options configured": "No options configured",
   "add your first option": "Add your first option to create product variants",
   "variants will be generated": "variants will be generated from these options",
-  "duplicate values not allowed": "Duplicate values are not allowed"
+  "duplicate values not allowed": "Duplicate values are not allowed",
+  "validation errors": "Validation Errors",
+  "option": "Option",
+  "values": "values"
 }
