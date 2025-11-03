@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/shopify/[id]">
 ) {
+  const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
 

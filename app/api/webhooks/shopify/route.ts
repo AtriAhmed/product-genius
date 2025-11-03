@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
         userId: shopifyStore.userId,
         totalCents,
         currency: shopifyOrder.currency || "USD",
-        status: "PENDING",
+        status: "UNPAID",
         shopifyOrderId: shopifyOrder.id.toString(),
         deliveryName:
           [shippingAddress?.first_name, shippingAddress?.last_name]

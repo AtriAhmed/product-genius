@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Star, Sparkles, Crown } from "lucide-react";
-import { Plan, User, Subscription } from "@/types";
+import { Plan, User, Subscription, PlanFeature } from "@/types";
 import {
   Card,
   CardContent,
@@ -111,7 +111,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
         {plan.features && plan.features.length > 0 && (
           <div className="py-4 rounded-xl bg-muted/20 dark:bg-muted/10">
             <ul className="space-y-2">
-              {plan.features.map((feature, index) => (
+              {(plan.features as PlanFeature[]).map((feature, index) => (
                 <li
                   key={index}
                   className="group/feature flex items-start space-x-3"

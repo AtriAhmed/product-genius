@@ -91,8 +91,9 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/invoices/[id]">
 ) {
+  const params = await ctx.params;
   try {
     // Only ADMIN and OWNER can delete invoices
     const user = await isAuthenticatedServerSide(["ADMIN", "OWNER"], true);

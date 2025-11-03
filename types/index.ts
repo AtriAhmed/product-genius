@@ -101,7 +101,7 @@ export type Plan = {
   stripeProductId?: string;
   stripePriceId?: string;
   active?: boolean;
-  features?: PlanFeature[] | any;
+  features?: PlanFeature[];
   mostPopular?: boolean;
   sortOrder?: number;
   createdAt?: Date;

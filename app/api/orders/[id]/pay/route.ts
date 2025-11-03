@@ -56,7 +56,7 @@ export async function POST(
     }
 
     // Check if order can be paid
-    if (order.status !== "DRAFT" && order.status !== "PENDING") {
+    if (order.status !== "DRAFT" && order.status !== "UNPAID") {
       return NextResponse.json(
         { error: "Order cannot be paid in its current status" },
         { status: 400 }
@@ -127,7 +127,7 @@ export async function POST(
       await prisma.order.update({
         where: { id: orderId },
         data: {
-          status: "PENDING",
+          status: "UNPAID",
         },
       });
 

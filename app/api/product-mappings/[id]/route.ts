@@ -16,8 +16,9 @@ const updateProductMappingSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/product-mappings/[id]">
 ) {
+  const params = await ctx.params;
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -88,8 +89,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/product-mappings/[id]">
 ) {
+  const params = await ctx.params;
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -231,8 +233,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/product-mappings/[id]">
 ) {
+  const params = await ctx.params;
   try {
     const user = await isAuthenticatedServerSide([], false);
     if (!user) {

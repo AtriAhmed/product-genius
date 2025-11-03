@@ -60,8 +60,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/subscriptions/[id]">
 ) {
+  const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -131,8 +132,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  ctx: RouteContext<"/api/product-mappings/[id]">
 ) {
+  const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
