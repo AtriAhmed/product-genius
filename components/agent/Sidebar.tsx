@@ -140,7 +140,7 @@ export function AgentSidebar({
                 </div>
                 <div className="flex-1 grid text-sm text-left leading-tight">
                   <span className="font-semibold truncate">
-                    {t("product genius")}
+                    {t("winwaterfall")}
                   </span>
                   <span className="text-muted-foreground text-xs truncate">
                     {t("agent panel")}

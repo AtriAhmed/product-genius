@@ -70,7 +70,7 @@ export default function SupplierCard({
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center">
               <h4 className="font-semibold text-foreground text-sm truncate">
-                {"Product Genius"}
+                {"WinWaterfall"}
               </h4>
               <div className="flex items-center gap-1">
                 <Star

@@ -130,7 +130,7 @@ export async function POST(
       title: primaryTranslation.title,
       descriptionHtml: primaryTranslation.description,
       productType: categoryTranslation?.title,
-      vendor: "Product Genius",
+      vendor: "WinWaterfall",
       status: product.isActive ? "ACTIVE" : "DRAFT",
       tags: [],
     };

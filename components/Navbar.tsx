@@ -32,7 +32,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Zap className="w-8 h-8 text-primary-500" />
-              <span className="ml-2 font-bold text-xl">ProductGenius</span>
+              <span className="ml-2 font-bold text-xl">WinWaterfall</span>
             </Link>
           </div>
 

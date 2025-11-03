@@ -38,7 +38,7 @@ export async function sendEmail(config: EmailConfig): Promise<boolean> {
 
     // Send email
     const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || "Product Genius"}" <${
+      from: `"${process.env.SMTP_FROM_NAME || "WinWaterfall"}" <${
         process.env.SMTP_FROM_EMAIL
       }>`,
       to: config.to,
@@ -83,7 +83,7 @@ export async function sendVerificationEmail(
 
   return sendEmail({
     to: email,
-    subject: "Verify Your Email Address - Product Genius",
+    subject: "Verify Your Email Address - WinWaterfall",
     html: htmlContent,
     text: `Please verify your email address by clicking this link: ${verificationUrl}`,
   });
@@ -129,7 +129,7 @@ export async function sendOrderPaymentNotification(
 
   return sendEmail({
     to: email,
-    subject: `Payment Required for Order ${orderData.orderNumber} - Product Genius`,
+    subject: `Payment Required for Order ${orderData.orderNumber} - WinWaterfall`,
     html: htmlContent,
     text: `Your order ${orderData.orderNumber} requires payment. Please visit ${orderData.paymentUrl} to complete your payment.`,
   });

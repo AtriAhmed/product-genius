@@ -263,7 +263,7 @@ model ProductVariant {
   @@index([sku])
 }
 
-// Mapping between Product Genius variants and Shopify variants
+// Mapping between WinWaterfall variants and Shopify variants
 model VariantMapping {
   id               Int    @id @default(autoincrement())
   userId           Int

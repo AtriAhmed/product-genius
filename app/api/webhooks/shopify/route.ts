@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Process line items and check for Product Genius mappings
+    // Process line items and check for WinWaterfall mappings
     const validOrderItems = [];
     let totalCents = 0;
 
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     // If no valid items found, skip order creation
     if (validOrderItems.length === 0) {
-      console.log("No Product Genius items found in Shopify order");
+      console.log("No WinWaterfall items found in Shopify order");
       return NextResponse.json({ success: true });
     }
 
