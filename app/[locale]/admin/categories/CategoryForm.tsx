@@ -411,7 +411,7 @@ export default function CategoryForm({
               type="button"
               variant="outline"
               onClick={handleCancelEdit}
-              className="w-full"
+              className="w-full mb-2"
             >
               {t("cancel")}
             </Button>
