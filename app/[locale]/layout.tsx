@@ -25,8 +25,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Products Genius",
-  description: "Find Winning Products For Your Store",
+  title: "WinWaterfall - Find Winning Products For Your Store",
+  description:
+    "Discover trending products and boost your e-commerce store's sales with WinWaterfall. Find winning products tailored for your niche today!",
 };
 
 export default async function RootLayout({
