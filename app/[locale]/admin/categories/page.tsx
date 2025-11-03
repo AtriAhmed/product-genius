@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import useSWR from "swr";
+import axios from "axios";
 
 interface CategoryTranslation {
   id: number;
@@ -28,10 +30,29 @@ interface Category {
   updatedAt: string;
 }
 
+interface CategoriesResponse {
+  categories: Category[];
+}
+
+async function fetcher(
+  search: string,
+  filter: string,
+  sortBy: string,
+  sortOrder: string
+) {
+  const params = new URLSearchParams({
+    search,
+    filter,
+    sortBy,
+    sortOrder,
+  });
+
+  const response = await axios.get(`/api/categories?${params}`);
+  return response.data;
+}
+
 export default function CategoriesPage() {
   const t = useTranslations("categories");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<
     Category | undefined
@@ -43,36 +64,22 @@ export default function CategoriesPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const isMobile = useIsMobile();
 
-  // Fetch categories
-  const fetchCategories = async () => {
-    try {
-      setIsLoading(true);
-      const params = new URLSearchParams({
-        search,
-        filter,
-        sortBy,
-        sortOrder,
-      });
-
-      const response = await fetch(`/api/categories?${params}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setCategories(data.categories);
-      } else {
-        throw new Error(data.error || "Failed to fetch categories");
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      toast.error("Failed to load categories");
-    } finally {
-      setIsLoading(false);
+  // SWR hook for data fetching
+  const { data, error, isLoading, mutate } = useSWR<CategoriesResponse>(
+    ["categories", search, filter, sortBy, sortOrder],
+    () => fetcher(search, filter, sortBy, sortOrder),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
     }
-  };
+  );
 
-  useEffect(() => {
-    fetchCategories();
-  }, [search, filter, sortBy, sortOrder]);
+  const categories = data?.categories || [];
+
+  // Handle SWR error
+  if (error) {
+    toast.error("Failed to load categories");
+  }
 
   const handleAddCategory = () => {
     setSelectedCategory(undefined);
@@ -101,18 +108,9 @@ export default function CategoriesPage() {
     if (!deleteCategory) return;
 
     try {
-      const response = await fetch(`/api/categories/${deleteCategory.id}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(t("category deleted successfully"));
-        fetchCategories();
-      } else {
-        throw new Error(data.error || "Failed to delete category");
-      }
+      await axios.delete(`/api/categories/${deleteCategory.id}`);
+      toast.success(t("category deleted successfully"));
+      mutate();
     } catch (error) {
       console.error("Error deleting category:", error);
       toast.error(
@@ -126,7 +124,7 @@ export default function CategoriesPage() {
   const handleFormSuccess = () => {
     setIsFormOpen(false);
     setSelectedCategory(undefined);
-    fetchCategories();
+    mutate();
   };
 
   const handleFormClose = () => {
