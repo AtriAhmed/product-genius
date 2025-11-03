@@ -119,7 +119,9 @@ CREATE TABLE `CategoryTranslation` (
 CREATE TABLE `Product` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `sku` VARCHAR(191) NULL,
-    `suggestedPrice` DOUBLE NULL,
+    `price` DOUBLE NULL,
+    `compareAtPrice` DOUBLE NULL,
+    `sellingPrice` DOUBLE NULL,
     `currency` VARCHAR(191) NULL,
     `popularityScore` INTEGER NOT NULL DEFAULT 0,
     `shopifyId` VARCHAR(191) NULL,
@@ -136,8 +138,65 @@ CREATE TABLE `Product` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `ProductOption` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `productId` INTEGER NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `position` INTEGER NOT NULL,
+    `values` JSON NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `ProductOption_productId_idx`(`productId`),
+    UNIQUE INDEX `ProductOption_productId_position_key`(`productId`, `position`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProductVariant` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `productId` INTEGER NOT NULL,
+    `option1` VARCHAR(191) NULL,
+    `option2` VARCHAR(191) NULL,
+    `option3` VARCHAR(191) NULL,
+    `price` VARCHAR(191) NOT NULL,
+    `compareAtPrice` VARCHAR(191) NULL,
+    `costPrice` VARCHAR(191) NULL,
+    `sku` VARCHAR(191) NULL,
+    `inventory` INTEGER NOT NULL DEFAULT 0,
+    `trackInventory` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `ProductVariant_productId_idx`(`productId`),
+    INDEX `ProductVariant_sku_idx`(`sku`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `VariantMapping` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `variantId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `shopifyVariantId` VARCHAR(191) NOT NULL,
+    `shopifyProductId` VARCHAR(191) NOT NULL,
+    `shop` VARCHAR(191) NOT NULL,
+    `sku` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `VariantMapping_variantId_idx`(`variantId`),
+    INDEX `VariantMapping_productId_idx`(`productId`),
+    INDEX `VariantMapping_shop_idx`(`shop`),
+    UNIQUE INDEX `VariantMapping_shopifyVariantId_shop_key`(`shopifyVariantId`, `shop`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `ProductMapping` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
     `productId` INTEGER NOT NULL,
     `shopifyProductId` VARCHAR(191) NOT NULL,
     `shopifyStoreId` INTEGER NOT NULL,
@@ -201,7 +260,7 @@ CREATE TABLE `Order` (
     `invoiceId` INTEGER NULL,
     `totalCents` INTEGER NOT NULL,
     `currency` VARCHAR(191) NOT NULL,
-    `status` ENUM('DRAFT', 'PENDING', 'PAID', 'PROCESSING', 'COMPLETED', 'CANCELED', 'REFUNDED') NOT NULL DEFAULT 'PENDING',
+    `status` ENUM('DRAFT', 'UNPAID', 'PAID', 'PROCESSING', 'COMPLETED', 'CANCELED', 'REFUNDED') NOT NULL DEFAULT 'UNPAID',
     `deliveryName` VARCHAR(191) NULL,
     `deliveryPhone` VARCHAR(191) NULL,
     `deliveryEmail` VARCHAR(191) NULL,
@@ -214,18 +273,19 @@ CREATE TABLE `Order` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Order_orderNumber_key`(`orderNumber`),
+    UNIQUE INDEX `Order_shopifyOrderId_key`(`shopifyOrderId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `OrderItem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `orderId` INTEGER NOT NULL,
-    `productId` INTEGER NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `unitPriceCents` INTEGER NOT NULL,
     `quantity` INTEGER NOT NULL,
+    `orderId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `productVariantId` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -249,6 +309,7 @@ CREATE TABLE `ShopifyStore` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `shop` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NULL,
     `accessToken` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -276,10 +337,28 @@ ALTER TABLE `CategoryTranslation` ADD CONSTRAINT `CategoryTranslation_categoryId
 ALTER TABLE `Product` ADD CONSTRAINT `Product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `ProductOption` ADD CONSTRAINT `ProductOption_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductVariant` ADD CONSTRAINT `ProductVariant_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `VariantMapping` ADD CONSTRAINT `VariantMapping_variantId_fkey` FOREIGN KEY (`variantId`) REFERENCES `ProductVariant`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `VariantMapping` ADD CONSTRAINT `VariantMapping_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `VariantMapping` ADD CONSTRAINT `VariantMapping_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `ProductMapping` ADD CONSTRAINT `ProductMapping_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ProductMapping` ADD CONSTRAINT `ProductMapping_shopifyStoreId_fkey` FOREIGN KEY (`shopifyStoreId`) REFERENCES `ShopifyStore`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductMapping` ADD CONSTRAINT `ProductMapping_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ProductTranslation` ADD CONSTRAINT `ProductTranslation_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -307,6 +386,9 @@ ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_orderId_fkey` FOREIGN KEY (`or
 
 -- AddForeignKey
 ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_productVariantId_fkey` FOREIGN KEY (`productVariantId`) REFERENCES `ProductVariant`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `AgentProfile` ADD CONSTRAINT `AgentProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

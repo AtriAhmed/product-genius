@@ -4,6 +4,7 @@ import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
 import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
 import MultiLanguageForm from "@/app/[locale]/admin/products/ProductContentForm";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
+import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
 import {
   ProductFormData,
   productFormSchema,
@@ -15,7 +16,14 @@ import { Link } from "@/i18n/navigation";
 import { Marketplace, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { ArrowLeft, Globe, ImageIcon, Save, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Globe,
+  ImageIcon,
+  Save,
+  Trash2,
+  Package,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -74,6 +82,12 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           ...s,
           marketplace: s.marketplace as Marketplace,
         })) || [],
+      productOptions:
+        product?.productOptions?.map((option) => ({
+          id: option.id,
+          name: option.name || "",
+          values: Array.isArray(option.values) ? option.values : [],
+        })) || [],
     },
   });
 
@@ -96,6 +110,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             ...s,
             marketplace: s.marketplace as Marketplace,
           })) || [],
+        productOptions: product?.productOptions,
       });
     } else if (isCreateMode) {
       // Initialize with default values for create mode
@@ -106,9 +121,13 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         isActive: true,
         translations: [{ locale: "en", title: "", description: "" }],
         media: [],
+        productOptions: [],
       });
     }
   }, [product, isEditMode, isCreateMode, reset]);
+
+  console.log("-------------------- product --------------------");
+  console.log(product);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -334,6 +353,18 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   />
                 </CardContent>
               </Card>
+
+              {/* Product Variants */}
+              <ProductVariants
+                value={watch("productOptions") || []}
+                onChange={(newOptions) => {
+                  setValue("productOptions", newOptions, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                }}
+                error={errors.productOptions?.message}
+              />
             </div>
           </form>
           <ProductSuppliers setValue={setValue} watch={watch} />

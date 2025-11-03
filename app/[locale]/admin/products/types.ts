@@ -11,6 +11,16 @@ export const supplierSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
+// Product option schema for variants
+export const productOptionSchema = z.object({
+  id: z.number().optional(),
+  name: z.string().min(1, "Option name is required"),
+  values: z
+    .array(z.string().min(1, "Value cannot be empty"))
+    .min(1, "At least one value is required")
+    .max(50, "Maximum 50 values allowed"),
+});
+
 // Form validation schema
 export const productFormSchema = z.object({
   suggestedPrice: z.number().positive().optional().nullable(),
@@ -28,8 +38,14 @@ export const productFormSchema = z.object({
     .min(1, "At least one translation is required"),
   media: z.array(z.any()),
   suppliers: z.array(supplierSchema).optional(),
+  productOptions: z
+    .array(productOptionSchema)
+    .max(3, "Maximum 3 options allowed")
+    .optional(),
 });
 
 export type ProductFormData = z.infer<typeof productFormSchema>;
 
 export type AddSupplierFormData = z.infer<typeof supplierSchema>;
+
+export type ProductOptionFormData = z.infer<typeof productOptionSchema>;
