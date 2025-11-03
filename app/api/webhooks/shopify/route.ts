@@ -8,6 +8,7 @@ import {
 } from "@/lib/stripe";
 import { sendOrderPaymentNotification } from "@/lib/email";
 import type { InvoiceType } from "@/types";
+import { createShopifyClient } from "@/lib/shopify-client";
 
 interface ShopifyOrderItem {
   variant_id: number;
@@ -86,6 +87,11 @@ export async function POST(request: NextRequest) {
       shopifyOrder.order_number,
       shopifyOrder.id
     );
+
+    console.log(
+      "-------------------- JSON.stringify(shopifyOrder, null, 2) --------------------"
+    );
+    console.log(JSON.stringify(shopifyOrder, null, 2));
 
     // Find the Shopify store owner
     const shopifyStore = await prisma.shopifyStore.findUnique({
@@ -175,25 +181,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Generate order number
-    const orderNumber = `ORD-${nanoid(8)}`;
-
     // Prepare delivery information
     const shippingAddress = shopifyOrder.shipping_address;
-    const deliveryName = shippingAddress
-      ? `${shippingAddress.first_name} ${shippingAddress.last_name}`.trim()
-      : null;
 
     // Create order in our system
     const order = await prisma.order.create({
       data: {
-        orderNumber,
+        orderNumber: shopifyOrder.order_number?.toString(),
         userId: shopifyStore.userId,
         totalCents,
         currency: shopifyOrder.currency || "USD",
         status: "PENDING",
         shopifyOrderId: shopifyOrder.id.toString(),
-        deliveryName,
+        deliveryName:
+          [shippingAddress?.first_name, shippingAddress?.last_name]
+            .filter(Boolean)
+            .join(" ") || null,
         deliveryPhone: shippingAddress?.phone,
         deliveryEmail: shopifyOrder.email,
         deliveryAddress1: shippingAddress?.address1,

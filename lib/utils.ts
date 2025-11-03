@@ -19,10 +19,10 @@ export function getMediaUrl(mediaPath?: string): string {
   return `/api/media?path=${mediaPath}`;
 }
 
-export function formatPrice(price: number) {
+export function formatPrice(price: number, currency: string = "USD") {
   return new Intl.NumberFormat("en-UK", {
     style: "currency",
-    currency: "EUR",
+    currency: currency,
   }).format(price);
 }
 

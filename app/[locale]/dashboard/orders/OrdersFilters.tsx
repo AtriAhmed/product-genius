@@ -67,7 +67,7 @@ export default function OrdersFilters({
         <SelectContent>
           <SelectItem value="all">{t("all statuses")}</SelectItem>
           <SelectItem value="DRAFT">{t("draft")}</SelectItem>
-          <SelectItem value="PENDING">{t("pending")}</SelectItem>
+          <SelectItem value="UNPAID">{t("unpaid")}</SelectItem>
           <SelectItem value="PAID">{t("paid")}</SelectItem>
           <SelectItem value="PROCESSING">{t("processing")}</SelectItem>
           <SelectItem value="COMPLETED">{t("completed")}</SelectItem>

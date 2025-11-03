@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Order, ShipmentStatus } from "@/types";
+import { Order, OrderStatus } from "@/types";
 
 interface OrdersDataTableProps {
   orders: Order[];
@@ -27,22 +27,24 @@ interface OrdersDataTableProps {
   isLoading: boolean;
 }
 
-const getShipmentStatusColor = (status: ShipmentStatus) => {
+const getShipmentStatusColor = (status: OrderStatus) => {
   switch (status) {
-    case "PENDING":
-      return "bg-yellow-400 text-yellow-900";
-    case "PICKED":
-      return "bg-blue-400 text-blue-900";
-    case "IN_TRANSIT":
-      return "bg-purple-400 text-purple-900";
-    case "DELIVERED":
-      return "bg-green-400 text-green-900";
-    case "RETURNED":
-      return "bg-orange-400 text-orange-900";
-    case "CANCELLED":
-      return "bg-red-400 text-red-900";
+    case "DRAFT":
+      return "bg-gray-300 text-gray-900";
+    case "UNPAID": // unpaid, waiting for payment so a red color
+      return "bg-red-500 text-white";
+    case "PAID":
+      return "bg-green-300 text-green-900";
+    case "PROCESSING":
+      return "bg-blue-300 text-blue-900";
+    case "COMPLETED":
+      return "bg-purple-300 text-purple-900";
+    case "CANCELED":
+      return "bg-red-300 text-red-900";
+    case "REFUNDED":
+      return "bg-orange-300 text-orange-900";
     default:
-      return "bg-gray-400 text-gray-900";
+      return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -148,13 +150,11 @@ export default function OrdersDataTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Badge
-                    className={getShipmentStatusColor(order.shipmentStatus!)}
-                  >
-                    {t(order.shipmentStatus?.toLowerCase() || "pending")}
+                  <Badge className={getShipmentStatusColor(order.status!)}>
+                    {t(order.status?.toLowerCase() || "pending")}
                   </Badge>
                   <Select
-                    value={order.shipmentStatus}
+                    value={order.status}
                     onValueChange={(value) =>
                       onUpdateShipmentStatus(order.id!, value)
                     }

@@ -29,7 +29,7 @@ import { Order, OrderStatus } from "@/types";
 import useSWR from "swr";
 import axios from "axios";
 import { toast } from "sonner";
-import { getMediaUrl } from "@/lib/utils";
+import { formatPrice, getMediaUrl } from "@/lib/utils";
 
 async function fetcher(orderId: string) {
   const response = await axios.get(`/api/orders/${orderId}`);
@@ -53,13 +53,6 @@ const getShipmentStatusColor = (status: string) => {
     default:
       return "bg-gray-100 text-gray-800 hover:bg-gray-200";
   }
-};
-
-const formatCurrency = (cents: number, currency: string = "USD") => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-  }).format(cents / 100);
 };
 
 const formatDate = (date: Date) => {
@@ -289,14 +282,14 @@ export default function AgentOrderDetailsPage() {
                           </div>
                           <div className="text-right">
                             <p className="font-medium">
-                              {formatCurrency(
+                              {formatPrice(
                                 item.unitPriceCents || 0,
                                 order.currency
                               )}
                             </p>
                             <p className="text-muted-foreground text-sm">
                               {t("total")}:{" "}
-                              {formatCurrency(
+                              {formatPrice(
                                 (item.unitPriceCents || 0) *
                                   (item.quantity || 1),
                                 order.currency
@@ -309,10 +302,7 @@ export default function AgentOrderDetailsPage() {
                       <div className="flex justify-between items-center font-semibold text-lg">
                         <span>{t("order total")}:</span>
                         <span>
-                          {formatCurrency(
-                            order.totalCents || 0,
-                            order.currency
-                          )}
+                          {formatPrice(order.totalCents || 0, order.currency)}
                         </span>
                       </div>
                     </div>
@@ -408,7 +398,7 @@ export default function AgentOrderDetailsPage() {
                   <div className="flex justify-between font-semibold">
                     <span>{t("total amount")}:</span>
                     <span>
-                      {formatCurrency(order.totalCents || 0, order.currency)}
+                      {formatPrice(order.totalCents || 0, order.currency)}
                     </span>
                   </div>
                 </CardContent>

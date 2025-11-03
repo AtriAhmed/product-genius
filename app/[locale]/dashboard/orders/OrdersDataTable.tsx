@@ -23,7 +23,7 @@ const getStatusColor = (status: OrderStatus) => {
   switch (status) {
     case "DRAFT":
       return "!bg-gray-300 text-gray-900";
-    case "PENDING": // unpaid, waiting for payment so a red color
+    case "UNPAID": // unpaid, waiting for payment so a red color
       return "!bg-red-500 text-white";
     case "PAID":
       return "!bg-green-300 text-green-900";

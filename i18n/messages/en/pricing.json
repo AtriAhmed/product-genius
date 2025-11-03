@@ -76,5 +76,6 @@
   "please add a payment method first": "Please add a payment method in your billing settings first.",
   "failed to create subscription": "Failed to create subscription",
   "current plan": "Current Plan",
-  "already subscribed": "Already Subscribed"
+  "already subscribed": "Already Subscribed",
+  "subscription created successfully": "Subscription created successfully"
 }

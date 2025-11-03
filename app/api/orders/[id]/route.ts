@@ -7,7 +7,7 @@ const updateOrderSchema = z.object({
   status: z
     .enum([
       "DRAFT",
-      "PENDING",
+      "UNPAID",
       "PAID",
       "PROCESSING",
       "COMPLETED",
@@ -17,7 +17,7 @@ const updateOrderSchema = z.object({
     .optional(),
   shipmentStatus: z
     .enum([
-      "PENDING",
+      "UNPAID",
       "PICKED",
       "IN_TRANSIT",
       "DELIVERED",

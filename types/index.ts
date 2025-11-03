@@ -27,7 +27,7 @@ export type CardBrand =
 
 export type OrderStatus =
   | "DRAFT"
-  | "PENDING"
+  | "UNPAID"
   | "PAID"
   | "PROCESSING"
   | "COMPLETED"

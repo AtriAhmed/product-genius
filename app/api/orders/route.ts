@@ -43,7 +43,7 @@ const querySchema = z.object({
   status: z
     .enum([
       "DRAFT",
-      "PENDING",
+      "UNPAID",
       "PAID",
       "PROCESSING",
       "COMPLETED",
@@ -53,7 +53,7 @@ const querySchema = z.object({
     .optional(),
   shipmentStatus: z
     .enum([
-      "PENDING",
+      "UNPAID",
       "PICKED",
       "IN_TRANSIT",
       "DELIVERED",
@@ -250,14 +250,13 @@ export async function POST(request: NextRequest) {
     // Generate order number
     const orderNumber = `ORD-${nanoid(8)}`;
 
-    // Create order first (PENDING)
     const order = await prisma.order.create({
       data: {
         orderNumber,
         userId: user.id,
         totalCents,
         currency: validatedData.currency,
-        status: "PENDING",
+        status: "UNPAID",
         deliveryName: validatedData.deliveryName,
         deliveryPhone: validatedData.deliveryPhone,
         deliveryEmail: validatedData.deliveryEmail,
@@ -414,7 +413,6 @@ export async function POST(request: NextRequest) {
             ? (pi as any).client_secret
             : null;
 
-        // keep order PENDING and return client_secret / payment intent id for frontend to handle SCA
         return NextResponse.json(
           {
             requiresAction: true,
@@ -442,7 +440,6 @@ export async function POST(request: NextRequest) {
 
       // If stripe provides a payment_intent that needs action in the error payload, surface it
       if (stripeErr?.raw?.payment_intent?.client_secret) {
-        // keep order PENDING and let frontend complete SCA
         return NextResponse.json(
           {
             requiresAction: true,

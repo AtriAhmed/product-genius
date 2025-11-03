@@ -45,7 +45,7 @@ enum PaymentStatus {
 
 enum OrderStatus {
   DRAFT
-  PENDING
+  UNPAID
   PAID
   PROCESSING
   COMPLETED
@@ -345,7 +345,7 @@ model Supplier {
 
 model Order {
   id             Int     @id @default(autoincrement())
-  orderNumber    String  @unique
+  orderNumber    String
   shopifyOrderId String? @unique
 
   shopifyStoreId Int?
@@ -365,7 +365,7 @@ model Order {
   items      OrderItem[]
   totalCents Int
   currency   String
-  status     OrderStatus @default(PENDING)
+  status     OrderStatus @default(UNPAID)
 
   // delivery address
   deliveryName     String?
