@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcrypt";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
 // Validation schema for profile updates
 const updateProfileSchema = z.object({

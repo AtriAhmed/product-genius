@@ -101,7 +101,6 @@ export default function CategoryForm({
     defaultValues: {
       translations: [],
     },
-    mode: "onChange",
   });
 
   // Initialize form when category changes
@@ -128,7 +127,7 @@ export default function CategoryForm({
 
   // Update form when translations change
   useEffect(() => {
-    setValue("translations", translations, { shouldValidate: true });
+    setValue("translations", translations, { shouldDirty: true });
   }, [translations, setValue]);
 
   const selectedLanguages = translations.map((t) => t.locale);

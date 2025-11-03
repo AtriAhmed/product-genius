@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import type { PayOrderRequest } from "@/types";
 
 const payOrderSchema = z.object({

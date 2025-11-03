@@ -9,7 +9,7 @@ import {
   validateVariants,
   type OptionDefinition,
 } from "@/lib/variant-generator";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
 // Validation schemas
 const mediaSchema = z.object({
@@ -53,23 +53,10 @@ const createProductSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = isAuthenticatedServerSide(["ADMIN", "OWNER", "EDITOR"], false);
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check user role (ADMIN or OWNER only)
-    const user = await prisma.user.findUnique({
-      where: { id: parseInt(session.user.id) },
-      select: { role: true },
-    });
-
-    if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
     }
 
     // Handle form data with file uploads

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { stripe } from "@/lib/stripe";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import Stripe from "stripe";
 
 const createSubscriptionSchema = z.object({

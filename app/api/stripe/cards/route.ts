@@ -1,4 +1,4 @@
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { stripe } from "@/lib/stripe";
 import { NextRequest } from "next/server";
 import Stripe from "stripe";

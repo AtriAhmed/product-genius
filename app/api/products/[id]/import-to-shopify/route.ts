@@ -1,4 +1,4 @@
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { prisma } from "@/lib/prisma";
 import { getCurrentTranslation } from "@/lib/products";
 import { createShopifyClient } from "@/lib/shopify-client";

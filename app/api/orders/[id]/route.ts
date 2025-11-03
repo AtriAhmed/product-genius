@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { isAuthenticatedServerSide, isAuthorized } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
+import { isAuthorized } from "@/lib/authUtils";
 
 const updateOrderSchema = z.object({
   status: z

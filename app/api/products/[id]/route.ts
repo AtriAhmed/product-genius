@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import {
-  uploadFile,
-  getMediaType,
   deleteMultipleFiles,
+  getMediaType,
+  uploadFile,
 } from "@/lib/file-upload";
-import { z } from "zod";
-import { MARKETPLACES } from "@/types";
+import { prisma } from "@/lib/prisma";
 import {
   generateVariants,
   validateVariants,
   type OptionDefinition,
 } from "@/lib/variant-generator";
-import { isAuthorized } from "@/lib/authUtils";
+import { MARKETPLACES } from "@/types";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 // Validation schemas for updates
 const translationSchema = z.object({
@@ -127,23 +127,10 @@ export async function PUT(
   const params = await ctx.params;
 
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const user = isAuthenticatedServerSide(["ADMIN", "OWNER", "EDITOR"], false);
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check user role (ADMIN or OWNER only)
-    const user = await prisma.user.findUnique({
-      where: { id: parseInt(session.user.id) },
-      select: { role: true },
-    });
-
-    if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
     }
 
     const productId = parseInt(params.id);

@@ -1,6 +1,7 @@
 "use client";
 
 import { MainLoader } from "@/components/Loaders";
+import { usePathname } from "@/i18n/navigation";
 import { Role, User } from "@/types";
 import { useSession } from "next-auth/react";
 import { notFound, useRouter } from "next/navigation";
@@ -23,6 +24,7 @@ export default function Private({
   getRedirectTo = () => Promise.resolve("/auth/login"),
 }: Readonly<PrivateProps>) {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export default function Private({
   // Show loader while checking
   if (status === "loading") {
     return (
-      <div className="flex h-[calc(100vh-55px)] w-full items-center justify-center">
+      <div className="flex justify-center items-center w-full h-[calc(100vh-55px)]">
         <MainLoader />
       </div>
     );
@@ -69,6 +71,17 @@ export default function Private({
   // Guest-only: show children if no session
   if (guestOnly && !session) {
     return children;
+  }
+
+  console.log("-------------------- pathname --------------------");
+  console.log(pathname);
+  if (
+    session?.user?.role === "EDITOR" &&
+    !pathname.includes("/products") &&
+    !pathname.includes("/categories") &&
+    pathname !== "/admin"
+  ) {
+    return notFound();
   }
 
   // Authenticated with valid role

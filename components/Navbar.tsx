@@ -9,6 +9,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useState } from "react";
+import { isAuthorized } from "@/lib/authUtils";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -68,9 +69,10 @@ export default function Navbar() {
                 <>
                   <Link
                     href={
-                      isMounted && ["ADMIN", "OWNER"].includes(user?.role || "")
+                      isMounted &&
+                      isAuthorized(user, ["OWNER", "ADMIN", "EDITOR"])
                         ? "/admin"
-                        : ["AGENT"].includes(user?.role || "")
+                        : isAuthorized(user, ["AGENT"])
                         ? "/agent"
                         : "/dashboard"
                     }

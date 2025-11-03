@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
 // This endpoint creates a SetupIntent for securely collecting card details
 export async function POST(request: NextRequest) {

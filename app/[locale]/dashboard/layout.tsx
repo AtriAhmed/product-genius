@@ -11,7 +11,7 @@ import {
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
-import { isAuthenticatedServerSide } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import DashboardContent from "@/app/[locale]/dashboard/DashboardContent";
 
 export default async function Layout({

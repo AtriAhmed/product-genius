@@ -3,7 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { isAuthenticatedServerSide, isAuthorized } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
+import { isAuthorized } from "@/lib/authUtils";
 
 // Validation schemas
 const updateProductMappingSchema = z.object({

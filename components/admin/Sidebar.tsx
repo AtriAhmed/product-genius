@@ -49,53 +49,71 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { Role } from "@/types";
+
+// Navigation item type
+type NavigationItem = {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: Role[];
+};
 
 // Admin navigation data
-const navigationData = [
+const navigationData: NavigationItem[] = [
   {
     title: "overview",
     url: "/admin",
     icon: BarChart3,
+    roles: ["OWNER", "ADMIN", "EDITOR"],
   },
   {
     title: "products",
     url: "/admin/products",
     icon: Package,
+    roles: ["OWNER", "ADMIN", "EDITOR"],
   },
   {
     title: "categories",
     url: "/admin/categories",
     icon: FolderTree,
+    roles: ["OWNER", "ADMIN", "EDITOR"],
   },
   {
     title: "orders",
     url: "/admin/orders",
     icon: ShoppingCart,
+    roles: ["OWNER", "ADMIN"],
   },
   {
     title: "users",
     url: "/admin/users",
     icon: Users,
+    roles: ["OWNER", "ADMIN"],
   },
   {
     title: "subscriptions",
     url: "/admin/subscriptions",
     icon: CreditCard,
+    roles: ["OWNER", "ADMIN"],
   },
   {
     title: "plans",
     url: "/admin/plans",
     icon: Star,
+    roles: ["OWNER", "ADMIN"],
   },
   {
     title: "analytics",
     url: "/admin/analytics",
     icon: BarChart3,
+    roles: ["OWNER", "ADMIN"],
   },
   {
     title: "settings",
     url: "/admin/settings",
     icon: Settings,
+    roles: ["OWNER", "ADMIN"],
   },
 ];
 
@@ -107,13 +125,23 @@ export function AdminSidebar({
   const router = useRouter();
   const t = useTranslations("sidebar");
 
+  // Function to check if user has permission to see a navigation item
+  const hasPermission = (item: NavigationItem): boolean => {
+    const userRole = session?.user?.role;
+    if (!userRole) return false;
+    return item.roles.includes(userRole);
+  };
+
+  // Filter navigation items based on user role
+  const allowedNavigation = navigationData.filter(hasPermission);
+
   async function handleLogout() {
     await signOut({ redirect: false });
   }
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)] shadow-[0_0_3px_rgb(0,0,0,.2)] light:border-none"
+      className="top-[55px] h-[calc(100vh-55px)] light:border-none shadow-[0_0_3px_rgb(0,0,0,.2)]"
       collapsible="icon"
       {...props}
     >
@@ -122,14 +150,14 @@ export function AdminSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/admin" className="no-ring">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary-500 text-sidebar-primary-foreground">
+                <div className="flex justify-center items-center size-8 aspect-square rounded-lg bg-primary-500 text-sidebar-primary-foreground">
                   <Zap className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
+                <div className="flex-1 grid text-sm text-left leading-tight">
+                  <span className="font-semibold truncate">
                     {t("product genius")}
                   </span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs truncate">
                     {t("admin panel")}
                   </span>
                 </div>
@@ -144,7 +172,7 @@ export function AdminSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>{t("admin panel")}</SidebarGroupLabel>
           <SidebarMenu>
-            {navigationData.map((item) => (
+            {allowedNavigation.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={pathname === item.url}>
                   <Link href={item.url} className="no-ring">
@@ -167,7 +195,7 @@ export function AdminSidebar({
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
+                  <Avatar className="w-8 h-8 rounded-lg">
                     <AvatarImage
                       src={session?.user?.image || ""}
                       alt={session?.user?.name || ""}
@@ -176,15 +204,15 @@ export function AdminSidebar({
                       {session?.user?.name?.slice(0, 2)?.toUpperCase() || "AD"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
+                  <div className="flex-1 grid text-sm text-left leading-tight">
+                    <span className="font-semibold truncate">
                       {session?.user?.name || t("admin")}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs truncate">
                       {session?.user?.email}
                     </span>
                   </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
+                  <ChevronsUpDown className="size-4 ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -195,8 +223,8 @@ export function AdminSidebar({
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   {/* User info header */}
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
+                    <Avatar className="w-8 h-8 rounded-lg">
                       <AvatarImage
                         src={session?.user?.image || ""}
                         alt={session?.user?.name || ""}
@@ -206,11 +234,11 @@ export function AdminSidebar({
                           "AD"}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
+                    <div className="flex-1 grid text-sm text-left leading-tight">
+                      <span className="font-semibold truncate">
                         {session?.user?.name || t("admin")}
                       </span>
-                      <span className="truncate text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs truncate">
                         {session?.user?.email}
                       </span>
                     </div>
