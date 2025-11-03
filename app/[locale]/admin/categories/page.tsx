@@ -58,6 +58,7 @@ export default function CategoriesPage() {
     Category | undefined
   >();
   const [deleteCategory, setDeleteCategory] = useState<Category | undefined>();
+  const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
@@ -95,18 +96,10 @@ export default function CategoriesPage() {
     }
   };
 
-  const handleViewCategory = (category: Category) => {
-    // For now, just open edit form - could be expanded to view-only mode
-    handleEditCategory(category);
-  };
-
-  const handleDeleteCategory = (category: Category) => {
-    setDeleteCategory(category);
-  };
-
   const confirmDelete = async () => {
     if (!deleteCategory) return;
 
+    setIsDeleting(true);
     try {
       await axios.delete(`/api/categories/${deleteCategory.id}`);
       toast.success(t("category deleted successfully"));
@@ -117,31 +110,9 @@ export default function CategoriesPage() {
         error instanceof Error ? error.message : t("failed to delete category")
       );
     } finally {
+      setIsDeleting(false);
       setDeleteCategory(undefined);
     }
-  };
-
-  const handleFormSuccess = () => {
-    setIsFormOpen(false);
-    setSelectedCategory(undefined);
-    mutate();
-  };
-
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setSelectedCategory(undefined);
-  };
-
-  const clearFilters = () => {
-    setSearch("");
-    setFilter("all");
-    setSortBy("createdAt");
-    setSortOrder("desc");
-  };
-
-  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
-    setSortBy(newSortBy);
-    setSortOrder(newSortOrder);
   };
 
   return (
@@ -177,16 +148,24 @@ export default function CategoriesPage() {
               sortOrder={sortOrder}
               onSearchChange={setSearch}
               onFilterChange={setFilter}
-              onSortChange={handleSortChange}
-              onClearFilters={clearFilters}
+              onSortChange={(newSortBy: string, newSortOrder: string) => {
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+              }}
+              onClearFilters={() => {
+                setSearch("");
+                setFilter("all");
+                setSortBy("createdAt");
+                setSortOrder("desc");
+              }}
             />
 
             {/* Data Table */}
             <CategoriesDataTable
               categories={categories}
               onEdit={handleEditCategory}
-              onDelete={handleDeleteCategory}
-              onView={handleViewCategory}
+              onDelete={(category) => setDeleteCategory(category)}
+              onView={handleEditCategory}
               isLoading={isLoading}
             />
 
@@ -211,8 +190,15 @@ export default function CategoriesPage() {
                 </h2>
                 <CategoryForm
                   category={selectedCategory}
-                  onSuccess={handleFormSuccess}
-                  onClose={handleFormClose}
+                  onSuccess={() => {
+                    setIsFormOpen(false);
+                    setSelectedCategory(undefined);
+                    mutate();
+                  }}
+                  onClose={() => {
+                    setIsFormOpen(false);
+                    setSelectedCategory(undefined);
+                  }}
                   isOpen={true}
                   isEmbedded={true}
                 />
@@ -226,8 +212,15 @@ export default function CategoriesPage() {
       <div className="lg:hidden">
         <CategoryForm
           category={selectedCategory}
-          onSuccess={handleFormSuccess}
-          onClose={handleFormClose}
+          onSuccess={() => {
+            setIsFormOpen(false);
+            setSelectedCategory(undefined);
+            mutate();
+          }}
+          onClose={() => {
+            setIsFormOpen(false);
+            setSelectedCategory(undefined);
+          }}
           isOpen={isFormOpen}
           isEmbedded={false}
         />
@@ -256,6 +249,7 @@ export default function CategoriesPage() {
         disabled={Boolean(
           deleteCategory?._count?.products && deleteCategory._count.products > 0
         )}
+        isLoading={isDeleting}
       />
     </div>
   );
