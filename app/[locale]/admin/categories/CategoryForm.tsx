@@ -22,6 +22,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { getCurrentTranslation } from "@/lib/products";
+import axios from "axios";
 
 interface CategoryTranslation {
   locale: string;
@@ -95,7 +96,7 @@ export default function CategoryForm({
     watch,
     setValue,
     reset,
-    formState: { errors, isValid },
+    formState: { errors, isDirty },
   } = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
@@ -176,32 +177,10 @@ export default function CategoryForm({
   };
 
   const hasErrors = (languageCode: string) => {
-    const translation = translations.find((t) => t.locale === languageCode);
-    return !translation || !translation.title.trim();
-  };
-
-  // Check if there are changes compared to original
-  const hasChanges = () => {
-    if (!category)
-      return translations.some((t) => t.title.trim() || t.description.trim());
-
-    // Compare translations arrays
-    if (translations.length !== originalTranslations.length) return true;
-
-    for (const translation of translations) {
-      const original = originalTranslations.find(
-        (t) => t.locale === translation.locale
-      );
-      if (!original) return true;
-      if (
-        translation.title !== original.title ||
-        translation.description !== original.description
-      ) {
-        return true;
-      }
-    }
-
-    return false;
+    const translationIndex = translations.findIndex(
+      (t) => t.locale === languageCode
+    );
+    return errors.translations?.[translationIndex]?.title !== undefined;
   };
 
   const handleCancelEdit = () => {
@@ -251,28 +230,17 @@ export default function CategoryForm({
     setIsSubmitting(true);
 
     try {
+      const requestData = {
+        translations: data.translations.filter((t) => t.title.trim()), // Only include translations with titles
+      };
+
       const url = category
         ? `/api/categories/${category.id}`
         : "/api/categories";
-      const method = category ? "PUT" : "POST";
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          translations: translations.filter((t) => t.title.trim()), // Only include translations with titles
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.error || `Failed to ${category ? "update" : "create"} category`
-        );
-      }
+      const response = category
+        ? await axios.put(url, requestData)
+        : await axios.post(url, requestData);
 
       toast.success(
         t(
@@ -285,8 +253,8 @@ export default function CategoryForm({
     } catch (error) {
       console.error("Category form error:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
+        axios.isAxiosError(error) && error.response?.data?.error
+          ? error.response.data.error
           : t(
               category
                 ? "failed to update category"
@@ -366,14 +334,23 @@ export default function CategoryForm({
                     }
                     placeholder={t("category name placeholder")}
                     className={cn(
-                      !currentTranslation.title?.trim() && "border-destructive"
+                      hasErrors(activeLanguage) && "border-destructive"
                     )}
                   />
-                  {!currentTranslation.title?.trim() && (
-                    <p className="text-destructive text-sm">
-                      {t("title is required")}
-                    </p>
-                  )}
+                  {(() => {
+                    const translationIndex = translations.findIndex(
+                      (t) => t.locale === activeLanguage
+                    );
+                    const error =
+                      errors.translations?.[translationIndex]?.title;
+                    return (
+                      error && (
+                        <p className="text-destructive text-sm">
+                          {error.message}
+                        </p>
+                      )
+                    );
+                  })()}
                 </div>
 
                 {/* Description */}
@@ -400,10 +377,12 @@ export default function CategoryForm({
         </div>
       )}
 
-      {/* Summary */}
-      {translations.some((t) => hasErrors(t.locale)) && (
+      {/* Form Errors */}
+      {errors.translations && (
         <div className="pt-2 text-destructive text-sm">
-          ⚠️ Some translations are incomplete
+          {typeof errors.translations.message === "string"
+            ? errors.translations.message
+            : "⚠️ Some translations are incomplete"}
         </div>
       )}
     </form>
@@ -426,8 +405,9 @@ export default function CategoryForm({
           )}
 
           <Button
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting || !isValid || (category && !hasChanges())}
+            type="submit"
+            form="category-form"
+            disabled={isSubmitting && !isDirty}
             className="w-full"
           >
             {isSubmitting
@@ -468,8 +448,9 @@ export default function CategoryForm({
           )}
 
           <Button
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting || !isValid || (category && !hasChanges())}
+            type="submit"
+            form="category-form"
+            disabled={isSubmitting || !isDirty}
             className="w-full"
           >
             {isSubmitting
