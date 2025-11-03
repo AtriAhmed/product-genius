@@ -48,22 +48,6 @@ async function getProduct(id: number): Promise<Product | null> {
 export default async function EditProductPage({ params }: Props) {
   const { id } = await params;
 
-  // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    redirect("/auth/login");
-  }
-
-  // Check user role (ADMIN or OWNER only)
-  const user = await prisma.user.findUnique({
-    where: { id: parseInt(session.user.id) },
-    select: { role: true },
-  });
-
-  if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
-    redirect("/");
-  }
-
   const productId = parseInt(id);
   if (isNaN(productId)) {
     notFound();
