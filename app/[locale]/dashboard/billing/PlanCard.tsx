@@ -15,6 +15,7 @@ import { Check, Crown, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import SubscriptionDialog from "./SubscriptionDialog";
+import { formatPrice } from "@/lib/utils";
 
 type Props = {
   plan: Plan;
@@ -53,12 +54,6 @@ export default function PlanCard({
       setShowSubscriptionDialog(true);
     }
   };
-
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
 
   return (
     <Card

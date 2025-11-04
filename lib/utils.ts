@@ -23,14 +23,9 @@ export function formatPrice(price: number, currency: string = "USD") {
   return new Intl.NumberFormat("en-UK", {
     style: "currency",
     currency: currency,
+    currencyDisplay: "narrowSymbol",
+    trailingZeroDisplay: "stripIfInteger",
   }).format(price);
-}
-
-export function getInternalSupplierPrice(
-  suppliers: { price?: number | null; isInternal?: boolean }[]
-) {
-  const internalSupplier = suppliers.find((s) => s.isInternal);
-  return internalSupplier?.price || null;
 }
 
 export function formatPriceCents(cents: number, currency: string = "USD") {

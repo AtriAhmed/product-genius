@@ -1,35 +1,15 @@
 "use client";
 
+import ShopifyIcon from "@/assets/images/shopify.svg";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentTranslation } from "@/lib/products";
-import {
-  formatPrice,
-  formatPriceCents,
-  getInternalSupplierPrice,
-  getMediaUrl,
-} from "@/lib/utils";
-import { Product, ProductTranslation } from "@/types";
+import { formatPrice, getMediaUrl } from "@/lib/utils";
+import { Product } from "@/types";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import ShopifyIcon from "@/assets/images/shopify.svg";
-
-const currencies = [
-  { code: "USD", name: "US Dollar", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "GBP", name: "British Pound", symbol: "£" },
-  { code: "JPY", name: "Japanese Yen", symbol: "¥" },
-  { code: "CAD", name: "Canadian Dollar", symbol: "C$" },
-  { code: "AUD", name: "Australian Dollar", symbol: "A$" },
-  { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
-  { code: "CNY", name: "Chinese Yuan", symbol: "¥" },
-];
-
-const currencyMap = Object.fromEntries(
-  currencies.map((currency) => [currency.code, currency])
-);
 
 // Product Card Component
 export default function ProductCard({

@@ -63,17 +63,17 @@ export default function CopyPlanDropdown({
         "prices",
         prices.map((price) => ({
           interval: price.interval || "MONTH",
-          price: price.price || 0,
+          price: price.price || undefined,
           compareAtPrice: price.compareAtPrice,
         }))
       );
     } else {
       // Default structure if no prices
       setValue("prices", [
-        { interval: "DAY", price: 0 },
-        { interval: "WEEK", price: 0 },
-        { interval: "MONTH", price: 0 },
-        { interval: "YEAR", price: 0 },
+        { interval: "DAY" },
+        { interval: "WEEK" },
+        { interval: "MONTH" },
+        { interval: "YEAR" },
       ]);
     }
 
