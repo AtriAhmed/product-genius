@@ -1,7 +1,4 @@
-// COMPLETE VERSION WITH STRIPE INTEGRATION
-// Use this file after running: npm install stripe
-// Replace the current [id]/route.ts content with this after installation
-
+// Updated API routes for Plans with multiple PlanPrice support
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -17,16 +14,25 @@ const PlanFeatureSchema = z.object({
   note: z.string().optional(),
 });
 
+const PlanPriceSchema = z.object({
+  id: z.number().optional(), // For updating existing prices
+  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]),
+  price: z.number().optional(),
+  compareAtPrice: z.number().optional(),
+});
+
 const UpdatePlanSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  oldPrice: z.number().optional().nullable(),
-  price: z.number().min(0).optional(),
-  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]).optional(),
   active: z.boolean().optional(),
   features: z.array(PlanFeatureSchema).optional(),
   mostPopular: z.boolean().optional(),
   sortOrder: z.number().optional(),
+  prices: z
+    .array(PlanPriceSchema)
+    .refine((prices) => prices.some((price) => price.price !== undefined), {
+      message: "At least one price must have a value",
+    }),
 });
 
 export async function GET(
@@ -44,6 +50,7 @@ export async function GET(
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
       include: {
+        prices: true,
         _count: {
           select: {
             subscriptions: true,
@@ -101,6 +108,9 @@ export async function PUT(
     // Check if plan exists
     const existingPlan = await prisma.plan.findUnique({
       where: { id: planId },
+      include: {
+        prices: true,
+      },
     });
 
     if (!existingPlan) {
@@ -116,28 +126,13 @@ export async function PUT(
       if (existingPlan.stripeProductId) {
         try {
           await stripe.products.update(existingPlan.stripeProductId, {
-            name: validatedData.name || existingPlan.name,
-            description:
-              validatedData.description !== undefined
-                ? validatedData.description
-                : existingPlan.description,
-            active:
-              validatedData.active !== undefined
-                ? validatedData.active
-                : existingPlan.active,
-            metadata: {
-              planFeatures: JSON.stringify(
-                validatedData.features || existingPlan.features || []
-              ),
-              mostPopular: (validatedData.mostPopular !== undefined
-                ? validatedData.mostPopular
-                : existingPlan.mostPopular
-              ).toString(),
-              sortOrder: (validatedData.sortOrder !== undefined
-                ? validatedData.sortOrder
-                : existingPlan.sortOrder
-              ).toString(),
-            },
+            ...(validatedData.name && { name: validatedData.name }),
+            ...(validatedData.description !== undefined && {
+              description: validatedData.description,
+            }),
+            ...(validatedData.active !== undefined && {
+              active: validatedData.active,
+            }),
           });
         } catch (error) {
           console.warn("Failed to update Stripe product:", error);
@@ -145,57 +140,76 @@ export async function PUT(
       }
     }
 
-    // Create new Stripe price if price or interval changed
-    let newStripePriceId = null;
-    if (
-      (validatedData.price && validatedData.price !== existingPlan.price) ||
-      (validatedData.interval &&
-        validatedData.interval !== existingPlan.interval)
-    ) {
-      if (existingPlan.stripeProductId) {
+    // Handle price updates if provided
+    if (validatedData.prices && existingPlan.stripeProductId) {
+      const intervalMap = {
+        DAY: "day" as const,
+        WEEK: "week" as const,
+        MONTH: "month" as const,
+        YEAR: "year" as const,
+      };
+
+      // Archive old Stripe prices
+      for (const existingPrice of existingPlan.prices) {
+        if (!existingPrice.stripePriceId) continue;
+
         try {
-          // Archive old prices
-          const oldPrices = await stripe.prices.list({
-            product: existingPlan.stripeProductId,
-            active: true,
+          await stripe.prices.update(existingPrice.stripePriceId, {
+            active: false,
           });
-
-          for (const price of oldPrices.data) {
-            await stripe.prices.update(price.id, { active: false });
-          }
-
-          // Convert interval to Stripe format
-          const intervalMap = {
-            DAY: "day" as const,
-            WEEK: "week" as const,
-            MONTH: "month" as const,
-            YEAR: "year" as const,
-          };
-
-          // Create new price
-          const newPrice = await stripe.prices.create({
-            product: existingPlan.stripeProductId,
-            unit_amount: Math.round(
-              (validatedData.price || existingPlan.price) * 100
-            ),
-            currency: "eur",
-            recurring: {
-              interval:
-                intervalMap[validatedData.interval || existingPlan.interval],
-            },
-            active:
-              validatedData.active !== undefined
-                ? validatedData.active
-                : existingPlan.active,
-          });
-
-          newStripePriceId = newPrice.id;
         } catch (error) {
-          console.warn("Failed to create new Stripe price:", error);
+          console.warn("Failed to archive old Stripe price:", error);
         }
       }
+
+      // Create new Stripe prices
+      const newPrices = await Promise.all(
+        validatedData.prices.map(async (priceData) => {
+          if (priceData.price === undefined) {
+            return {
+              ...priceData,
+              stripePriceId: null,
+            };
+          }
+
+          try {
+            const stripePrice = await stripe.prices.create({
+              product: existingPlan.stripeProductId!,
+              unit_amount: Math.round(priceData.price * 100),
+              currency: "eur",
+              recurring: {
+                interval: intervalMap[priceData.interval],
+              },
+            });
+
+            return {
+              ...priceData,
+              stripePriceId: stripePrice.id,
+            };
+          } catch (error) {
+            console.error("Failed to create Stripe price:", error);
+            throw error;
+          }
+        })
+      );
+
+      // Update plan prices in database
+      await prisma.planPrice.deleteMany({
+        where: { planId: planId },
+      });
+
+      await prisma.planPrice.createMany({
+        data: newPrices.map((priceData) => ({
+          planId: planId,
+          interval: priceData.interval,
+          price: priceData.price,
+          compareAtPrice: priceData.compareAtPrice || null,
+          stripePriceId: priceData.stripePriceId,
+        })),
+      });
     }
 
+    // Update plan basic information
     const plan = await prisma.plan.update({
       where: { id: planId },
       data: {
@@ -203,13 +217,6 @@ export async function PUT(
         ...(validatedData.description !== undefined && {
           description: validatedData.description,
         }),
-        ...(validatedData.price !== undefined && {
-          price: validatedData.price,
-        }),
-        ...(validatedData.oldPrice !== undefined && {
-          oldPrice: validatedData.oldPrice,
-        }),
-        ...(validatedData.interval && { interval: validatedData.interval }),
         ...(validatedData.active !== undefined && {
           active: validatedData.active,
         }),
@@ -220,9 +227,9 @@ export async function PUT(
         ...(validatedData.sortOrder !== undefined && {
           sortOrder: validatedData.sortOrder,
         }),
-        ...(newStripePriceId && { stripePriceId: newStripePriceId }),
       },
       include: {
+        prices: true,
         _count: {
           select: {
             subscriptions: true,
@@ -272,6 +279,7 @@ export async function DELETE(
     const existingPlan = await prisma.plan.findUnique({
       where: { id: planId },
       include: {
+        prices: true,
         _count: {
           select: {
             subscriptions: true,
@@ -299,14 +307,12 @@ export async function DELETE(
     if (existingPlan.stripeProductId) {
       try {
         // Archive all prices first
-        const prices = await stripe.prices.list({
-          product: existingPlan.stripeProductId,
-        });
+        for (const price of existingPlan.prices) {
+          if (!price.stripePriceId) continue;
 
-        for (const price of prices.data) {
-          if (price.active) {
-            await stripe.prices.update(price.id, { active: false });
-          }
+          await stripe.prices.update(price.stripePriceId, {
+            active: false,
+          });
         }
 
         // Archive product
@@ -317,6 +323,11 @@ export async function DELETE(
         console.warn("Failed to archive Stripe resources:", error);
       }
     }
+
+    // Delete prices first due to foreign key constraint
+    await prisma.planPrice.deleteMany({
+      where: { planId: planId },
+    });
 
     await prisma.plan.delete({
       where: { id: planId },

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import CopyPlanDropdown from "@/app/[locale]/admin/plans/CopyPlanDropdown";
 import PlanBasicInformation from "@/app/[locale]/admin/plans/PlanBasicInformation";
 import PlanFeatures from "@/app/[locale]/admin/plans/PlanFeatures";
+import PlanPricing from "@/app/[locale]/admin/plans/PlanPricing";
 import { PlanFormData, planFormSchema } from "./types";
 
 type PlanFormProps = {
@@ -41,13 +42,16 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     defaultValues: {
       name: plan?.name || "",
       description: plan?.description || "",
-      oldPrice: plan?.oldPrice || null,
-      price: plan?.price || 0,
-      interval: plan?.interval || "MONTH",
       active: plan?.active ?? true,
       features: plan?.features || [],
       mostPopular: plan?.mostPopular || false,
       sortOrder: plan?.sortOrder || 0,
+      prices: plan?.prices || [
+        { interval: "DAY" },
+        { interval: "WEEK" },
+        { interval: "MONTH" },
+        { interval: "YEAR" },
+      ],
     },
   });
 
@@ -125,7 +129,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
 
             <Button
               onClick={handleSubmit(onSubmit)}
-              disabled={!isValid || isSubmitting || !isDirty}
+              disabled={isSubmitting || !isDirty}
               size="sm"
             >
               <Save className="w-4 h-4 mr-2" />
@@ -157,6 +161,11 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
             errors={errors}
           />
         </form>
+
+        {/* Pricing */}
+        <div className="mb-4">
+          <PlanPricing setValue={setValue} watch={watch} />
+        </div>
 
         {/* Features */}
         <PlanFeatures watch={watch} setValue={setValue} />

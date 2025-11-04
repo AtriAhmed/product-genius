@@ -91,22 +91,30 @@ export type PlanFeature = {
   note?: string;
 };
 
+export type PlanPrice = {
+  id: number;
+  planId?: number;
+  interval?: PlanInterval;
+  price?: number;
+  compareAtPrice?: number;
+  stripePriceId?: string;
+  /* Relations */
+  plan?: Plan;
+};
+
 export type Plan = {
   id: number;
   name?: string;
   description?: string;
-  oldPrice?: number;
-  price?: number;
-  interval?: PlanInterval;
   stripeProductId?: string;
-  stripePriceId?: string;
   active?: boolean;
   features?: PlanFeature[];
   mostPopular?: boolean;
   sortOrder?: number;
   createdAt?: Date;
   updatedAt?: Date;
-  // Relations
+  /* Relations */
+  prices?: PlanPrice[];
   subscriptions?: Subscription[];
 };
 

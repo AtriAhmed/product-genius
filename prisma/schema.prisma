@@ -108,23 +108,51 @@ model User {
   variantMappings VariantMapping[]
 }
 
+// old plan model before introducing PlanPrice
+// model Plan {
+//   id              Int          @id @default(autoincrement())
+//   name            String
+//   description     String?
+//   oldPrice        Float?
+//   price           Float
+//   interval        PlanInterval
+//   stripeProductId String?
+//   stripePriceId   String?
+//   active          Boolean      @default(true)
+//   features        Json?
+//   mostPopular     Boolean      @default(false)
+//   sortOrder       Int          @default(0)
+
+//   subscriptions Subscription[]
+//   createdAt     DateTime       @default(now())
+//   updatedAt     DateTime       @updatedAt
+// }
+
 model Plan {
-  id              Int          @id @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   name            String
   description     String?
-  oldPrice        Float?
-  price           Float
-  interval        PlanInterval
   stripeProductId String?
-  stripePriceId   String?
-  active          Boolean      @default(true)
   features        Json?
-  mostPopular     Boolean      @default(false)
-  sortOrder       Int          @default(0)
+  active          Boolean @default(true)
+  mostPopular     Boolean @default(false)
+  sortOrder       Int     @default(0)
 
+  prices        PlanPrice[]
   subscriptions Subscription[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+}
+
+model PlanPrice {
+  id             Int          @id @default(autoincrement())
+  planId         Int
+  interval       PlanInterval // weekly, monthly, yearly, etc
+  price          Float?
+  compareAtPrice Float?
+  stripePriceId  String?
+
+  plan Plan @relation(fields: [planId], references: [id])
 }
 
 model Subscription {

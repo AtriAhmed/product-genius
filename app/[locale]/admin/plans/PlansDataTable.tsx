@@ -54,6 +54,17 @@ export default function PlansDataTable({
     return `${formatted}/${getIntervalLabel(interval).toLowerCase()}`;
   };
 
+  function getPriceDisplay(plan: Plan) {
+    if (!plan.prices || plan.prices.length === 0) {
+      return t("no pricing set");
+    }
+
+    const priceObj =
+      plan.prices?.find((p) => p.interval === "MONTH") || plan.prices[0];
+
+    return formatPrice(priceObj.price || 0, priceObj.interval || "MONTH");
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -115,9 +126,7 @@ export default function PlansDataTable({
                 </div>
               </TableCell>
               <TableCell>
-                <div className="font-medium">
-                  {formatPrice(plan?.price || 0, plan?.interval || "")}
-                </div>
+                <div className="font-medium">{getPriceDisplay(plan)}</div>
               </TableCell>
               <TableCell>
                 <Badge variant={plan.active ? "default" : "secondary"}>

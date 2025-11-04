@@ -17,16 +17,24 @@ const PlanFeatureSchema = z.object({
   note: z.string().optional(),
 });
 
+const PlanPriceSchema = z.object({
+  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]),
+  price: z.number().optional(),
+  compareAtPrice: z.number().optional(),
+});
+
 const CreatePlanSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  oldPrice: z.number().optional().nullable(),
-  price: z.number().min(0),
-  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]),
   active: z.boolean().default(true),
   features: z.array(PlanFeatureSchema).optional(),
   mostPopular: z.boolean().default(false),
   sortOrder: z.number().default(0),
+  prices: z
+    .array(PlanPriceSchema)
+    .refine((prices) => prices.some((price) => price.price !== undefined), {
+      message: "At least one price must have a value",
+    }),
 });
 
 export async function GET(request: NextRequest) {
@@ -82,6 +90,7 @@ export async function GET(request: NextRequest) {
       prisma.plan.findMany({
         where,
         include: {
+          prices: true,
           _count: {
             select: {
               subscriptions: true,
@@ -135,32 +144,53 @@ export async function POST(request: NextRequest) {
       YEAR: "year" as const,
     };
 
-    // Create Stripe price
-    const stripePrice = await stripe.prices.create({
-      product: stripeProduct.id,
-      unit_amount: Math.round(validatedData.price * 100), // Convert to cents
-      currency: "eur",
-      recurring: {
-        interval: intervalMap[validatedData.interval],
-      },
-    });
+    // Create Stripe prices for each price variant
+    const stripePrices = await Promise.all(
+      validatedData.prices.map(async (priceData) => {
+        if (priceData.price === undefined) {
+          return {
+            ...priceData,
+            stripePriceId: null,
+          };
+        }
 
-    // Create plan in database
+        const stripePrice = await stripe.prices.create({
+          product: stripeProduct.id,
+          unit_amount: Math.round(priceData.price * 100), // Convert to cents
+          currency: "eur",
+          recurring: {
+            interval: intervalMap[priceData.interval],
+          },
+        });
+
+        return {
+          ...priceData,
+          stripePriceId: stripePrice.id,
+        };
+      })
+    );
+
+    // Create plan in database with prices
     const plan = await prisma.plan.create({
       data: {
         name: validatedData.name,
         description: validatedData.description,
-        oldPrice: validatedData.oldPrice ?? null,
-        price: validatedData.price,
-        interval: validatedData.interval,
         stripeProductId: stripeProduct.id,
-        stripePriceId: stripePrice.id,
         active: validatedData.active,
         features: validatedData.features || [],
         mostPopular: validatedData.mostPopular,
         sortOrder: validatedData.sortOrder,
+        prices: {
+          create: stripePrices.map((priceData) => ({
+            interval: priceData.interval,
+            price: priceData.price,
+            compareAtPrice: priceData.compareAtPrice,
+            stripePriceId: priceData.stripePriceId,
+          })),
+        },
       },
       include: {
+        prices: true,
         _count: {
           select: {
             subscriptions: true,

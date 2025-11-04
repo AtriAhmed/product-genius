@@ -51,13 +51,31 @@ export default function CopyPlanDropdown({
   const handleCopyPlan = (plan: Plan) => {
     setValue("name", `${plan.name} (Copy)`);
     setValue("description", plan.description || "");
-    setValue("oldPrice", plan.oldPrice);
-    setValue("price", plan?.price || 0);
-    setValue("interval", plan?.interval || "MONTH");
     setValue("active", plan?.active || false);
     setValue("features", plan?.features || []);
     setValue("mostPopular", false); // Reset most popular
     setValue("sortOrder", plan?.sortOrder || 0);
+
+    // Copy prices with proper structure
+    const prices = plan.prices || [];
+    if (prices.length > 0) {
+      setValue(
+        "prices",
+        prices.map((price) => ({
+          interval: price.interval || "MONTH",
+          price: price.price || 0,
+          compareAtPrice: price.compareAtPrice,
+        }))
+      );
+    } else {
+      // Default structure if no prices
+      setValue("prices", [
+        { interval: "DAY", price: 0 },
+        { interval: "WEEK", price: 0 },
+        { interval: "MONTH", price: 0 },
+        { interval: "YEAR", price: 0 },
+      ]);
+    }
 
     toast.success(t("plan data copied successfully"));
   };
@@ -70,24 +88,31 @@ export default function CopyPlanDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={isLoading}>
-          <Copy className="h-4 w-4 mr-2" />
+          <Copy className="w-4 h-4 mr-2" />
           {t("copy from plan")}
-          <ChevronDown className="h-4 w-4 ml-2" />
+          <ChevronDown className="w-4 h-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        {plans.map((plan) => (
-          <DropdownMenuItem
-            key={plan.id}
-            onClick={() => handleCopyPlan(plan)}
-            className="flex items-start px-3 py-1"
-          >
-            <div className="font-medium">{plan.name}</div>
-            <div className="text-sm text-muted-foreground">
-              ${plan.price}/{plan?.interval?.toLowerCase()}
-            </div>
-          </DropdownMenuItem>
-        ))}
+        {plans.map((plan) => {
+          const monthlyPrice = plan.prices?.find((p) => p.interval === "MONTH");
+          const priceDisplay = monthlyPrice
+            ? `€${monthlyPrice.price}/month`
+            : "Multiple prices";
+
+          return (
+            <DropdownMenuItem
+              key={plan.id}
+              onClick={() => handleCopyPlan(plan)}
+              className="flex flex-col items-start px-3 py-2"
+            >
+              <div className="font-medium">{plan.name}</div>
+              <div className="text-muted-foreground text-sm">
+                {priceDisplay}
+              </div>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
