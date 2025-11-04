@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { getCurrentTranslation } from "@/lib/products";
-import { cn, getMediaUrl } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -116,10 +116,9 @@ export default function ProductRow({
 
       {/* Price */}
       <TableCell>
-        {product.sellingPrice ? (
+        {product.price ? (
           <span className="font-medium">
-            {product.currency || "$"}
-            {product.sellingPrice.toFixed(2)}
+            {formatPrice(product.price, product.currency)}
           </span>
         ) : (
           <span className="text-muted-foreground text-xs italic">

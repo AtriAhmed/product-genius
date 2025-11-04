@@ -78,17 +78,6 @@ export function ProvidersPreview({
             </div>
           </div>
         )}
-
-        {/* See More Button */}
-        {/* <Button
-          variant="outline"
-          className="w-full"
-          onClick={onScrollToProviders}
-        >
-          <ChevronDown className="w-4 h-4 mr-2" />
-          See All Providers ({suppliers.length + externalSuppliers.length}{" "}
-          total)
-        </Button> */}
       </div>
     </>
   );
