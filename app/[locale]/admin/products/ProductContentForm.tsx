@@ -237,10 +237,10 @@ export default function MultiLanguageForm({
                     placeholder={`Enter product description in ${
                       getLanguageInfo(activeTab).name
                     }`}
-                    rows={4}
                     className={cn(
                       !currentTranslation.description?.trim() &&
-                        "border-destructive"
+                        "border-destructive",
+                      "h-40"
                     )}
                   />
                   {!currentTranslation.description?.trim() && (

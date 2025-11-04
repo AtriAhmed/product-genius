@@ -23,9 +23,11 @@ export const productOptionSchema = z.object({
 
 // Form validation schema
 export const productFormSchema = z.object({
-  suggestedPrice: z.number().positive().optional().nullable(),
+  price: z.number().positive().optional().nullable(),
+  compareAtPrice: z.number().positive().optional().nullable(),
+  sellingPrice: z.number().positive().optional().nullable(),
   currency: z.string().length(3).optional(),
-  categoryId: z.number().int().positive().optional(),
+  categoryId: z.number().int().positive().optional().nullable(),
   isActive: z.boolean(),
   translations: z
     .array(

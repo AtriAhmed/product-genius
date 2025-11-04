@@ -3,6 +3,7 @@
 import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
 import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
 import MultiLanguageForm from "@/app/[locale]/admin/products/ProductContentForm";
+import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
 import {
@@ -69,8 +70,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      suggestedPrice: product?.sellingPrice || undefined,
-      currency: "EUR",
+      price: product?.price || undefined,
+      compareAtPrice: product?.compareAtPrice || undefined,
+      sellingPrice: product?.sellingPrice || undefined,
+      currency: product?.currency || "EUR",
       categoryId: product?.categoryId || undefined,
       isActive: product?.isActive ?? true,
       translations: product?.translations || [
@@ -99,7 +102,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     if (isEditMode && product) {
       // Reset form with product data
       reset({
-        suggestedPrice: product.sellingPrice,
+        price: product.price,
+        compareAtPrice: product.compareAtPrice,
+        sellingPrice: product.sellingPrice,
         currency: product.currency || "EUR",
         categoryId: product.categoryId,
         isActive: product.isActive ?? true,
@@ -115,7 +120,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     } else if (isCreateMode) {
       // Initialize with default values for create mode
       reset({
-        suggestedPrice: undefined,
+        price: undefined,
+        compareAtPrice: undefined,
+        sellingPrice: undefined,
         currency: "EUR",
         categoryId: undefined,
         isActive: true,
@@ -299,6 +306,16 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 categories={categories}
                 categoryValue={watch("categoryId")}
                 isActive={watch("isActive")}
+              />
+
+              {/* Pricing Section */}
+              <PricingSection
+                setValue={setValue}
+                errors={errors}
+                price={watch("price")}
+                compareAtPrice={watch("compareAtPrice")}
+                sellingPrice={watch("sellingPrice")}
+                currency={watch("currency")}
               />
 
               {/* Multi-language Content */}

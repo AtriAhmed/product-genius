@@ -10,6 +10,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { getCurrentTranslation } from "@/lib/products";
 import { Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { FieldErrors, UseFormSetValue } from "react-hook-form";
 
 interface Category {
@@ -29,7 +30,7 @@ interface BasicInformationProps {
   setValue: UseFormSetValue<any>;
   errors: FieldErrors<any>;
   categories: Category[];
-  categoryValue?: number;
+  categoryValue?: number | null;
   isActive?: boolean;
 }
 
@@ -40,6 +41,8 @@ export default function BasicInformation({
   categoryValue,
   isActive = true,
 }: BasicInformationProps) {
+  const t = useTranslations("products");
+
   const selectedCategory = categoryValue
     ? categories.find((cat) => cat.id === categoryValue)
     : null;
@@ -49,12 +52,12 @@ export default function BasicInformation({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Package className="w-5 h-5" />
-          Basic Information
+          {t("basic information")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label className="font-medium text-sm">Category</label>
+          <label className="font-medium text-sm">{t("category")}</label>
           <Select
             value={categoryValue?.toString() || ""}
             onValueChange={(value) => {
@@ -70,10 +73,10 @@ export default function BasicInformation({
             <SelectTrigger className="w-full">
               {selectedCategory
                 ? getCurrentTranslation(selectedCategory?.translations)?.title
-                : "Select a category"}
+                : t("select category")}
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="unclassified">Unclassified</SelectItem>
+              <SelectItem value="unclassified">{t("unclassified")}</SelectItem>
               {categories?.length ? (
                 categories.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
@@ -82,7 +85,9 @@ export default function BasicInformation({
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="none">No categories available</SelectItem>
+                <SelectItem value="none">
+                  {t("no categories available")}
+                </SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -90,9 +95,9 @@ export default function BasicInformation({
 
         <div className="flex justify-between items-center">
           <div className="space-y-1">
-            <label className="font-medium text-sm">Active Status</label>
+            <label className="font-medium text-sm">{t("active status")}</label>
             <p className="text-muted-foreground text-sm">
-              Control product visibility in your store
+              {t("control product visibility")}
             </p>
           </div>
           <Switch

@@ -45,9 +45,11 @@ const productOptionSchema = z.object({
 });
 
 const updateProductSchema = z.object({
-  suggestedPrice: z.number().positive().optional().nullable(),
+  price: z.number().positive().optional().nullable(),
+  compareAtPrice: z.number().positive().optional().nullable(),
+  sellingPrice: z.number().positive().optional().nullable(),
   currency: z.string().length(3).optional(),
-  categoryId: z.number().int().positive().optional(),
+  categoryId: z.number().int().positive().optional().nullable(),
   isActive: z.boolean(),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
@@ -278,8 +280,9 @@ export async function PUT(
         )
       );
 
-      // Generate and create new variants
-      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      // Generate and create variants
+      const basePrice =
+        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
       const productCode = `PROD${productId}`;
 
       const optionDefinitions: OptionDefinition[] =
@@ -324,14 +327,15 @@ export async function PUT(
       });
 
       // Create a single default variant for products without options
-      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const basePrice =
+        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
       const productCode = `PROD${productId}`;
 
       await prisma.productVariant.create({
         data: {
           productId: productId,
           price: basePrice,
-          sku: `PG-${productCode}`,
+          sku: productCode,
           inventory: 0,
           trackInventory: false,
         },
@@ -342,7 +346,9 @@ export async function PUT(
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
-        sellingPrice: validatedData.suggestedPrice || null,
+        price: validatedData.price || null,
+        compareAtPrice: validatedData.compareAtPrice || null,
+        sellingPrice: validatedData.sellingPrice || null,
         currency: validatedData.currency || null,
         categoryId: validatedData.categoryId || null,
         isActive: validatedData.isActive,

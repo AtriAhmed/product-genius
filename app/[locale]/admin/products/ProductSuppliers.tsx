@@ -152,7 +152,7 @@ export default function ProductSuppliers({
       <CardHeader className="flex flex-wrap justify-between items-center gap-2">
         <CardTitle className="flex items-center gap-2">
           <Users className="w-5 h-5" />
-          {t("suppliers")}
+          {t("external suppliers")}
         </CardTitle>
         <div className="flex justify-end ms-auto">
           <Button onClick={openAddDialog} variant="primary" size="sm">

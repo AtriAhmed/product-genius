@@ -123,7 +123,7 @@ export default function AddSupplierDialog({
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           {/* Internal/External buttons at top of form */}
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button
               type="button"
               size="sm"
@@ -146,7 +146,7 @@ export default function AddSupplierDialog({
             >
               {t("external") || "External"}
             </Button>
-          </div>
+          </div> */}
 
           <div className="space-y-4">
             {/* Marketplace - only when external */}

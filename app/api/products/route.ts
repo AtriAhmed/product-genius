@@ -41,9 +41,11 @@ const productOptionSchema = z.object({
 });
 
 const createProductSchema = z.object({
-  suggestedPrice: z.number().positive().optional().nullable(),
+  price: z.number().positive().optional().nullable(),
+  compareAtPrice: z.number().positive().optional().nullable(),
+  sellingPrice: z.number().positive().optional().nullable(),
   currency: z.string().length(3).optional(),
-  categoryId: z.number().int().positive().optional(),
+  categoryId: z.number().int().positive().optional().nullable(),
   isActive: z.boolean().default(true),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
@@ -79,7 +81,9 @@ export async function POST(request: NextRequest) {
     // Create the product first
     const product = await prisma.product.create({
       data: {
-        sellingPrice: validatedData.suggestedPrice,
+        price: validatedData.price,
+        compareAtPrice: validatedData.compareAtPrice,
+        sellingPrice: validatedData.sellingPrice,
         currency: validatedData.currency,
         categoryId: validatedData.categoryId,
         isActive: validatedData.isActive,
@@ -201,7 +205,8 @@ export async function POST(request: NextRequest) {
       );
 
       // Generate and create variants
-      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const basePrice =
+        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
       const productCode = `PROD${product.id}`;
 
       const optionDefinitions: OptionDefinition[] =
@@ -238,14 +243,15 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Create a single default variant for products without options
-      const basePrice = validatedData.suggestedPrice?.toString() || "0";
+      const basePrice =
+        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
       const productCode = `PROD${product.id}`;
 
       await prisma.productVariant.create({
         data: {
           productId: product.id,
           price: basePrice,
-          sku: `PG-${productCode}`,
+          sku: productCode,
           inventory: 0,
           trackInventory: false,
         },
@@ -312,7 +318,7 @@ const getProductsSchema = z.object({
   categoryId: z.coerce.number().optional(),
   isActive: z.enum(["true", "false"]).optional(),
   sortBy: z
-    .enum(["createdAt", "updatedAt", "suggestedPrice"])
+    .enum(["createdAt", "updatedAt", "price", "compareAtPrice", "sellingPrice"])
     .default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
@@ -362,8 +368,12 @@ export async function GET(request: NextRequest) {
 
     if (query.sortBy === "updatedAt") {
       orderBy = { updatedAt: query.sortOrder };
-    } else if (query.sortBy === "suggestedPrice") {
-      orderBy = { suggestedPrice: query.sortOrder };
+    } else if (query.sortBy === "price") {
+      orderBy = { price: query.sortOrder };
+    } else if (query.sortBy === "compareAtPrice") {
+      orderBy = { compareAtPrice: query.sortOrder };
+    } else if (query.sortBy === "sellingPrice") {
+      orderBy = { sellingPrice: query.sortOrder };
     } else if (query.sortBy === "createdAt") {
       orderBy = { createdAt: query.sortOrder };
     }
