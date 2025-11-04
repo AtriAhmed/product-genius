@@ -3,23 +3,18 @@ import { CategoryTranslation, ProductTranslation } from "@/types";
 export function getCurrentTranslation(
   translations: ProductTranslation[],
   locale?: string
-): ProductTranslation;
+): ProductTranslation | null;
 
 export function getCurrentTranslation(
   translations: CategoryTranslation[],
   locale?: string
-): CategoryTranslation;
+): CategoryTranslation | null;
 
 export function getCurrentTranslation(
   translations: ProductTranslation[] | CategoryTranslation[],
   locale: string = "en"
-): ProductTranslation | CategoryTranslation {
+): ProductTranslation | CategoryTranslation | null {
   return (
-    translations.find((t) => t.locale === locale) ||
-    translations[0] || {
-      locale,
-      title: "",
-      description: "",
-    }
+    translations.find((t) => t.locale === locale) || translations[0] || null
   );
 }

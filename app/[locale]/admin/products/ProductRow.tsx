@@ -103,15 +103,9 @@ export default function ProductRow({
 
       {/* Category */}
       <TableCell>
-        {categoryTranslation ? (
-          <Badge variant="outline" className="text-xs">
-            {categoryTranslation.title}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-xs italic">
-            {t("no category")}
-          </span>
-        )}
+        <Badge variant="outline" className="text-xs">
+          {categoryTranslation?.title || "N/A"}
+        </Badge>
       </TableCell>
 
       {/* Price */}

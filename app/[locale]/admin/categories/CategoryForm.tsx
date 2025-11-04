@@ -341,7 +341,7 @@ export default function CategoryForm({
                     <span className="text-destructive">*</span>
                   </label>
                   <Input
-                    value={currentTranslation.title}
+                    value={currentTranslation?.title}
                     onChange={(e) =>
                       updateTranslation(activeLanguage, "title", e.target.value)
                     }
@@ -372,7 +372,7 @@ export default function CategoryForm({
                     {t("category description")}
                   </label>
                   <Textarea
-                    value={currentTranslation.description}
+                    value={currentTranslation?.description}
                     onChange={(e) =>
                       updateTranslation(
                         activeLanguage,

@@ -27,7 +27,7 @@ import { toast } from "sonner";
 interface TranslationDropdownProps {
   selectedLanguages: string[];
   activeLanguage: string;
-  currentTranslation: Translation;
+  currentTranslation: Translation | null;
   onTranslate: (translations: {
     [key: string]: { title: string; description: string };
   }) => void;
@@ -146,8 +146,8 @@ export default function TranslationDropdown({
           size="sm"
           className={cn("gap-2 h-9", className)}
           disabled={
-            !currentTranslation.title?.trim() ||
-            !currentTranslation.description?.trim()
+            !currentTranslation?.title?.trim() ||
+            !currentTranslation?.description?.trim()
           }
         >
           <Languages className="w-4 h-4" />

@@ -24,7 +24,7 @@ interface LanguageSelectorProps {
   requiredLanguages?: string[];
   hasErrors?: (languageCode: string) => boolean;
   className?: string;
-  currentTranslation: ProductTranslation;
+  currentTranslation: ProductTranslation | null;
   handleAutoTranslate: (translations: {
     [key: string]: { title: string; description: string };
   }) => void;

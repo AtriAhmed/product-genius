@@ -141,7 +141,7 @@ export default function CategoriesDataTable({
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span className="font-semibold text-foreground">
-                          {primaryTranslation.title}
+                          {primaryTranslation?.title}
                         </span>
                         {category.translations.length > 1 && (
                           <span className="text-muted-foreground text-xs">
@@ -153,10 +153,10 @@ export default function CategoriesDataTable({
 
                     <TableCell>
                       <div className="max-w-xs">
-                        {primaryTranslation.description &&
-                        primaryTranslation.description.trim() ? (
+                        {primaryTranslation?.description &&
+                        primaryTranslation?.description.trim() ? (
                           <p className="text-muted-foreground text-sm truncate">
-                            {primaryTranslation.description}
+                            {primaryTranslation?.description}
                           </p>
                         ) : (
                           <span className="text-muted-foreground text-xs italic">

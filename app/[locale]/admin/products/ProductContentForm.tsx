@@ -202,7 +202,7 @@ export default function MultiLanguageForm({
                     Title <span className="text-destructive">*</span>
                   </label>
                   <Input
-                    value={currentTranslation.title}
+                    value={currentTranslation?.title}
                     onChange={(e) =>
                       updateTranslation(activeTab, "title", e.target.value)
                     }
@@ -210,10 +210,10 @@ export default function MultiLanguageForm({
                       getLanguageInfo(activeTab).name
                     }`}
                     className={cn(
-                      !currentTranslation.title?.trim() && "border-destructive"
+                      !currentTranslation?.title?.trim() && "border-destructive"
                     )}
                   />
-                  {!currentTranslation.title?.trim() && (
+                  {!currentTranslation?.title?.trim() && (
                     <p className="text-destructive text-sm">
                       Title is required
                     </p>
@@ -226,7 +226,7 @@ export default function MultiLanguageForm({
                     Description <span className="text-destructive">*</span>
                   </label>
                   <Textarea
-                    value={currentTranslation.description}
+                    value={currentTranslation?.description}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                       updateTranslation(
                         activeTab,
@@ -238,12 +238,12 @@ export default function MultiLanguageForm({
                       getLanguageInfo(activeTab).name
                     }`}
                     className={cn(
-                      !currentTranslation.description?.trim() &&
+                      !currentTranslation?.description?.trim() &&
                         "border-destructive",
                       "h-40"
                     )}
                   />
-                  {!currentTranslation.description?.trim() && (
+                  {!currentTranslation?.description?.trim() && (
                     <p className="text-destructive text-sm">
                       Description is required
                     </p>
