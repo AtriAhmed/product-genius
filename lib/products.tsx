@@ -18,8 +18,8 @@ export function getCurrentTranslation(
     translations.find((t) => t.locale === locale) ||
     translations[0] || {
       locale,
-      title: "N/A",
-      description: "N/A",
+      title: "",
+      description: "",
     }
   );
 }

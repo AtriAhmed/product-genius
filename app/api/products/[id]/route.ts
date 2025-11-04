@@ -45,9 +45,9 @@ const productOptionSchema = z.object({
 });
 
 const updateProductSchema = z.object({
-  price: z.number().positive().optional().nullable(),
-  compareAtPrice: z.number().positive().optional().nullable(),
-  sellingPrice: z.number().positive().optional().nullable(),
+  price: z.number().gte(0).optional().nullable(),
+  compareAtPrice: z.number().gte(0).optional().nullable(),
+  sellingPrice: z.number().gte(0).optional().nullable(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional().nullable(),
   isActive: z.boolean(),

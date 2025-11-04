@@ -5,21 +5,18 @@ import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceC
 
 interface ProvidersPreviewProps {
   suppliers: Supplier[];
+  price?: number;
+  compareAtPrice?: number;
   isImported: boolean;
   onScrollToProviders: () => void;
 }
 
-export function ProvidersPreview({
+export function ProductSuppliers({
+  price,
+  compareAtPrice,
   suppliers,
   isImported,
 }: ProvidersPreviewProps) {
-  const externalSuppliers = suppliers.filter(
-    (supplier) => supplier.isInternal === false
-  );
-  const internalSuppliers = suppliers.filter(
-    (supplier) => supplier.isInternal === true
-  );
-
   if (!suppliers?.length)
     return (
       <>
@@ -43,32 +40,30 @@ export function ProvidersPreview({
         <h3 className="font-semibold text-lg">Available From</h3>
 
         {/* Show first few suppliers */}
-        {internalSuppliers.length > 0 && (
+        {price && (
           <div className="space-y-2">
             <h4 className="font-medium text-muted-foreground text-sm">
               Our Suppliers
             </h4>
             <div className="gap-2 grid xl:grid-cols-2">
-              {internalSuppliers.map((supplier) => (
-                <SupplierCard
-                  key={supplier.id}
-                  supplier={supplier}
-                  compact={true}
-                  isImported={isImported}
-                />
-              ))}
+              <SupplierCard
+                price={price}
+                compareAtPrice={compareAtPrice}
+                compact={true}
+                isImported={isImported}
+              />
             </div>
           </div>
         )}
 
         {/* Show first few marketplaces */}
-        {externalSuppliers.length > 0 && (
+        {suppliers.length > 0 && (
           <div className="space-y-2">
             <h4 className="font-medium text-muted-foreground text-sm">
               Marketplaces
             </h4>
             <div className="gap-2 grid xl:grid-cols-2">
-              {externalSuppliers.map((supplier) => (
+              {suppliers.map((supplier) => (
                 <MarketplaceCard
                   key={supplier.id}
                   supplier={supplier}

@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductFormData } from "@/app/[locale]/admin/products/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ import {
 import { CURRENCIES } from "@/types/constants";
 import { DollarSign } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FieldErrors, UseFormSetValue, FieldError } from "react-hook-form";
+import { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
 
 // Helper function to get error message
 const getErrorMessage = (error: any): string | undefined => {
@@ -25,22 +26,22 @@ const getErrorMessage = (error: any): string | undefined => {
 
 interface PricingSectionProps {
   setValue: UseFormSetValue<any>;
+  register: UseFormRegister<ProductFormData>;
   errors: FieldErrors<any>;
-  price?: number | null;
-  compareAtPrice?: number | null;
-  sellingPrice?: number | null;
   currency?: string;
 }
 
 export default function PricingSection({
+  register,
   setValue,
   errors,
-  price,
-  compareAtPrice,
-  sellingPrice,
   currency = "EUR",
 }: PricingSectionProps) {
   const t = useTranslations("products");
+
+  const selectedCurrency = currency
+    ? CURRENCIES.find((c) => c.code === currency)
+    : null;
 
   return (
     <Card className="bg-background">
@@ -61,7 +62,9 @@ export default function PricingSection({
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("select currency")} />
+              {selectedCurrency
+                ? `${selectedCurrency.symbol} ${selectedCurrency.name} ${selectedCurrency.code}`
+                : t("select currency")}
             </SelectTrigger>
             <SelectContent>
               {CURRENCIES.map((curr) => (
@@ -86,16 +89,11 @@ export default function PricingSection({
               <Input
                 id="price"
                 type="number"
-                step="0.01"
-                min="0"
+                step="0.5"
                 placeholder="0.00"
-                value={price || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setValue("price", value === "" ? null : parseFloat(value), {
-                    shouldDirty: true,
-                  });
-                }}
+                {...register("price", {
+                  setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                })}
               />
               <span className="top-1/2 right-3 absolute text-muted-foreground text-sm -translate-y-1/2 transform">
                 {CURRENCIES.find((c) => c.code === currency)?.symbol}
@@ -117,19 +115,12 @@ export default function PricingSection({
             <div className="relative">
               <Input
                 id="compareAtPrice"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
+                step="0.5"
                 placeholder="0.00"
-                value={compareAtPrice || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setValue(
-                    "compareAtPrice",
-                    value === "" ? null : parseFloat(value),
-                    { shouldDirty: true }
-                  );
-                }}
+                {...register("compareAtPrice", {
+                  setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                })}
               />
               <span className="top-1/2 right-3 absolute text-muted-foreground text-sm -translate-y-1/2 transform">
                 {CURRENCIES.find((c) => c.code === currency)?.symbol}
@@ -152,18 +143,11 @@ export default function PricingSection({
               <Input
                 id="sellingPrice"
                 type="number"
-                step="0.01"
-                min="0"
+                step="0.5"
                 placeholder="0.00"
-                value={sellingPrice || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setValue(
-                    "sellingPrice",
-                    value === "" ? null : parseFloat(value),
-                    { shouldDirty: true }
-                  );
-                }}
+                {...register("sellingPrice", {
+                  setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                })}
               />
               <span className="top-1/2 right-3 absolute text-muted-foreground text-sm -translate-y-1/2 transform">
                 {CURRENCIES.find((c) => c.code === currency)?.symbol}

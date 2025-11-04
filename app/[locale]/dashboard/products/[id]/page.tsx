@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { ImageGallery } from "./ImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { ProductSkeleton } from "./ProductSkeleton";
-import { ProvidersPreview } from "./ProvidersPreview";
+import { ProductSuppliers } from "./ProductSuppliers";
 import { Product } from "@/types";
 import axios from "axios";
 import useSWR from "swr";
@@ -162,7 +162,7 @@ export default function ProductPage() {
               onShare={handleShare}
             />
 
-            <ProvidersPreview
+            <ProductSuppliers
               suppliers={product?.suppliers || []}
               isImported={product?.productMappings?.length! > 0}
               onScrollToProviders={scrollToProviders}

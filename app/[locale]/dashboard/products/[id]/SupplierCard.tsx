@@ -18,13 +18,17 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 interface SupplierCardProps {
-  supplier: Supplier;
+  productId?: number;
+  price: number;
+  compareAtPrice?: number;
   compact?: boolean;
   isImported?: boolean;
 }
 
 export default function SupplierCard({
-  supplier,
+  productId,
+  price,
+  compareAtPrice,
   compact = true,
   isImported = false,
 }: SupplierCardProps) {
@@ -38,13 +42,13 @@ export default function SupplierCard({
   };
 
   const handleConfirmImport = async () => {
-    if (!supplier.productId) return;
+    if (!productId) return;
 
     setIsImporting(true);
 
     try {
       const response = await axios.post(
-        `/api/products/${supplier.productId}/import-to-shopify`
+        `/api/products/${productId}/import-to-shopify`
       );
       toast.success("Product successfully imported to Shopify!");
       router.push("/dashboard/imported-products");
@@ -82,9 +86,9 @@ export default function SupplierCard({
           </div>
         </div>
 
-        <div className="min-w-0 font-semibold text-primary-700 dark:text-primary-300 text-xs truncate">
+        {/* <div className="min-w-0 font-semibold text-primary-700 dark:text-primary-300 text-xs truncate">
           {supplier?.notes}
-        </div>
+        </div> */}
 
         {/* Price & Domain Row */}
         <div className="flex justify-between items-center gap-2 mt-auto">
@@ -94,7 +98,7 @@ export default function SupplierCard({
           >
             <div className="flex items-center gap-1">
               <span className="drop-shadow-sm font-bold text-white text-xs">
-                {formatPrice(supplier.price!)}
+                {formatPrice(price)}
               </span>
             </div>
           </div>

@@ -312,10 +312,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               <PricingSection
                 setValue={setValue}
                 errors={errors}
-                price={watch("price")}
-                compareAtPrice={watch("compareAtPrice")}
-                sellingPrice={watch("sellingPrice")}
                 currency={watch("currency")}
+                register={register}
               />
 
               {/* Multi-language Content */}

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentTranslation } from "@/lib/products";
 import {
+  formatPrice,
   formatPriceCents,
   getInternalSupplierPrice,
   getMediaUrl,
@@ -62,8 +63,6 @@ export default function ProductCard({
   const categoryTranslation = getCurrentTranslation(
     product?.category?.translations || []
   );
-
-  const sellingPrice = getInternalSupplierPrice(product?.suppliers || []);
 
   const isImported = (product.productMappings || []).length > 0;
 
@@ -149,7 +148,7 @@ export default function ProductCard({
             </h3>
           </div>
 
-          {categoryTranslation && (
+          {categoryTranslation?.title && (
             <Badge
               variant="secondary"
               className="!bg-yellow-500 text-white text-xs"
@@ -163,12 +162,9 @@ export default function ProductCard({
           </p>
 
           <div className="flex flex-wrap justify-between items-center gap-2 mt-auto ml-auto">
-            {sellingPrice && (
+            {product?.price && (
               <Badge className="px-3 py-1 border-0 bg-gradient-to-r from-primary-700 to-primary-500 font-semibold text-white text-sm transition-all duration-300 transform">
-                {formatPriceCents(
-                  sellingPrice * 100,
-                  product.currency || "USD"
-                )}
+                {formatPrice(product.price, product.currency || "USD")}
               </Badge>
             )}
           </div>
