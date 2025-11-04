@@ -8,6 +8,7 @@ import { z } from "zod";
 const updateSubscriptionSchema = z.object({
   planId: z.number().optional(),
   cancelAtPeriodEnd: z.boolean().optional(),
+  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]).optional(),
 });
 
 export async function GET(
@@ -30,7 +31,11 @@ export async function GET(
         userId,
       },
       include: {
-        plan: true,
+        plan: {
+          include: {
+            prices: true,
+          },
+        },
         user: {
           select: {
             id: true,
@@ -81,7 +86,11 @@ export async function PUT(
         userId,
       },
       include: {
-        plan: true,
+        plan: {
+          include: {
+            prices: true,
+          },
+        },
       },
     });
 
@@ -99,21 +108,40 @@ export async function PUT(
       );
     }
 
-    let newPlan = null;
+    let newPriceId = undefined;
 
-    if (updates.planId && updates.planId !== subscription.planId) {
-      newPlan = await prisma.plan.findUnique({
-        where: { id: updates.planId },
+    if (updates.planId || updates.interval) {
+      const targetPlanId = updates.planId || subscription.planId;
+      const targetInterval = updates.interval;
+
+      const plan = await prisma.plan.findUnique({
+        where: { id: targetPlanId },
+        include: { prices: true },
       });
 
-      if (!newPlan?.stripePriceId) {
+      if (!plan) {
         return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+      }
+
+      if (targetInterval) {
+        const planPrice = plan.prices.find(
+          (price) => price.interval === targetInterval && price.stripePriceId
+        );
+
+        if (!planPrice?.stripePriceId) {
+          return NextResponse.json(
+            { error: "No valid price found for the specified interval" },
+            { status: 400 }
+          );
+        }
+
+        newPriceId = planPrice.stripePriceId;
       }
     }
 
     // Update in Stripe only - database will be updated via webhook
     await updateSubscription(subscription.stripeSubscriptionId, {
-      priceId: newPlan?.stripePriceId || undefined,
+      priceId: newPriceId,
       cancelAtPeriodEnd: updates.cancelAtPeriodEnd,
     });
 

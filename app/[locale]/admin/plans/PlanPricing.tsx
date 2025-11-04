@@ -6,15 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlanInterval } from "@/types";
 import { useTranslations } from "next-intl";
-import { UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { FieldErrors, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { PlanFormData } from "./types";
 
 type PlanPricingProps = {
   setValue: UseFormSetValue<PlanFormData>;
   watch: UseFormWatch<PlanFormData>;
+  errors: FieldErrors<PlanFormData>;
 };
 
-export default function PlanPricing({ setValue, watch }: PlanPricingProps) {
+export default function PlanPricing({
+  setValue,
+  watch,
+  errors,
+}: PlanPricingProps) {
   const t = useTranslations("plans");
 
   const prices = watch("prices") || [];
@@ -68,6 +73,9 @@ export default function PlanPricing({ setValue, watch }: PlanPricingProps) {
     );
   };
 
+  console.log("-------------------- errors --------------------");
+  console.log(errors);
+
   return (
     <Card>
       <CardHeader>
@@ -114,7 +122,13 @@ export default function PlanPricing({ setValue, watch }: PlanPricingProps) {
                             : Number(e.target.value);
                         updatePrice(interval.value, "price", value);
                       }}
+                      className={errors.prices ? "border-red-500" : ""}
                     />
+                    {errors.prices && (
+                      <p className="mt-1 text-red-500 text-sm">
+                        {errors.prices.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>

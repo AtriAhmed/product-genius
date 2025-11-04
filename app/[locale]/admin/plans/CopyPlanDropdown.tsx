@@ -104,11 +104,11 @@ export default function CopyPlanDropdown({
             <DropdownMenuItem
               key={plan.id}
               onClick={() => handleCopyPlan(plan)}
-              className="flex flex-col items-start px-3 py-2"
+              className="flex gap-2 px-2 py-1"
             >
-              <div className="font-medium">{plan.name}</div>
-              <div className="text-muted-foreground text-sm">
-                {priceDisplay}
+              <div className="font-medium text-sm">{plan.name}</div>
+              <div className="font-medium text-muted-foreground text-sm">
+                ({priceDisplay})
               </div>
             </DropdownMenuItem>
           );

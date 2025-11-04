@@ -164,7 +164,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
 
         {/* Pricing */}
         <div className="mb-4">
-          <PlanPricing setValue={setValue} watch={watch} />
+          <PlanPricing setValue={setValue} watch={watch} errors={errors} />
         </div>
 
         {/* Features */}

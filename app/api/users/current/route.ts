@@ -36,13 +36,20 @@ export async function GET(request: NextRequest) {
             endsAt: true,
             trialEndsAt: true,
             cancelAtPeriodEnd: true,
+            interval: true,
             plan: {
               select: {
                 id: true,
                 name: true,
-                price: true,
-                interval: true,
                 features: true,
+                prices: {
+                  select: {
+                    id: true,
+                    interval: true,
+                    price: true,
+                    compareAtPrice: true,
+                  },
+                },
               },
             },
           },

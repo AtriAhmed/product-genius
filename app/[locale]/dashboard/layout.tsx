@@ -38,9 +38,7 @@ export default async function Layout({
             </div>
           </header>
           <div className="flex flex-col flex-1 gap-4 sm:px-4 py-4 pt-0">
-            <DashboardContent hasSubscription={!!user?.currentSubscription}>
-              {children}
-            </DashboardContent>
+            {children}
           </div>
         </SidebarInset>
       </SidebarProvider>

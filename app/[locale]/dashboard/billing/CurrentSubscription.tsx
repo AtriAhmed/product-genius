@@ -93,7 +93,7 @@ export default function CurrentSubscription() {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="h-24 bg-muted animate-pulse rounded-lg" />
+          <div className="h-24 rounded-lg bg-muted animate-pulse" />
         </CardContent>
       </Card>
     );
@@ -103,7 +103,7 @@ export default function CurrentSubscription() {
     <>
       <Card className="bg-background">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <div>
               <CardTitle className="flex items-center gap-2 text-base">
                 <CreditCard className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function CurrentSubscription() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPlanDialog(true)}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent h-7 w-7 p-0"
+                className="w-7 h-7 p-0 hover:bg-accent text-muted-foreground hover:text-foreground"
               >
                 <Info className="w-3.5 h-3.5" />
               </Button>
@@ -124,38 +124,43 @@ export default function CurrentSubscription() {
         </CardHeader>
         <CardContent>
           {!subscription ? (
-            <div className="text-center py-6">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mx-auto mb-2">
+            <div className="py-6 text-center">
+              <div className="flex justify-center items-center w-10 h-10 mx-auto mb-2 rounded-full bg-muted">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
               </div>
-              <h3 className="text-sm font-medium mb-1">
+              <h3 className="mb-1 font-medium text-sm">
                 {t("no subscription")}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {t("no subscription description")}
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {/* Plan Info */}
-              <div className="flex items-start justify-between">
+              <div className="flex justify-between items-start">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold">{plan?.name}</h3>
+                    <h3 className="font-semibold text-base">{plan?.name}</h3>
                     <Badge
                       variant={getStatusBadgeVariant(subscription.status || "")}
-                      className="text-xs py-0 h-5"
+                      className="h-5 py-0 text-xs"
                     >
                       {getStatusLabel(subscription?.status || "")}
                     </Badge>
                   </div>
-                  {plan && (
+                  {plan && subscription.interval && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="font-semibold text-sm">
-                        {formatPrice(plan?.price || 0)}
+                        {(() => {
+                          const currentPrice = plan.prices?.find(
+                            (price) => price.interval === subscription.interval
+                          );
+                          return formatPrice(currentPrice?.price || 0);
+                        })()}
                       </span>
                       <span className="text-xs">
-                        {getIntervalLabel(plan?.interval || "")}
+                        {getIntervalLabel(subscription.interval || "")}
                       </span>
                     </div>
                   )}
@@ -201,8 +206,8 @@ export default function CurrentSubscription() {
 
               {/* Cancel at period end notice */}
               {subscription.cancelAtPeriodEnd && (
-                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-2.5">
-                  <p className="text-xs text-orange-800 dark:text-orange-200">
+                <div className="p-2.5 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                  <p className="text-orange-800 dark:text-orange-200 text-xs">
                     Your subscription will be canceled at the end of the current
                     billing period.
                   </p>
@@ -218,6 +223,7 @@ export default function CurrentSubscription() {
           open={showPlanDialog}
           onOpenChange={setShowPlanDialog}
           plan={plan}
+          subscriptionInterval={subscription?.interval}
         />
       )}
     </>

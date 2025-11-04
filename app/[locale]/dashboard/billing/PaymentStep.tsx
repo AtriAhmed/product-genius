@@ -24,6 +24,7 @@ type Props = {
   loading: boolean;
   loadingCards: boolean;
   onNavigateToBilling: () => void;
+  selectedInterval?: string;
 };
 
 export default function PaymentStep({
@@ -35,8 +36,16 @@ export default function PaymentStep({
   loading,
   loadingCards,
   onNavigateToBilling,
+  selectedInterval,
 }: Props) {
   const t = useTranslations("pricing");
+
+  // Get the price for the selected interval
+  const selectedPrice = selectedInterval
+    ? plan.prices?.find(
+        (price) => price.interval === selectedInterval && price.price != null
+      ) || plan.prices?.find((price) => price.price != null)
+    : plan.prices?.find((price) => price.price != null);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-US", {
@@ -156,7 +165,7 @@ export default function PaymentStep({
         ) : (
           <>
             <Sparkles className="w-4 h-4 mr-2" />
-            {t("subscribe for")} {formatPrice(plan?.price || 0)}
+            {t("subscribe for")} {formatPrice(selectedPrice?.price || 0)}
           </>
         )}
       </Button>

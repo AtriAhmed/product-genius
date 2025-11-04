@@ -8,10 +8,18 @@ import { Check, CreditCard, Sparkles, Zap, Star } from "lucide-react";
 type Props = {
   plan: Plan;
   onNext: () => void;
+  selectedInterval?: string;
 };
 
-export default function ReviewStep({ plan, onNext }: Props) {
+export default function ReviewStep({ plan, onNext, selectedInterval }: Props) {
   const t = useTranslations("pricing");
+
+  // Get the price for the selected interval
+  const selectedPrice = selectedInterval
+    ? plan.prices?.find(
+        (price) => price.interval === selectedInterval && price.price != null
+      ) || plan.prices?.find((price) => price.price != null)
+    : plan.prices?.find((price) => price.price != null);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("en-US", {
@@ -41,10 +49,10 @@ export default function ReviewStep({ plan, onNext }: Props) {
             </div>
             <div className="px-3 py-2 rounded-xl bg-gradient-to-br from-primary-600 dark:from-primary-500 to-primary-700 dark:to-primary-600 shadow-lg text-white text-right">
               <div className="font-black text-xl">
-                {formatPrice(plan?.price || 0)}
+                {formatPrice(selectedPrice?.price || 0)}
               </div>
               <div className="opacity-90 font-semibold text-xs">
-                / {t(plan?.interval?.toLowerCase() || "")}
+                / {t(selectedPrice?.interval?.toLowerCase() || "")}
               </div>
             </div>
           </div>
@@ -90,12 +98,14 @@ export default function ReviewStep({ plan, onNext }: Props) {
               <span>
                 {t("plan")}: {plan.name}
               </span>
-              <span>{formatPrice(plan?.price || 0)}</span>
+              <span>{formatPrice(selectedPrice?.price || 0)}</span>
             </div>
             <Separator className="bg-gradient-to-r from-transparent via-primary-300 dark:via-primary-600 to-transparent" />
             <div className="flex justify-between bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 to-primary-700 dark:to-primary-500 font-bold text-transparent text-sm">
               <span>{t("total due today")}</span>
-              <span className="text-base">{formatPrice(plan?.price || 0)}</span>
+              <span className="text-base">
+                {formatPrice(selectedPrice?.price || 0)}
+              </span>
             </div>
           </div>
         </CardContent>

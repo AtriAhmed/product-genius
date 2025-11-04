@@ -33,11 +33,17 @@ type Props = {
   plan: Plan | null;
   isOpen: boolean;
   onClose: () => void;
+  selectedInterval?: string;
 };
 
 type Step = "review" | "payment" | "processing";
 
-export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
+export default function SubscriptionDialog({
+  plan,
+  isOpen,
+  onClose,
+  selectedInterval,
+}: Props) {
   const t = useTranslations("pricing");
   const router = useRouter();
   const [step, setStep] = useState<Step>("review");
@@ -81,7 +87,7 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
   };
 
   const handleSubscribe = async () => {
-    if (!plan || !selectedPaymentMethod) return;
+    if (!plan || !selectedPaymentMethod || !selectedInterval) return;
 
     setLoading(true);
     setError("");
@@ -91,9 +97,8 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
       const response = await axios.post("/api/subscriptions", {
         planId: plan.id,
         paymentMethodId: selectedPaymentMethod,
+        interval: selectedInterval,
       });
-
-      // Success - close dialog and refresh
 
       setTimeout(() => {
         router.refresh();
@@ -202,7 +207,11 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
 
             {/* Review Step */}
             {step === "review" && (
-              <ReviewStep plan={plan} onNext={handleNext} />
+              <ReviewStep
+                plan={plan}
+                onNext={handleNext}
+                selectedInterval={selectedInterval}
+              />
             )}
 
             {/* Payment Step */}
@@ -216,6 +225,7 @@ export default function SubscriptionDialog({ plan, isOpen, onClose }: Props) {
                 loading={loading}
                 loadingCards={loadingCards}
                 onNavigateToBilling={navigateToBilling}
+                selectedInterval={selectedInterval}
               />
             )}
 

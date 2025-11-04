@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Star, Sparkles, Crown } from "lucide-react";
-import { Plan, User, Subscription, PlanFeature } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,8 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Plan, PlanFeature, User } from "@/types";
+import { Check, Crown, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import SubscriptionDialog from "./SubscriptionDialog";
@@ -20,9 +20,15 @@ type Props = {
   plan: Plan;
   user?: User;
   onSelect?: (plan: Plan) => void;
+  selectedInterval?: string;
 };
 
-export default function PlanCard({ plan, user, onSelect }: Props) {
+export default function PlanCard({
+  plan,
+  user,
+  onSelect,
+  selectedInterval,
+}: Props) {
   const t = useTranslations("pricing");
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
 
@@ -30,6 +36,13 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
   console.log(user);
   const hasActiveSubscription = !!user?.currentSubscription;
   const isCurrentPlan = user?.currentSubscription?.plan?.id === plan.id;
+
+  // Get the price for the selected interval, fallback to first available price
+  const selectedPrice = selectedInterval
+    ? plan.prices?.find(
+        (price) => price.interval === selectedInterval && price.price != null
+      ) || plan.prices?.find((price) => price.price != null)
+    : plan.prices?.find((price) => price.price != null);
 
   const handleSelectPlan = () => {
     if (hasActiveSubscription) return;
@@ -80,14 +93,14 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
         </CardTitle>
 
         <div className="flex justify-center items-baseline gap-2">
-          {plan.oldPrice && (
+          {selectedPrice?.compareAtPrice && (
             <span className="font-medium text-muted-foreground text-sm sm:text-lg line-through">
-              {formatPrice(plan.oldPrice)}
+              {formatPrice(selectedPrice.compareAtPrice)}
             </span>
           )}
           <div className="flex items-baseline">
             <span className="bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 via-primary-700 dark:via-primary-500 to-primary-800 dark:to-primary-600 font-black text-transparent text-2xl sm:text-3xl">
-              {formatPrice(plan?.price || 0)}
+              {formatPrice(selectedPrice?.price || 0)}
             </span>
           </div>
         </div>
@@ -95,7 +108,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
         <div className="flex justify-center items-center gap-2">
           <div className="w-6 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent"></div>
           <p className="px-2 py-1 rounded-full bg-muted/50 font-semibold text-muted-foreground text-xs capitalize">
-            / {t(plan?.interval?.toLowerCase() || "")}
+            / {t(selectedPrice?.interval?.toLowerCase() || "")}
           </p>
           <div className="w-6 h-px bg-gradient-to-r from-transparent via-primary-400 to-transparent"></div>
         </div>
@@ -196,6 +209,7 @@ export default function PlanCard({ plan, user, onSelect }: Props) {
           plan={plan}
           isOpen={showSubscriptionDialog}
           onClose={() => setShowSubscriptionDialog(false)}
+          selectedInterval={selectedInterval}
         />
       </CardFooter>
     </Card>

@@ -10,6 +10,7 @@ import Stripe from "stripe";
 const createSubscriptionSchema = z.object({
   planId: z.number(),
   paymentMethodId: z.string(),
+  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]),
 });
 
 const subscriptionQuerySchema = z.object({
@@ -56,7 +57,11 @@ export async function GET(request: NextRequest) {
       prisma.subscription.findMany({
         where,
         include: {
-          plan: true,
+          plan: {
+            include: {
+              prices: true,
+            },
+          },
           user: {
             select: {
               id: true,
@@ -98,7 +103,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planId, paymentMethodId } = createSubscriptionSchema.parse(body);
+    const { planId, paymentMethodId, interval } =
+      createSubscriptionSchema.parse(body);
 
     if (!user?.stripeCustomerId) {
       return NextResponse.json(
@@ -107,14 +113,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get plan details
+    // Get plan details with prices
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
+      include: {
+        prices: true,
+      },
     });
 
-    if (!plan || !plan.stripePriceId) {
+    if (!plan) {
+      return NextResponse.json({ error: "Plan not found" }, { status: 400 });
+    }
+
+    // Find the price for the specified interval
+    const planPrice = plan.prices?.find(
+      (price) => price.interval === interval && price.stripePriceId
+    );
+
+    if (!planPrice?.stripePriceId) {
       return NextResponse.json(
-        { error: "Plan not found or invalid" },
+        { error: "No valid price found for the specified interval" },
         { status: 400 }
       );
     }
@@ -133,12 +151,14 @@ export async function POST(request: NextRequest) {
     // Database record will be created via webhook
     const stripeSubscription = await stripe.subscriptions.create({
       customer: user.stripeCustomerId,
-      items: [{ price: plan.stripePriceId }],
+      items: [{ price: planPrice.stripePriceId }],
       default_payment_method: paymentMethodId,
       expand: ["latest_invoice.payment_intent"],
       metadata: {
         userId: user.id.toString(),
         planId: plan.id.toString(),
+        interval: interval,
+        priceId: planPrice.id.toString(),
       },
     });
 

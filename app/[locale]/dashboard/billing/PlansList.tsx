@@ -64,18 +64,18 @@ export default function PlansList() {
         <CardContent>
           <div className="w-full max-w-7xl mx-auto">
             <div className="flex justify-center mb-12">
-              <div className="grid grid-cols-4 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-2xl p-2 shadow-xl">
+              <div className="grid grid-cols-4 p-2 border-2 border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-900 shadow-xl">
                 {intervals.map((interval) => (
                   <Skeleton
                     key={interval}
-                    className="h-12 w-20 rounded-xl mx-1"
+                    className="w-20 h-12 mx-1 rounded-xl"
                   />
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="gap-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-[520px] w-full rounded-3xl" />
+                <Skeleton key={i} className="w-full h-[520px] rounded-3xl" />
               ))}
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function PlansList() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="py-8 text-muted-foreground text-center">
             {t("failed to load plans")}
           </div>
         </CardContent>
@@ -104,15 +104,14 @@ export default function PlansList() {
 
   const plans = data.data || [];
 
-  const grouped = intervals.reduce((acc, interval) => {
-    acc[interval] = plans.filter((p) => p.interval === interval);
-    return acc;
-  }, {} as Record<string, Plan[]>);
-
-  // Filter intervals to only show those with plans
-  const availableIntervals = intervals.filter(
-    (interval) => grouped[interval]?.length > 0
-  );
+  // Get all available intervals from all plans that have prices with values
+  const availableIntervals = intervals.filter((interval) => {
+    return plans.some((plan) =>
+      plan.prices?.some(
+        (price) => price.interval === interval && price.price != null
+      )
+    );
+  });
 
   // Set default active interval to first available, or fallback to "MONTH"
   const defaultInterval =
@@ -129,7 +128,11 @@ export default function PlansList() {
       <CardContent>
         <div className="w-full max-w-7xl mx-auto">
           <Tabs
-            defaultValue={defaultInterval}
+            value={
+              availableIntervals.includes(activeInterval as any)
+                ? activeInterval
+                : defaultInterval
+            }
             onValueChange={setActiveInterval}
             className="w-full"
           >
@@ -156,7 +159,7 @@ export default function PlansList() {
                     data-[state=inactive]:hover:scale-102
                   `}
                     >
-                      <span className="relative z-10 flex items-center justify-center capitalize">
+                      <span className="z-10 relative flex justify-center items-center capitalize">
                         {t(interval.toLowerCase())}
                       </span>
                     </TabsTrigger>
@@ -167,21 +170,33 @@ export default function PlansList() {
 
             {availableIntervals.map((interval) => (
               <TabsContent key={interval} value={interval}>
-                <div className="grid sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] justify-center gap-x-2 gap-y-4">
-                  {grouped[interval].map((plan) => (
-                    <PlanCard key={plan.id} plan={plan} user={user} />
-                  ))}
+                <div className="justify-center gap-x-2 gap-y-4 grid sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
+                  {plans
+                    .filter((plan) =>
+                      plan.prices?.some(
+                        (price) =>
+                          price.interval === interval && price.price != null
+                      )
+                    )
+                    .map((plan) => (
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        user={user}
+                        selectedInterval={interval}
+                      />
+                    ))}
                 </div>
               </TabsContent>
             ))}
 
             {availableIntervals.length === 0 && (
-              <div className="text-center py-16">
+              <div className="py-16 text-center">
                 <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                  <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
                     <Star className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="mb-2 font-semibold text-foreground text-lg">
                     {t("no plans available")}
                   </h3>
                   <p className="text-muted-foreground">

@@ -17,8 +17,8 @@ const PlanFeatureSchema = z.object({
 const PlanPriceSchema = z.object({
   id: z.number().optional(), // For updating existing prices
   interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]),
-  price: z.number().optional(),
-  compareAtPrice: z.number().optional(),
+  price: z.number().optional().nullable(),
+  compareAtPrice: z.number().optional().nullable(),
 });
 
 const UpdatePlanSchema = z.object({
@@ -165,7 +165,7 @@ export async function PUT(
       // Create new Stripe prices
       const newPrices = await Promise.all(
         validatedData.prices.map(async (priceData) => {
-          if (priceData.price === undefined) {
+          if (priceData.price === undefined || priceData.price === null) {
             return {
               ...priceData,
               stripePriceId: null,

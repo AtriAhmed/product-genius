@@ -88,6 +88,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       data: {
         userId: user.id,
         planId: plan.id,
+        interval: subscription.metadata?.interval as any,
         stripeSubscriptionId: subscription.id,
         status: dbStatus,
         latestStripeInvoiceId: subscription.latest_invoice as string,
@@ -145,6 +146,11 @@ async function handleSubscriptionUpdated(subscription: any) {
     // Only update planId if we found a matching plan
     if (planId) {
       updateData.planId = planId;
+    }
+
+    // Update interval if provided in metadata
+    if (subscription.metadata?.interval) {
+      updateData.interval = subscription.metadata.interval;
     }
 
     await safeUpdateSubscription(

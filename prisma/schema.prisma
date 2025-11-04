@@ -161,6 +161,7 @@ model Subscription {
   userId                Int
   plan                  Plan               @relation(fields: [planId], references: [id])
   planId                Int
+  interval              PlanInterval? // Current billing interval
   stripeSubscriptionId  String?
   status                SubscriptionStatus @default(TRIALING)
   startsAt              DateTime?

@@ -122,6 +122,7 @@ export type Subscription = {
   id: number;
   userId?: number;
   planId?: number;
+  interval?: PlanInterval;
   stripeSubscriptionId?: string;
   status?: SubscriptionStatus;
   startsAt?: Date;
