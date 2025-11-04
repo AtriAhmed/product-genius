@@ -8,6 +8,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { getCurrentTranslation } from "@/lib/products";
 import { Package } from "lucide-react";
 import { FieldErrors, UseFormSetValue } from "react-hook-form";
 
@@ -39,15 +40,6 @@ export default function BasicInformation({
   categoryValue,
   isActive = true,
 }: BasicInformationProps) {
-  // Get category title in the first available language (preferably English)
-  const getCategoryTitle = (category: Category) => {
-    const enTranslation = category.translations.find((t) => t.locale === "en");
-    if (enTranslation) return enTranslation.title;
-
-    // Fallback to first available translation
-    return category.translations[0]?.title || `Category ${category.id}`;
-  };
-
   const selectedCategory = categoryValue
     ? categories.find((cat) => cat.id === categoryValue)
     : null;
@@ -62,26 +54,31 @@ export default function BasicInformation({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Category</label>
+          <label className="font-medium text-sm">Category</label>
           <Select
             value={categoryValue?.toString() || ""}
             onValueChange={(value) => {
-              setValue("categoryId", value ? parseInt(value) : undefined, {
-                shouldDirty: true,
-              });
+              setValue(
+                "categoryId",
+                value === "unclassified" ? undefined : parseInt(value),
+                {
+                  shouldDirty: true,
+                }
+              );
             }}
           >
             <SelectTrigger className="w-full">
               {selectedCategory
-                ? getCategoryTitle(selectedCategory)
+                ? getCurrentTranslation(selectedCategory?.translations)?.title
                 : "Select a category"}
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="unclassified">Unclassified</SelectItem>
               {categories?.length ? (
                 categories.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
-                    {getCategoryTitle(category)} ({category._count.products}{" "}
-                    products)
+                    {getCurrentTranslation(category?.translations)?.title} (
+                    {category._count.products} products)
                   </SelectItem>
                 ))
               ) : (
@@ -91,10 +88,10 @@ export default function BasicInformation({
           </Select>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex justify-between items-center">
           <div className="space-y-1">
-            <label className="text-sm font-medium">Active Status</label>
-            <p className="text-sm text-muted-foreground">
+            <label className="font-medium text-sm">Active Status</label>
+            <p className="text-muted-foreground text-sm">
               Control product visibility in your store
             </p>
           </div>
