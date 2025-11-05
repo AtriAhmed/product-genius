@@ -46,6 +46,7 @@ const createProductSchema = z.object({
   sellingPrice: z.number().positive().optional().nullable(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional().nullable(),
+  planIds: z.array(z.number().int().positive()).optional().default([]),
   isActive: z.boolean().default(true),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
@@ -87,6 +88,12 @@ export async function POST(request: NextRequest) {
         currency: validatedData.currency,
         categoryId: validatedData.categoryId,
         isActive: validatedData.isActive,
+        plans:
+          validatedData.planIds.length > 0
+            ? {
+                connect: validatedData.planIds.map((id) => ({ id })),
+              }
+            : undefined,
       },
     });
 
@@ -270,6 +277,11 @@ export async function POST(request: NextRequest) {
         suppliers: true,
         productOptions: true,
         productVariants: true,
+        plans: {
+          include: {
+            prices: true,
+          },
+        },
       },
     });
 
@@ -316,6 +328,7 @@ const getProductsSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(10),
   search: z.string().optional(),
   categoryId: z.coerce.number().optional(),
+  planId: z.coerce.number().optional(),
   isActive: z.enum(["true", "false"]).optional(),
   sortBy: z
     .enum(["createdAt", "updatedAt", "price", "compareAtPrice", "sellingPrice"])
@@ -336,6 +349,7 @@ export async function GET(request: NextRequest) {
       limit: searchParams.get("limit") || undefined,
       search: searchParams.get("search") || undefined,
       categoryId: searchParams.get("categoryId") || undefined,
+      planId: searchParams.get("planId") || undefined,
       isActive: searchParams.get("isActive") || undefined,
       sortBy: searchParams.get("sortBy") || undefined,
       sortOrder: searchParams.get("sortOrder") || undefined,
@@ -357,6 +371,14 @@ export async function GET(request: NextRequest) {
 
     if (query.categoryId) {
       where.categoryId = query.categoryId;
+    }
+
+    if (query.planId) {
+      where.plans = {
+        some: {
+          id: query.planId,
+        },
+      };
     }
 
     if (query.isActive) {
@@ -400,6 +422,11 @@ export async function GET(request: NextRequest) {
           productMappings: {
             where: {
               userId: parseInt(user.id),
+            },
+          },
+          plans: {
+            include: {
+              prices: true,
             },
           },
         },

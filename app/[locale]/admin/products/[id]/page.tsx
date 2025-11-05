@@ -28,6 +28,11 @@ async function getProduct(id: number): Promise<Product | null> {
             },
           },
         },
+        plans: {
+          include: {
+            prices: true,
+          },
+        },
         suppliers: true,
         productOptions: true,
       },

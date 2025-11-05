@@ -84,5 +84,9 @@
   "no image": "Aucune image",
   "name": "Nom",
   "actions": "Actions",
-  "view supplier": "Voir le fournisseur"
+  "view supplier": "Voir le fournisseur",
+  "select plans": "Sélectionner les plans",
+  "select all": "Tout sélectionner",
+  "clear all": "Tout effacer",
+  "no plans available": "Aucun plan disponible"
 }

@@ -77,5 +77,6 @@
   "failed to create subscription": "Failed to create subscription",
   "current plan": "Current Plan",
   "already subscribed": "Already Subscribed",
-  "subscription created successfully": "Subscription created successfully"
+  "subscription created successfully": "Subscription created successfully",
+  "included": "Included"
 }

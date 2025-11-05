@@ -6,6 +6,7 @@ import MultiLanguageForm from "@/app/[locale]/admin/products/ProductContentForm"
 import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
+import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
 import {
   ProductFormData,
   productFormSchema,
@@ -14,7 +15,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
-import { Marketplace, Product } from "@/types";
+import { Marketplace, Plan, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import {
@@ -68,13 +69,14 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     reset,
     formState: { errors, isValid, isDirty },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(productFormSchema) as any,
     defaultValues: {
       price: product?.price || undefined,
       compareAtPrice: product?.compareAtPrice || undefined,
       sellingPrice: product?.sellingPrice || undefined,
       currency: product?.currency || "EUR",
       categoryId: product?.categoryId || undefined,
+      planIds: product?.plans?.map((p) => p.id) || [],
       isActive: product?.isActive ?? true,
       translations: product?.translations || [
         { locale: "en", title: "", description: "" },
@@ -107,6 +109,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         sellingPrice: product.sellingPrice,
         currency: product.currency || "EUR",
         categoryId: product.categoryId,
+        planIds: product.plans?.map((p: Plan) => p.id) || [],
         isActive: product.isActive ?? true,
         translations: product.translations,
         media: product.media,
@@ -125,9 +128,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         sellingPrice: undefined,
         currency: "EUR",
         categoryId: undefined,
+        planIds: [],
         isActive: true,
         translations: [{ locale: "en", title: "", description: "" }],
         media: [],
+        suppliers: [],
         productOptions: [],
       });
     }
@@ -314,6 +319,17 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 errors={errors}
                 currency={watch("currency")}
                 register={register}
+              />
+
+              {/* Plan Selection */}
+              <PlanSelector
+                selectedPlanIds={watch("planIds") || []}
+                onChange={(planIds) => {
+                  setValue("planIds", planIds, {
+                    shouldDirty: true,
+                  });
+                }}
+                error={errors.planIds?.message}
               />
 
               {/* Multi-language Content */}

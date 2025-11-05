@@ -107,9 +107,7 @@ export default function PlansList() {
   // Get all available intervals from all plans that have prices with values
   const availableIntervals = intervals.filter((interval) => {
     return plans.some((plan) =>
-      plan.prices?.some(
-        (price) => price.interval === interval && price.price != null
-      )
+      plan.prices?.some((price) => price.interval === interval && !!price.price)
     );
   });
 

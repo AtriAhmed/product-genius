@@ -50,6 +50,7 @@ const updateProductSchema = z.object({
   sellingPrice: z.number().gte(0).optional().nullable(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional().nullable(),
+  planIds: z.array(z.number().int().positive()).optional().default([]),
   isActive: z.boolean(),
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
@@ -103,6 +104,11 @@ export async function GET(
           },
           include: {
             shopifyStore: true,
+          },
+        },
+        plans: {
+          include: {
+            prices: true,
           },
         },
       },
@@ -352,6 +358,10 @@ export async function PUT(
         currency: validatedData.currency || null,
         categoryId: validatedData.categoryId || null,
         isActive: validatedData.isActive,
+        plans: {
+          set: [], // First disconnect all existing plans
+          connect: validatedData.planIds.map((id) => ({ id })), // Then connect the new ones
+        },
         translations: {
           deleteMany: {}, // Remove existing translations
           create: validatedData.translations.map((translation) => ({
@@ -399,6 +409,11 @@ export async function PUT(
         suppliers: true,
         productOptions: true,
         productVariants: true,
+        plans: {
+          include: {
+            prices: true,
+          },
+        },
       },
     });
 

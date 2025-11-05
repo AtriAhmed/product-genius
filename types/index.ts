@@ -205,6 +205,7 @@ export type Product = {
   productVariants?: ProductVariant[]; // new
   productMappings?: ProductMapping[]; // matches schema name
   variantMappings?: VariantMapping[]; // new
+  plans?: Plan[];
 };
 
 export type ProductOption = {

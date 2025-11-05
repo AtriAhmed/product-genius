@@ -37,6 +37,7 @@ export default function PlanCard({
   console.log(user);
   const hasActiveSubscription = !!user?.currentSubscription;
   const isCurrentPlan = user?.currentSubscription?.plan?.id === plan.id;
+  const isFreePlan = plan.prices?.every((price) => price.price === 0);
 
   // Get the price for the selected interval, fallback to first available price
   const selectedPrice = selectedInterval
@@ -179,7 +180,7 @@ export default function PlanCard({
               : "outline"
           }
           onClick={handleSelectPlan}
-          disabled={hasActiveSubscription}
+          disabled={hasActiveSubscription || isFreePlan}
         >
           <span
             className={`flex items-center justify-center gap-2 ${
@@ -189,7 +190,9 @@ export default function PlanCard({
             {!hasActiveSubscription && plan.mostPopular && (
               <Star className="w-3 h-3 fill-current" />
             )}
-            {hasActiveSubscription
+            {isFreePlan
+              ? t("included")
+              : hasActiveSubscription
               ? isCurrentPlan
                 ? t("current plan")
                 : t("already subscribed")

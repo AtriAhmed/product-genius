@@ -28,6 +28,7 @@ export const productFormSchema = z.object({
   sellingPrice: z.number().gte(0).optional().nullable(),
   currency: z.string().length(3).optional(),
   categoryId: z.number().int().positive().optional().nullable(),
+  planIds: z.array(z.number().positive()).default([]),
   isActive: z.boolean(),
   translations: z
     .array(

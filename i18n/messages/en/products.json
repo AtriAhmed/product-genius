@@ -189,5 +189,9 @@
   "active status": "Active Status",
   "control product visibility": "Control product visibility in your store",
   "suggested selling price": "Suggested Selling Price",
-  "suggested price for customers": "Suggested price for customers"
+  "suggested price for customers": "Suggested price for customers",
+  "select plans": "Select Plans",
+  "select all": "Select All",
+  "clear all": "Clear All",
+  "no plans available": "No plans available"
 }
