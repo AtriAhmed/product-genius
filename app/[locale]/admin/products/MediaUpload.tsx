@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Upload, Image as ImageIcon, Video, Plus, Edit } from "lucide-react";
 import { cn, getMediaUrl } from "@/lib/utils";
 import MediaPreviewDialog from "./MediaPreviewDialog";
@@ -16,12 +17,7 @@ import {
   DragStartEvent,
   DragOverlay,
 } from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  rectSortingStrategy,
-} from "@dnd-kit/sortable";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { generateVideoPoster } from "@/lib/media";
@@ -54,20 +50,8 @@ interface SortableMediaItemProps {
   onPreview: (item: MediaItem) => void;
 }
 
-function SortableMediaItem({
-  item,
-  index,
-  onRemove,
-  onPreview,
-}: SortableMediaItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
+function SortableMediaItem({ item, index, onRemove, onPreview }: SortableMediaItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -81,55 +65,40 @@ function SortableMediaItem({
       {...attributes}
       {...listeners}
       className={cn(
-        "relative group aspect-square rounded-lg border-2 border-dashed border-transparent hover:border-primary/50 cursor-move",
+        "group relative aspect-square border-2 border-transparent hover:border-primary/50 border-dashed rounded-lg cursor-move",
         isDragging && "opacity-50 z-10" // Reduce opacity when dragging instead of hiding
       )}
     >
-      <div className="relative w-full h-full rounded-lg border bg-muted overflow-hidden">
+      <div className="relative w-full h-full overflow-hidden border rounded-lg bg-muted">
         {/* Media Preview */}
         {item.type === "VIDEO" ? (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <div className="flex justify-center items-center w-full h-full bg-gray-100">
             {item.poster ? (
-              <img
-                src={getMediaUrl(item.poster)}
-                alt="Video thumbnail"
-                className="w-full h-full object-cover"
-              />
+              <img src={getMediaUrl(item.poster)} alt="Video thumbnail" className="w-full h-full object-cover" />
             ) : (
-              <video
-                src={getMediaUrl(item.url!)}
-                className="w-full h-full object-cover"
-              />
+              <video src={getMediaUrl(item.url!)} className="w-full h-full object-cover" />
             )}
           </div>
         ) : (
-          <img
-            src={getMediaUrl(item.url!)}
-            alt="Media preview"
-            className="w-full h-full object-cover"
-          />
+          <img src={getMediaUrl(item.url!)} alt="Media preview" className="w-full h-full object-cover" />
         )}
 
         {/* Media Type Badge */}
-        <div className="absolute top-2 left-2">
-          <div className="bg-black/50 rounded px-2 py-1 text-xs text-white flex items-center gap-1">
-            {item.type === "VIDEO" ? (
-              <Video className="w-3 h-3" />
-            ) : (
-              <ImageIcon className="w-3 h-3" />
-            )}
+        <div className="top-2 left-2 absolute">
+          <div className="flex items-center gap-1 px-2 py-1 rounded bg-black/50 text-white text-xs">
+            {item.type === "VIDEO" ? <Video className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
           </div>
         </div>
 
         {/* Sort Order Badge */}
-        <div className="absolute top-2 right-2">
-          <div className="bg-black/50 rounded-full w-6 h-6 flex items-center justify-center text-xs text-white font-medium">
+        <div className="top-2 right-2 absolute">
+          <div className="flex justify-center items-center w-6 h-6 rounded-full bg-black/50 font-medium text-white text-xs">
             {index + 1}
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="right-2 bottom-2 absolute flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             type="button"
             variant="secondary"
@@ -138,7 +107,7 @@ function SortableMediaItem({
               e.stopPropagation();
               onPreview(item);
             }}
-            className="h-8 w-8 p-0"
+            className="w-8 h-8 p-0"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -150,14 +119,14 @@ function SortableMediaItem({
               e.stopPropagation();
               onRemove(item.id);
             }}
-            className="h-8 w-8 p-0"
+            className="w-8 h-8 p-0"
           >
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {/* File Info */}
-        {/* <div className="absolute bottom-2 left-2 bg-black/50 rounded px-2 py-1 text-xs text-white max-w-[calc(100%-3rem)]">
+        {/* <div className="bottom-2 left-2 absolute max-w-[calc(100%-3rem)] px-2 py-1 rounded bg-black/50 text-white text-xs">
           {item.file && (
             <p className="text-gray-300">
               {(item.file.size / 1024 / 1024).toFixed(2)} MB
@@ -180,9 +149,7 @@ export default function MediaUpload({
   const [dragOver, setDragOver] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-  const [selectedMediaItem, setSelectedMediaItem] = useState<MediaItem | null>(
-    null
-  );
+  const [selectedMediaItem, setSelectedMediaItem] = useState<MediaItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
@@ -216,9 +183,7 @@ export default function MediaUpload({
     });
 
     if (!isValidType) {
-      return `File type not supported. Accepted types: ${acceptedTypes.join(
-        ", "
-      )}`;
+      return `File type not supported. Accepted types: ${acceptedTypes.join(", ")}`;
     }
 
     return null;
@@ -275,19 +240,10 @@ export default function MediaUpload({
         onChange([...value, ...newMedia]);
       }
     },
-    [
-      value,
-      onChange,
-      maxFiles,
-      validateFile,
-      createPreviewUrl,
-      generateVideoPoster,
-    ]
+    [value, onChange, maxFiles, validateFile, createPreviewUrl, generateVideoPoster]
   );
 
-  const handleFileInput = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileInput = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
       await handleFilesSelect(files);
@@ -370,132 +326,133 @@ export default function MediaUpload({
   };
 
   const handleUpdateMedia = (updatedItem: MediaItem) => {
-    const newItems = value.map((item) =>
-      item.id === updatedItem.id ? updatedItem : item
-    );
+    const newItems = value.map((item) => (item.id === updatedItem.id ? updatedItem : item));
     onChange(newItems);
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Upload Area - Reduced Height */}
-      <div
-        className={cn(
-          "border-2 border-dashed rounded-lg p-4 text-center transition-colors",
-          dragOver
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-muted-foreground/50",
-          value.length >= maxFiles && "opacity-50 pointer-events-none"
-        )}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-        <div className="space-y-1">
-          <p className="text-sm font-medium">
-            Drop files here or click to upload
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Images and videos up to {maxFileSize}MB • {value.length}/{maxFiles}{" "}
-            files
-          </p>
-        </div>
-
-        <div className="flex gap-2 justify-center mt-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={value.length >= maxFiles}
+    <Card className="bg-background">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ImageIcon className="w-5 h-5" />
+          Product Media
+        </CardTitle>
+        <p className="text-muted-foreground text-sm">Upload images and videos</p>
+      </CardHeader>
+      <CardContent>
+        <div className={cn("space-y-4", className)}>
+          {/* Upload Area - Reduced Height */}
+          <div
+            className={cn(
+              "p-4 border-2 border-dashed rounded-lg text-center transition-colors",
+              dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-muted-foreground/50",
+              value.length >= maxFiles && "opacity-50 pointer-events-none"
+            )}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
           >
-            <Plus className="w-3 h-3 mr-1" />
-            Choose Files
-          </Button>
-        </div>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept={acceptedTypes.join(",")}
-          onChange={handleFileInput}
-          className="hidden"
-        />
-      </div>
-
-      {/* Media Grid with DnD */}
-      {value.length > 0 && (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={value.map((item) => item.id)}
-            strategy={rectSortingStrategy}
-          >
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {value.map((item, index) => (
-                <SortableMediaItem
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  onRemove={removeItem}
-                  onPreview={handlePreviewMedia}
-                />
-              ))}
+            <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+            <div className="space-y-1">
+              <p className="font-medium text-sm">Drop files here or click to upload</p>
+              <p className="text-muted-foreground text-xs">
+                Images and videos up to {maxFileSize}MB • {value.length}/{maxFiles} files
+              </p>
             </div>
-          </SortableContext>
 
-          <DragOverlay>
-            {activeId ? (
-              <div className="relative aspect-square rounded-lg border bg-muted overflow-hidden opacity-90 shadow-lg">
-                {(() => {
-                  const activeItem = value.find((item) => item.id === activeId);
-                  if (!activeItem) return null;
+            <div className="flex justify-center gap-2 mt-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={value.length >= maxFiles}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Choose Files
+              </Button>
+            </div>
 
-                  return activeItem.type === "VIDEO" ? (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      {activeItem.poster ? (
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={acceptedTypes.join(",")}
+              onChange={handleFileInput}
+              className="hidden"
+            />
+          </div>
+
+          {/* Media Grid with DnD */}
+          {value.length > 0 && (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={value.map((item) => item.id)} strategy={rectSortingStrategy}>
+                <div className="gap-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {value.map((item, index) => (
+                    <SortableMediaItem
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      onRemove={removeItem}
+                      onPreview={handlePreviewMedia}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+
+              <DragOverlay>
+                {activeId ? (
+                  <div className="relative aspect-square overflow-hidden border rounded-lg bg-muted opacity-90 shadow-lg">
+                    {(() => {
+                      const activeItem = value.find((item) => item.id === activeId);
+                      if (!activeItem) return null;
+
+                      return activeItem.type === "VIDEO" ? (
+                        <div className="flex justify-center items-center w-full h-full bg-gray-100">
+                          {activeItem.poster ? (
+                            <img
+                              src={getMediaUrl(activeItem.poster)}
+                              alt="Video thumbnail"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Video className="w-12 h-12 text-muted-foreground" />
+                          )}
+                        </div>
+                      ) : (
                         <img
-                          src={getMediaUrl(activeItem.poster)}
-                          alt="Video thumbnail"
+                          src={getMediaUrl(activeItem.url!)}
+                          alt="Media preview"
                           className="w-full h-full object-cover"
                         />
-                      ) : (
-                        <Video className="w-12 h-12 text-muted-foreground" />
-                      )}
-                    </div>
-                  ) : (
-                    <img
-                      src={getMediaUrl(activeItem.url!)}
-                      alt="Media preview"
-                      className="w-full h-full object-cover"
-                    />
-                  );
-                })()}
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      )}
+                      );
+                    })()}
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          )}
 
-      {value.length > 0 && (
-        <div className="text-xs text-muted-foreground text-center">
-          <strong>Drag and drop</strong> to reorder media files
+          {value.length > 0 && (
+            <div className="text-muted-foreground text-xs text-center">
+              <strong>Drag and drop</strong> to reorder media files
+            </div>
+          )}
+
+          {/* Media Preview Dialog */}
+          <MediaPreviewDialog
+            open={previewDialogOpen}
+            onOpenChange={setPreviewDialogOpen}
+            mediaItem={selectedMediaItem}
+            onUpdateMedia={handleUpdateMedia}
+          />
         </div>
-      )}
-
-      {/* Media Preview Dialog */}
-      <MediaPreviewDialog
-        open={previewDialogOpen}
-        onOpenChange={setPreviewDialogOpen}
-        mediaItem={selectedMediaItem}
-        onUpdateMedia={handleUpdateMedia}
-      />
-    </div>
+      </CardContent>
+    </Card>
   );
 }

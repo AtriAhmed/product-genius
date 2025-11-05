@@ -2,7 +2,7 @@
 
 import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
 import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
-import MultiLanguageForm from "@/app/[locale]/admin/products/ProductContentForm";
+import ProductContentForm from "@/app/[locale]/admin/products/ProductContentForm";
 import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
@@ -294,51 +294,28 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               />
 
               {/* Multi-language Content */}
-              <Card className="bg-background">
-                <CardHeader className="mb-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="w-5 h-5" />
-                    {t("product content")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MultiLanguageForm
-                    value={watch("translations") || []}
-                    onChange={(newTranslations) => {
-                      setValue("translations", newTranslations, {
-                        shouldDirty: true,
-                      });
-                    }}
-                    requiredLanguages={[]}
-                  />
-                  {errors.translations && (
-                    <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>
-                  )}
-                </CardContent>
-              </Card>
+              <ProductContentForm
+                value={watch("translations") || []}
+                onChange={(newTranslations) => {
+                  setValue("translations", newTranslations, {
+                    shouldDirty: true,
+                  });
+                }}
+                requiredLanguages={[]}
+              />
+              {errors.translations && <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>}
 
               {/* Media Upload */}
-              <Card className="bg-background">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5" />
-                    {t("product media")}
-                  </CardTitle>
-                  <p className="text-muted-foreground text-sm">{t("upload images and videos")}</p>
-                </CardHeader>
-                <CardContent>
-                  <MediaUpload
-                    value={watch("media") || []}
-                    onChange={(newMedia) => {
-                      setValue("media", newMedia, {
-                        shouldDirty: true,
-                      });
-                    }}
-                    maxFiles={100}
-                    maxFileSize={500}
-                  />
-                </CardContent>
-              </Card>
+              <MediaUpload
+                value={watch("media") || []}
+                onChange={(newMedia) => {
+                  setValue("media", newMedia, {
+                    shouldDirty: true,
+                  });
+                }}
+                maxFiles={100}
+                maxFileSize={500}
+              />
 
               {/* Product Variants */}
               <ProductVariants

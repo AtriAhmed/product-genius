@@ -6,11 +6,11 @@ export interface OptionDefinition {
 }
 
 export interface GeneratedVariant {
-  option1?: string;
-  option2?: string;
-  option3?: string;
+  option1?: string | null;
+  option2?: string | null;
+  option3?: string | null;
   price: string;
-  sku?: string;
+  sku?: string | null;
 }
 
 /**
@@ -26,9 +26,7 @@ export interface GeneratedVariant {
  * //   ['Blue', 'S'], ['Blue', 'M'], ['Blue', 'L']
  * // ]
  */
-export function generateVariantCombinations(
-  options: OptionDefinition[]
-): string[][] {
+export function generateVariantCombinations(options: OptionDefinition[]): string[][] {
   if (options.length === 0) return [[]];
   if (options.length > 3) {
     throw new Error("Shopify supports maximum 3 options per product");
@@ -62,11 +60,7 @@ export function generateVariantCombinations(
  * generateSku('TSHIRT', ['Red', 'Small'])
  * // Returns: "TSHIRT-RED-SM"
  */
-export function generateSku(
-  productCode: string,
-  optionValues: string[],
-  addPrefix: boolean = true
-): string {
+export function generateSku(productCode: string, optionValues: string[], addPrefix: boolean = true): string {
   const prefix = addPrefix ? "PG-" : "";
 
   const sanitized = optionValues.map(
@@ -113,10 +107,7 @@ export function generateVariants(
 /**
  * Create a simple product with one variant (no options)
  */
-export function generateSimpleVariant(
-  price: string,
-  sku?: string
-): GeneratedVariant {
+export function generateSimpleVariant(price: string, sku?: string): GeneratedVariant {
   return {
     price,
     ...(sku && { sku: `PG-${sku}` }),
@@ -143,9 +134,7 @@ export function validateVariants(
   // Check for duplicate option combinations
   const combinations = new Set<string>();
   variants.forEach((variant, index) => {
-    const combo = [variant.option1, variant.option2, variant.option3]
-      .filter(Boolean)
-      .join("|");
+    const combo = [variant.option1, variant.option2, variant.option3].filter(Boolean).join("|");
 
     if (combinations.has(combo)) {
       errors.push(`Duplicate variant at index ${index}: ${combo}`);
@@ -156,24 +145,16 @@ export function validateVariants(
   // Check if option values match defined options
   if (options.length > 0) {
     variants.forEach((variant, index) => {
-      const variantOptions = [
-        variant.option1,
-        variant.option2,
-        variant.option3,
-      ].filter(Boolean);
+      const variantOptions = [variant.option1, variant.option2, variant.option3].filter(Boolean);
 
       variantOptions.forEach((value, optIndex) => {
         if (!options[optIndex]) {
-          errors.push(
-            `Variant ${index} has option${optIndex + 1} but no option defined`
-          );
+          errors.push(`Variant ${index} has option${optIndex + 1} but no option defined`);
           return;
         }
 
         if (!options[optIndex].values.includes(value!)) {
-          errors.push(
-            `Variant ${index}: "${value}" is not in ${options[optIndex].name} values`
-          );
+          errors.push(`Variant ${index}: "${value}" is not in ${options[optIndex].name} values`);
         }
       });
     });
@@ -188,10 +169,7 @@ export function validateVariants(
 /**
  * Format variants for Shopify API
  */
-export function formatVariantsForShopify(
-  variants: GeneratedVariant[],
-  inventory: number = 0
-) {
+export function formatVariantsForShopify(variants: GeneratedVariant[], inventory: number = 0) {
   return variants.map((variant) => ({
     ...(variant.option1 && { option1: variant.option1 }),
     ...(variant.option2 && { option2: variant.option2 }),

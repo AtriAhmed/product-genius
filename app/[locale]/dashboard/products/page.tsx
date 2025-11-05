@@ -22,12 +22,7 @@ interface ProductsResponse {
   pages: number;
 }
 
-async function fetcher(
-  page: number,
-  limit: number,
-  search: string,
-  isActive: boolean | undefined
-) {
+async function fetcher(page: number, limit: number, search: string, isActive: boolean | undefined) {
   const response = await axios.get("/api/products", {
     params: { page, limit, search, isActive: isActive },
   });
@@ -47,8 +42,7 @@ export default function UserProductsPage() {
   const [page, setPage] = useState(1);
   const limit = 12; // Show 12 products per page in card layout
 
-  const isActive =
-    filter === "all" ? undefined : filter === "active" ? true : false;
+  const isActive = filter === "all" ? undefined : filter === "active" ? true : false;
 
   // SWR hook for data fetching
   const { data, error, isLoading } = useSWR<ProductsResponse>(
@@ -73,10 +67,8 @@ export default function UserProductsPage() {
     // Client-side sorting for unsupported API sorts
     if (sortBy === "title") {
       sortedProducts = sortedProducts.sort((a, b) => {
-        const aTitle =
-          getCurrentTranslation(a?.translations || [])?.title || "";
-        const bTitle =
-          getCurrentTranslation(b?.translations || [])?.title || "";
+        const aTitle = getCurrentTranslation(a?.translations || [])?.title || "";
+        const bTitle = getCurrentTranslation(b?.translations || [])?.title || "";
         const comparison = aTitle.localeCompare(bTitle);
         return sortOrder === "asc" ? comparison : -comparison;
       });
@@ -123,9 +115,7 @@ export default function UserProductsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-bold text-3xl tracking-tight">{t("products")}</h1>
-          <p className="mt-2 text-muted-foreground">
-            {t("discover our amazing collection of products")}
-          </p>
+          <p className="mt-2 text-muted-foreground">{t("discover our amazing collection of products")}</p>
         </div>
 
         {/* Filters */}
@@ -147,15 +137,11 @@ export default function UserProductsPage() {
         />
 
         {/* Products Grid */}
-        <ProductsGrid products={[]} isLoading={isLoading} />
+        <ProductsGrid products={products} isLoading={isLoading} />
 
         {/* Pagination */}
         {!isLoading && products.length > 0 && pagination.pages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.pages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
 
         {/* Results Count */}

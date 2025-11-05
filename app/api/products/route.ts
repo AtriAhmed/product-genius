@@ -4,14 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { uploadFile, getMediaType } from "@/lib/file-upload";
-import {
-  generateVariants,
-  validateVariants,
-  type OptionDefinition,
-} from "@/lib/variant-generator";
+import { generateVariants, validateVariants, type OptionDefinition } from "@/lib/variant-generator";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
-// Validation schemas
+// Validation schemas (unchanged media/translation/supplier/productOption)
 const mediaSchema = z.object({
   url: z.string().min(1),
   type: z.enum(["IMAGE", "VIDEO"]),
@@ -37,7 +33,18 @@ const supplierSchema = z.object({
 
 const productOptionSchema = z.object({
   name: z.string().min(1),
-  values: z.array(z.string().min(1)).min(1).max(50), // Max 50 values per option
+  values: z.array(z.string().min(1)).min(1).max(50),
+});
+
+// Variant schema: allow numeric or numeric-string price, optional sku/inventory/trackInventory
+const variantSchema = z.object({
+  option1: z.string().nullable().optional(),
+  option2: z.string().nullable().optional(),
+  option3: z.string().nullable().optional(),
+  price: z.union([z.number().positive(), z.string().regex(/^\d+(\.\d+)?$/)]),
+  sku: z.string().optional().nullable(),
+  inventory: z.number().int().min(0).optional().default(0),
+  trackInventory: z.boolean().optional().default(false),
 });
 
 const createProductSchema = z.object({
@@ -51,7 +58,9 @@ const createProductSchema = z.object({
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
   suppliers: z.array(supplierSchema).optional().default([]),
-  productOptions: z.array(productOptionSchema).max(3).optional().default([]), // Max 3 options per product (Shopify limit)
+  productOptions: z.array(productOptionSchema).max(3).optional().default([]),
+  // New: variants are provided from client when you want to control prices/skus
+  variants: z.array(variantSchema).optional().default([]),
 });
 
 export async function POST(request: NextRequest) {
@@ -68,15 +77,12 @@ export async function POST(request: NextRequest) {
     // Extract JSON data from form
     const productDataString = formData.get("productData") as string;
     if (!productDataString) {
-      return NextResponse.json(
-        { error: "Product data is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Product data is required" }, { status: 400 });
     }
 
     const productData = JSON.parse(productDataString);
 
-    // Validate the product data
+    // Validate the product data (now includes variants)
     const validatedData = createProductSchema.parse(productData);
 
     // Create the product first
@@ -97,25 +103,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create a map from the media array (sortOrder -> mediaObject)
-    const mediaMap = new Map(
-      validatedData.media.map((media, index) => [index, { ...media }])
-    );
+    // (file upload processing for media/posters unchanged)
+    const mediaMap = new Map(validatedData.media.map((media, index) => [index, { ...media }]));
 
-    // Process form data entries for file uploads
     for (const [key, value] of formData.entries()) {
       if (key.startsWith("media_") && value instanceof File) {
         const file = value as File;
         const index = parseInt(key.split("_")[1]);
 
         if (!isNaN(index) && mediaMap.has(index)) {
-          // Upload the media file
           const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
           const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
-          const allowedExtensions = [
-            ...allowedImageExtensions,
-            ...allowedVideoExtensions,
-          ];
+          const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
           const uploadResult = await uploadFile(file, {
             directory: "uploads/products",
@@ -124,7 +123,6 @@ export async function POST(request: NextRequest) {
             allowedExtensions,
           });
 
-          // Update the URL in the media map
           const mediaObject = mediaMap.get(index)!;
           mediaObject.url = uploadResult.url;
           mediaObject.type = getMediaType(file);
@@ -134,7 +132,6 @@ export async function POST(request: NextRequest) {
         const index = parseInt(key.split("_")[1]);
 
         if (!isNaN(index) && mediaMap.has(index)) {
-          // Upload the poster file
           const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
           const posterUploadResult = await uploadFile(file, {
@@ -144,33 +141,28 @@ export async function POST(request: NextRequest) {
             allowedExtensions: allowedImageExtensions,
           });
 
-          // Update the poster in the media map
           const mediaObject = mediaMap.get(index)!;
           mediaObject.poster = posterUploadResult.url;
         }
       }
     }
 
-    // Convert map back to array for database creation
     const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
       productId: product.id,
       url: media.url,
       type: media.type,
       sortOrder: media.sortOrder,
-      provider: media.url.startsWith("/uploads/")
-        ? "local"
-        : media.provider || "external",
+      provider: media.url.startsWith("/uploads/") ? "local" : media.provider || "external",
       poster: media.poster || null,
     }));
 
-    // Create all media records
     if (allMediaRecords.length > 0) {
       await prisma.media.createMany({
         data: allMediaRecords,
       });
     }
 
-    // Create translations with auto-generated slugs
+    // Create translations with auto-generated slugs (unchanged)
     await prisma.productTranslation.createMany({
       data: validatedData.translations.map((translation) => ({
         productId: product.id,
@@ -195,7 +187,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create product options and variants
+    // === Create product options and variants (updated to accept client-provided variants) ===
     if (validatedData.productOptions.length > 0) {
       // Create product options
       await Promise.all(
@@ -211,58 +203,96 @@ export async function POST(request: NextRequest) {
         )
       );
 
-      // Generate and create variants
-      const basePrice =
-        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
-      const productCode = `PROD${product.id}`;
+      // Build optionDefinitions for validation
+      const optionDefinitions: OptionDefinition[] = validatedData.productOptions.map((opt) => ({
+        name: opt.name,
+        values: opt.values,
+      }));
 
-      const optionDefinitions: OptionDefinition[] =
-        validatedData.productOptions.map((opt) => ({
-          name: opt.name,
-          values: opt.values,
+      // If client provided variants, use them; otherwise generate
+      if (validatedData.variants.length > 0) {
+        // Validate provided variants against options
+        // normalize prices to string for validateVariants if needed by your validator
+        const normalizedProvided = validatedData.variants.map((v) => ({
+          ...v,
+          price: typeof v.price === "number" ? v.price.toString() : v.price,
         }));
 
-      // Validate variant combinations
-      const generatedVariants = generateVariants(
-        optionDefinitions,
-        basePrice,
-        productCode,
-        true
-      );
-      const validation = validateVariants(generatedVariants, optionDefinitions);
+        const validation = validateVariants(normalizedProvided, optionDefinitions);
 
-      if (!validation.valid) {
-        throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+        if (!validation.valid) {
+          throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+        }
+
+        // Create provided variants in DB
+        await prisma.productVariant.createMany({
+          data: validatedData.variants.map((variant) => ({
+            productId: product.id,
+            option1: variant.option1 || null,
+            option2: variant.option2 || null,
+            option3: variant.option3 || null,
+            price: typeof variant.price === "number" ? variant.price.toString() : variant.price,
+            sku: variant.sku || null,
+            inventory: variant.inventory ?? 0,
+            trackInventory: variant.trackInventory ?? false,
+          })),
+        });
+      } else {
+        // Fall back to generating variants (old behavior)
+        const basePrice = (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
+        const productCode = `PROD${product.id}`;
+
+        const generatedVariants = generateVariants(optionDefinitions, basePrice, productCode, true);
+        const validation = validateVariants(generatedVariants, optionDefinitions);
+
+        if (!validation.valid) {
+          throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+        }
+
+        await prisma.productVariant.createMany({
+          data: generatedVariants.map((variant) => ({
+            productId: product.id,
+            option1: variant.option1 || null,
+            option2: variant.option2 || null,
+            option3: variant.option3 || null,
+            price: variant.price,
+            sku: variant.sku || null,
+            inventory: 0,
+            trackInventory: false,
+          })),
+        });
       }
-
-      // Create variants in database
-      await prisma.productVariant.createMany({
-        data: generatedVariants.map((variant) => ({
-          productId: product.id,
-          option1: variant.option1 || null,
-          option2: variant.option2 || null,
-          option3: variant.option3 || null,
-          price: variant.price,
-          sku: variant.sku || null,
-          inventory: 0,
-          trackInventory: false,
-        })),
-      });
     } else {
-      // Create a single default variant for products without options
-      const basePrice =
-        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
-      const productCode = `PROD${product.id}`;
+      // No product options
+      if (validatedData.variants.length > 0) {
+        // Accept provided single-variant or multiple variants (option fields will be ignored / null)
+        await prisma.productVariant.createMany({
+          data: validatedData.variants.map((variant) => ({
+            productId: product.id,
+            option1: variant.option1 || null,
+            option2: variant.option2 || null,
+            option3: variant.option3 || null,
+            price: typeof variant.price === "number" ? variant.price.toString() : variant.price,
+            sku: variant.sku || null,
+            inventory: variant.inventory ?? 0,
+            trackInventory: variant.trackInventory ?? false,
+          })),
+        });
+      } else {
+        // Create a single default variant for products without options (unchanged)
+        const basePrice = (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
+        const productCode = `PROD${product.id}`;
 
-      await prisma.productVariant.create({
-        data: {
-          productId: product.id,
-          price: basePrice,
-          sku: productCode,
-          inventory: 0,
-          trackInventory: false,
-        },
-      });
+        await prisma.productVariant.create({
+          data: {
+            productId: product.id,
+            price: basePrice,
+            sku: productCode,
+            inventory: 0,
+            trackInventory: false,
+          },
+        });
+      }
     }
 
     // Fetch the complete product with all relations
@@ -330,9 +360,7 @@ const getProductsSchema = z.object({
   categoryId: z.coerce.number().optional(),
   planId: z.coerce.number().optional(),
   isActive: z.enum(["true", "false"]).optional(),
-  sortBy: z
-    .enum(["createdAt", "updatedAt", "price", "compareAtPrice", "sellingPrice"])
-    .default("createdAt"),
+  sortBy: z.enum(["createdAt", "updatedAt", "price", "compareAtPrice", "sellingPrice"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
@@ -446,10 +474,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid query parameters", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid query parameters", details: error.issues }, { status: 400 });
     }
 
     console.error("Products fetch error:", error);

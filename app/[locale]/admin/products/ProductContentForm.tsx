@@ -2,12 +2,14 @@
 
 import LanguageSelector from "@/components/LanguageSelector";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrentTranslation } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { ProductTranslation } from "@/types";
 import { LANGUAGES } from "@/types/constants";
+import { Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
@@ -24,7 +26,7 @@ interface MultiLanguageFormProps {
   className?: string;
 }
 
-export default function MultiLanguageForm({
+export default function ProductContentForm({
   value = [],
   onChange,
   requiredLanguages = [],
@@ -66,11 +68,7 @@ export default function MultiLanguageForm({
     }
   };
 
-  const updateTranslation = (
-    locale: string,
-    field: keyof ProductTranslation,
-    fieldValue: string
-  ) => {
+  const updateTranslation = (locale: string, field: keyof ProductTranslation, fieldValue: string) => {
     const newTranslations = value.map((translation) => {
       if (translation.locale === locale) {
         return { ...translation, [field]: fieldValue };
@@ -106,9 +104,7 @@ export default function MultiLanguageForm({
 
   // Ensure required languages are present
   useEffect(() => {
-    const missingRequired = requiredLanguages.filter(
-      (lang) => !value.some((t) => t.locale === lang)
-    );
+    const missingRequired = requiredLanguages.filter((lang) => !value.some((t) => t.locale === lang));
 
     if (missingRequired.length > 0) {
       const newTranslations = [
@@ -123,15 +119,11 @@ export default function MultiLanguageForm({
     }
   }, [requiredLanguages, value, onChange]);
 
-  const handleAutoTranslate = (translations: {
-    [key: string]: { title: string; description: string };
-  }) => {
+  const handleAutoTranslate = (translations: { [key: string]: { title: string; description: string } }) => {
     const newTranslations = [...value];
 
     Object.entries(translations).forEach(([locale, translation]) => {
-      const existingIndex = newTranslations.findIndex(
-        (t) => t.locale === locale
-      );
+      const existingIndex = newTranslations.findIndex((t) => t.locale === locale);
 
       if (existingIndex >= 0) {
         // Update existing translation
@@ -156,104 +148,90 @@ export default function MultiLanguageForm({
   const selectedLanguages = value.map((t) => t.locale || "");
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Language Selector with Translation Button */}
-      <LanguageSelector
-        selectedLanguages={selectedLanguages}
-        onLanguageAdd={addLanguage}
-        onLanguageRemove={removeLanguage}
-        onLanguageSelect={setActiveTab}
-        activeLanguage={activeTab}
-        requiredLanguages={requiredLanguages}
-        hasErrors={hasLanguageErrors}
-        currentTranslation={getCurrentTranslation(value, activeTab)}
-        handleAutoTranslate={handleAutoTranslate}
-      />
+    <Card className="bg-background">
+      <CardHeader className="mb-2">
+        <CardTitle className="flex items-center gap-2">
+          <Globe className="w-5 h-5" />
+          {t("product content")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className={cn("space-y-4", className)}>
+          {/* Language Selector with Translation Button */}
+          <LanguageSelector
+            selectedLanguages={selectedLanguages}
+            onLanguageAdd={addLanguage}
+            onLanguageRemove={removeLanguage}
+            onLanguageSelect={setActiveTab}
+            activeLanguage={activeTab}
+            requiredLanguages={requiredLanguages}
+            hasErrors={hasLanguageErrors}
+            currentTranslation={getCurrentTranslation(value, activeTab)}
+            handleAutoTranslate={handleAutoTranslate}
+          />
 
-      {/* Translation Form */}
-      {value.length > 0 && (
-        <div className="space-y-3 pt-3 border-border border-t">
-          <div className="flex items-center gap-2">
-            <img
-              src={`https://flagsapi.com/${
-                getLanguageInfo(activeTab).countryCode
-              }/flat/24.png`}
-              alt={`${activeTab} flag`}
-              className="w-4 h-3 object-cover rounded-sm"
-            />
-            <span className="font-medium">
-              {t("{language} content", {
-                language: t(getLanguageInfo(activeTab).name),
-              })}
-            </span>
-            {isRequired(activeTab) && (
-              <Badge variant="secondary">Required</Badge>
-            )}
-          </div>
-
-          {(() => {
-            const currentTranslation = getCurrentTranslation(value, activeTab);
-
-            return (
-              <div className="space-y-4">
-                {/* Title */}
-                <div className="space-y-2">
-                  <label className="font-medium text-sm">
-                    Title <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    value={currentTranslation?.title}
-                    onChange={(e) =>
-                      updateTranslation(activeTab, "title", e.target.value)
-                    }
-                    placeholder={`Enter product title in ${
-                      getLanguageInfo(activeTab).name
-                    }`}
-                    className={cn(
-                      !currentTranslation?.title?.trim() && "border-destructive"
-                    )}
-                  />
-                  {!currentTranslation?.title?.trim() && (
-                    <p className="text-destructive text-sm">
-                      Title is required
-                    </p>
-                  )}
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <label className="font-medium text-sm">
-                    Description <span className="text-destructive">*</span>
-                  </label>
-                  <Textarea
-                    value={currentTranslation?.description}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      updateTranslation(
-                        activeTab,
-                        "description",
-                        e.target.value
-                      )
-                    }
-                    placeholder={`Enter product description in ${
-                      getLanguageInfo(activeTab).name
-                    }`}
-                    className={cn(
-                      !currentTranslation?.description?.trim() &&
-                        "border-destructive",
-                      "h-40"
-                    )}
-                  />
-                  {!currentTranslation?.description?.trim() && (
-                    <p className="text-destructive text-sm">
-                      Description is required
-                    </p>
-                  )}
-                </div>
+          {/* Translation Form */}
+          {value.length > 0 && (
+            <div className="space-y-3 pt-3 border-border border-t">
+              <div className="flex items-center gap-2">
+                <img
+                  src={`https://flagsapi.com/${getLanguageInfo(activeTab).countryCode}/flat/24.png`}
+                  alt={`${activeTab} flag`}
+                  className="w-4 h-3 object-cover rounded-sm"
+                />
+                <span className="font-medium">
+                  {t("{language} content", {
+                    language: t(getLanguageInfo(activeTab).name),
+                  })}
+                </span>
+                {isRequired(activeTab) && <Badge variant="secondary">Required</Badge>}
               </div>
-            );
-          })()}
+
+              {(() => {
+                const currentTranslation = getCurrentTranslation(value, activeTab);
+
+                return (
+                  <div className="space-y-4">
+                    {/* Title */}
+                    <div className="space-y-2">
+                      <label className="font-medium text-sm">
+                        Title <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        value={currentTranslation?.title}
+                        onChange={(e) => updateTranslation(activeTab, "title", e.target.value)}
+                        placeholder={`Enter product title in ${getLanguageInfo(activeTab).name}`}
+                        className={cn(!currentTranslation?.title?.trim() && "border-destructive")}
+                      />
+                      {!currentTranslation?.title?.trim() && (
+                        <p className="text-destructive text-sm">Title is required</p>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <label className="font-medium text-sm">
+                        Description <span className="text-destructive">*</span>
+                      </label>
+                      <Textarea
+                        value={currentTranslation?.description}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          updateTranslation(activeTab, "description", e.target.value)
+                        }
+                        placeholder={`Enter product description in ${getLanguageInfo(activeTab).name}`}
+                        className={cn(!currentTranslation?.description?.trim() && "border-destructive", "h-40")}
+                      />
+                      {!currentTranslation?.description?.trim() && (
+                        <p className="text-destructive text-sm">Description is required</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

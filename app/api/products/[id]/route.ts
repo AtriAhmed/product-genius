@@ -1,16 +1,8 @@
 import { authOptions } from "@/lib/auth";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
-import {
-  deleteMultipleFiles,
-  getMediaType,
-  uploadFile,
-} from "@/lib/file-upload";
+import { deleteMultipleFiles, getMediaType, uploadFile } from "@/lib/file-upload";
 import { prisma } from "@/lib/prisma";
-import {
-  generateVariants,
-  validateVariants,
-  type OptionDefinition,
-} from "@/lib/variant-generator";
+import { generateVariants, validateVariants, type OptionDefinition } from "@/lib/variant-generator";
 import { MARKETPLACES } from "@/types";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -44,6 +36,17 @@ const productOptionSchema = z.object({
   values: z.array(z.string().min(1)).min(1).max(50), // Max 50 values per option
 });
 
+// Variant schema: allow numeric or numeric-string price, optional sku/inventory/trackInventory
+const variantSchema = z.object({
+  option1: z.string().nullable().optional(),
+  option2: z.string().nullable().optional(),
+  option3: z.string().nullable().optional(),
+  price: z.union([z.number().positive(), z.string().regex(/^\d+(\.\d+)?$/)]),
+  sku: z.string().optional().nullable(),
+  inventory: z.number().int().min(0).optional().default(0),
+  trackInventory: z.boolean().optional().default(false),
+});
+
 const updateProductSchema = z.object({
   price: z.number().gte(0).optional().nullable(),
   compareAtPrice: z.number().gte(0).optional().nullable(),
@@ -56,12 +59,11 @@ const updateProductSchema = z.object({
   media: z.array(mediaSchema).optional().default([]),
   suppliers: z.array(supplierSchema).optional().default([]),
   productOptions: z.array(productOptionSchema).max(3).optional().default([]), // Max 3 options per product (Shopify limit)
+  // New: variants are provided from client when you want to control prices/skus
+  variants: z.array(variantSchema).optional().default([]),
 });
 
-export async function GET(
-  request: NextRequest,
-  ctx: RouteContext<"/api/products/[id]">
-) {
+export async function GET(request: NextRequest, ctx: RouteContext<"/api/products/[id]">) {
   const params = await ctx.params;
 
   try {
@@ -73,10 +75,7 @@ export async function GET(
 
     const productId = parseInt(params.id);
     if (isNaN(productId)) {
-      return NextResponse.json(
-        { error: "Invalid product ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     const product = await prisma.product.findUnique({
@@ -121,17 +120,11 @@ export async function GET(
     return NextResponse.json(product);
   } catch (error) {
     console.error("Product fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch product" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  ctx: RouteContext<"/api/products/[id]">
-) {
+export async function PUT(request: NextRequest, ctx: RouteContext<"/api/products/[id]">) {
   const params = await ctx.params;
 
   try {
@@ -143,10 +136,7 @@ export async function PUT(
 
     const productId = parseInt(params.id);
     if (isNaN(productId)) {
-      return NextResponse.json(
-        { error: "Invalid product ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     // Check if product exists
@@ -162,10 +152,7 @@ export async function PUT(
     const productDataString = formData.get("productData") as string;
 
     if (!productDataString) {
-      return NextResponse.json(
-        { error: "Product data is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Product data is required" }, { status: 400 });
     }
 
     const productData = JSON.parse(productDataString);
@@ -174,9 +161,7 @@ export async function PUT(
     const validatedData = updateProductSchema.parse(productData);
 
     // Create a map from the media array (sortOrder -> mediaObject)
-    const mediaMap = new Map(
-      validatedData.media.map((media, index) => [index, { ...media }])
-    );
+    const mediaMap = new Map(validatedData.media.map((media, index) => [index, { ...media }]));
 
     // Process form data entries for file uploads
     for (const [key, value] of formData.entries()) {
@@ -188,10 +173,7 @@ export async function PUT(
           // Upload the media file
           const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
           const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
-          const allowedExtensions = [
-            ...allowedImageExtensions,
-            ...allowedVideoExtensions,
-          ];
+          const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
           const uploadResult = await uploadFile(file, {
             directory: "uploads/products",
@@ -228,9 +210,7 @@ export async function PUT(
     }
 
     // Convert map back to array and sort by sortOrder
-    const allMediaRecords = Array.from(mediaMap.values()).sort(
-      (a, b) => a.sortOrder - b.sortOrder
-    );
+    const allMediaRecords = Array.from(mediaMap.values()).sort((a, b) => a.sortOrder - b.sortOrder);
 
     // Get current media files to identify which ones to delete
     const currentMedia = await prisma.media.findMany({
@@ -240,29 +220,18 @@ export async function PUT(
 
     // Identify files to delete (local files that are no longer in the new media list)
     const newMediaUrls = new Set(allMediaRecords.map((m) => m.url));
-    const newPosterUrls = new Set(
-      allMediaRecords.map((m) => m.poster).filter(Boolean)
-    );
+    const newPosterUrls = new Set(allMediaRecords.map((m) => m.poster).filter(Boolean));
 
     const filesToDelete = [
       // Delete media files that are no longer in the list
-      ...currentMedia
-        .filter(
-          (m) => m.url.startsWith("/uploads/") && !newMediaUrls.has(m.url)
-        )
-        .map((m) => m.url),
+      ...currentMedia.filter((m) => m.url.startsWith("/uploads/") && !newMediaUrls.has(m.url)).map((m) => m.url),
       // Delete poster files that are no longer in the list
       ...currentMedia
-        .filter(
-          (m) =>
-            m.poster &&
-            m.poster.startsWith("/uploads/") &&
-            !newPosterUrls.has(m.poster)
-        )
+        .filter((m) => m.poster && m.poster.startsWith("/uploads/") && !newPosterUrls.has(m.poster))
         .map((m) => m.poster!),
     ];
 
-    // Handle product options and variants update
+    // === Update product options and variants (updated to accept client-provided variants) ===
     if (validatedData.productOptions.length > 0) {
       // Remove existing options and variants
       await prisma.productOption.deleteMany({
@@ -286,45 +255,67 @@ export async function PUT(
         )
       );
 
-      // Generate and create variants
-      const basePrice =
-        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
-      const productCode = `PROD${productId}`;
+      // Build optionDefinitions for validation
+      const optionDefinitions: OptionDefinition[] = validatedData.productOptions.map((opt) => ({
+        name: opt.name,
+        values: opt.values,
+      }));
 
-      const optionDefinitions: OptionDefinition[] =
-        validatedData.productOptions.map((opt) => ({
-          name: opt.name,
-          values: opt.values,
+      // If client provided variants, use them; otherwise generate
+      if (validatedData.variants.length > 0) {
+        // Validate provided variants against options
+        // normalize prices to string for validateVariants if needed by your validator
+        const normalizedProvided = validatedData.variants.map((v) => ({
+          ...v,
+          price: typeof v.price === "number" ? v.price.toString() : v.price,
         }));
 
-      // Validate variant combinations
-      const generatedVariants = generateVariants(
-        optionDefinitions,
-        basePrice,
-        productCode,
-        true
-      );
-      const validation = validateVariants(generatedVariants, optionDefinitions);
+        const validation = validateVariants(normalizedProvided, optionDefinitions);
 
-      if (!validation.valid) {
-        throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+        if (!validation.valid) {
+          throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+        }
+
+        // Create provided variants in DB
+        await prisma.productVariant.createMany({
+          data: validatedData.variants.map((variant) => ({
+            productId: productId,
+            option1: variant.option1 || null,
+            option2: variant.option2 || null,
+            option3: variant.option3 || null,
+            price: typeof variant.price === "number" ? variant.price.toString() : variant.price,
+            sku: variant.sku || null,
+            inventory: variant.inventory ?? 0,
+            trackInventory: variant.trackInventory ?? false,
+          })),
+        });
+      } else {
+        // Fall back to generating variants (old behavior)
+        const basePrice = (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
+        const productCode = `PROD${productId}`;
+
+        const generatedVariants = generateVariants(optionDefinitions, basePrice, productCode, true);
+        const validation = validateVariants(generatedVariants, optionDefinitions);
+
+        if (!validation.valid) {
+          throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+        }
+
+        await prisma.productVariant.createMany({
+          data: generatedVariants.map((variant) => ({
+            productId: productId,
+            option1: variant.option1 || null,
+            option2: variant.option2 || null,
+            option3: variant.option3 || null,
+            price: variant.price,
+            sku: variant.sku || null,
+            inventory: 0,
+            trackInventory: false,
+          })),
+        });
       }
-
-      // Create variants in database
-      await prisma.productVariant.createMany({
-        data: generatedVariants.map((variant) => ({
-          productId: productId,
-          option1: variant.option1 || null,
-          option2: variant.option2 || null,
-          option3: variant.option3 || null,
-          price: variant.price,
-          sku: variant.sku || null,
-          inventory: 0,
-          trackInventory: false,
-        })),
-      });
     } else {
-      // Remove all options and variants, create a single default variant
+      // Remove all options and variants
       await prisma.productOption.deleteMany({
         where: { productId },
       });
@@ -332,20 +323,36 @@ export async function PUT(
         where: { productId },
       });
 
-      // Create a single default variant for products without options
-      const basePrice =
-        (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
-      const productCode = `PROD${productId}`;
+      // No product options
+      if (validatedData.variants.length > 0) {
+        // Accept provided single-variant or multiple variants (option fields will be ignored / null)
+        await prisma.productVariant.createMany({
+          data: validatedData.variants.map((variant) => ({
+            productId: productId,
+            option1: variant.option1 || null,
+            option2: variant.option2 || null,
+            option3: variant.option3 || null,
+            price: typeof variant.price === "number" ? variant.price.toString() : variant.price,
+            sku: variant.sku || null,
+            inventory: variant.inventory ?? 0,
+            trackInventory: variant.trackInventory ?? false,
+          })),
+        });
+      } else {
+        // Create a single default variant for products without options (unchanged)
+        const basePrice = (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
+        const productCode = `PROD${productId}`;
 
-      await prisma.productVariant.create({
-        data: {
-          productId: productId,
-          price: basePrice,
-          sku: productCode,
-          inventory: 0,
-          trackInventory: false,
-        },
-      });
+        await prisma.productVariant.create({
+          data: {
+            productId: productId,
+            price: basePrice,
+            sku: productCode,
+            inventory: 0,
+            trackInventory: false,
+          },
+        });
+      }
     }
 
     // Update product in database with transaction
@@ -441,17 +448,11 @@ export async function PUT(
       );
     }
 
-    return NextResponse.json(
-      { error: "Failed to update product" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  ctx: RouteContext<"/api/products/[id]">
-) {
+export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/products/[id]">) {
   const params = await ctx.params;
 
   try {
@@ -468,18 +469,12 @@ export async function DELETE(
     });
 
     if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const productId = parseInt(params.id);
     if (isNaN(productId)) {
-      return NextResponse.json(
-        { error: "Invalid product ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     // Check if product exists and get media files for cleanup
@@ -499,13 +494,9 @@ export async function DELETE(
     // Get local files to delete (both media and poster files)
     const localFiles = [
       // Media files
-      ...existingProduct.media
-        .filter((m) => m.url.startsWith("/uploads/"))
-        .map((m) => m.url),
+      ...existingProduct.media.filter((m) => m.url.startsWith("/uploads/")).map((m) => m.url),
       // Poster files
-      ...existingProduct.media
-        .filter((m) => m.poster && m.poster.startsWith("/uploads/"))
-        .map((m) => m.poster!),
+      ...existingProduct.media.filter((m) => m.poster && m.poster.startsWith("/uploads/")).map((m) => m.poster!),
     ];
 
     // Delete the product (cascade will handle related records)
@@ -523,9 +514,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Product deletion error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
   }
 }
