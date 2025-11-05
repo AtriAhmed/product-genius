@@ -1,11 +1,10 @@
 "use client";
 
-import ProductCard from "@/app/[locale]/dashboard/products/ProductCard";
+import ProductsGrid from "@/app/[locale]/dashboard/products/ProductsGrid";
 import ProductFilters from "@/app/[locale]/dashboard/products/ProductsFilter";
-import { Button } from "@/components/ui/button";
+import Pagination from "@/components/Pagination";
 import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
-import { Product, ProductTranslation } from "@/types";
-import { Search } from "lucide-react";
+import { Product } from "@/types";
 import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -105,10 +104,6 @@ export default function UserProductsPage() {
     toast.error(t("failed to load products"));
   }
 
-  const handleViewProduct = (product: Product) => {
-    router.push(`/${locale}/dashboard/products/${product.id}`);
-  };
-
   const clearFilters = () => {
     setSearch("");
     setFilter("active");
@@ -122,15 +117,11 @@ export default function UserProductsPage() {
     setSortOrder(newSortOrder);
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <div className="">
+      <div className="mx-auto px-4 py-2 container">
         {/* Header */}
-        <div className="mb-4">
+        <div className="mb-8">
           <h1 className="font-bold text-3xl tracking-tight">{t("products")}</h1>
           <p className="mt-2 text-muted-foreground">
             {t("discover our amazing collection of products")}
@@ -143,93 +134,33 @@ export default function UserProductsPage() {
           filter={filter}
           sortBy={sortBy}
           sortOrder={sortOrder}
-          onSearchChange={setSearch}
-          onFilterChange={setFilter}
+          onSearchChange={(newSearch) => {
+            setSearch(newSearch);
+            setPage(1);
+          }}
+          onFilterChange={(newFilter) => {
+            setFilter(newFilter);
+            setPage(1);
+          }}
           onSortChange={handleSortChange}
           onClearFilters={clearFilters}
         />
 
         {/* Products Grid */}
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="w-8 h-8 mx-auto border-primary border-b-2 rounded-full animate-spin"></div>
-            <p className="mt-4 text-muted-foreground">
-              {t("loading products")}
-            </p>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="flex justify-center items-center w-24 h-24 mx-auto mb-4 rounded-full bg-gray-100">
-              <Search className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="mb-2 font-semibold text-lg">
-              {t("no products found")}
-            </h3>
-            <p className="text-muted-foreground">
-              {search
-                ? t("try adjusting your search criteria")
-                : t("no products available at the moment")}
-            </p>
-          </div>
-        ) : (
-          <div className="gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onView={handleViewProduct}
-              />
-            ))}
-          </div>
-        )}
+        <ProductsGrid products={products} isLoading={isLoading} />
 
         {/* Pagination */}
         {!isLoading && products.length > 0 && pagination.pages > 1 && (
-          <div className="flex justify-center gap-2 mt-12">
-            <Button
-              variant="outline"
-              disabled={page === 1}
-              onClick={() => handlePageChange(page - 1)}
-            >
-              {t("previous")}
-            </Button>
-
-            {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-              let pageNumber;
-              if (pagination.pages <= 5) {
-                pageNumber = i + 1;
-              } else if (page <= 3) {
-                pageNumber = i + 1;
-              } else if (page >= pagination.pages - 2) {
-                pageNumber = pagination.pages - 4 + i;
-              } else {
-                pageNumber = page - 2 + i;
-              }
-
-              return (
-                <Button
-                  key={pageNumber}
-                  variant={page === pageNumber ? "default" : "outline"}
-                  onClick={() => handlePageChange(pageNumber)}
-                >
-                  {pageNumber}
-                </Button>
-              );
-            })}
-
-            <Button
-              variant="outline"
-              disabled={page === pagination.pages}
-              onClick={() => handlePageChange(page + 1)}
-            >
-              {t("next")}
-            </Button>
-          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={pagination.pages}
+            onPageChange={setPage}
+          />
         )}
 
         {/* Results Count */}
         {!isLoading && products.length > 0 && (
-          <div className="mt-8 text-muted-foreground text-sm text-center">
+          <div className="mt-4 text-muted-foreground text-sm text-center">
             {t("showing results", {
               start: (page - 1) * limit + 1,
               end: Math.min(page * limit, pagination.total),
