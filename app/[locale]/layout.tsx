@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { NextIntlClientProvider } from "next-intl";
-import { Geist, Geist_Mono, Roboto } from "next/font/google";
+import { Exo_2, Geist, Geist_Mono, Roboto } from "next/font/google";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -24,6 +24,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const exo2 = Exo_2({
+  variable: "--font-exo2",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
 export const metadata: Metadata = {
   title: "WinWaterfall - Find Winning Products For Your Store",
   description:
@@ -40,7 +46,7 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${exo2.variable} antialiased font-exo2`}
       >
         <NextIntlClientProvider>
           <Providers session={session}>

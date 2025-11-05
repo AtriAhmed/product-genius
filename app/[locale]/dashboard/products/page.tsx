@@ -119,7 +119,7 @@ export default function UserProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-bold text-3xl tracking-tight">{t("products")}</h1>
@@ -147,7 +147,7 @@ export default function UserProductsPage() {
         />
 
         {/* Products Grid */}
-        <ProductsGrid products={products} isLoading={isLoading} />
+        <ProductsGrid products={[]} isLoading={isLoading} />
 
         {/* Pagination */}
         {!isLoading && products.length > 0 && pagination.pages > 1 && (

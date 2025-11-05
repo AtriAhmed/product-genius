@@ -103,7 +103,7 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
@@ -150,20 +150,6 @@ export default function OrdersPage() {
               end: Math.min(page * limit, pagination.total),
               total: pagination.total,
             })}
-          </div>
-        )}
-
-        {/* No orders found */}
-        {!isLoading && orders.length === 0 && (
-          <div className="flex flex-col justify-center items-center py-12 text-center">
-            <div className="text-muted-foreground">
-              <p className="font-medium text-lg">{t("no orders found")}</p>
-              <p className="mt-1 text-sm">
-                {search || status !== "all"
-                  ? "Try adjusting your filters"
-                  : "No orders have been placed yet"}
-              </p>
-            </div>
           </div>
         )}
       </div>

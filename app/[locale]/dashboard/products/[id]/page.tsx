@@ -139,13 +139,13 @@ export default function ProductPage() {
   }
 
   const translation = getCurrentTranslation(product?.translations || []);
-  const categoryTranslation =
-    product.category?.translations?.find((t) => t.locale === "en") ||
-    product.category?.translations?.[0];
+  const categoryTranslation = getCurrentTranslation(
+    product?.category?.translations || []
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-0 sm:px-4 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="mb-6">
           <Button
@@ -186,12 +186,6 @@ export default function ProductPage() {
             />
           </div>
         </div>
-
-        {/* All Providers Section */}
-        {/* <AllProviders
-          suppliers={mockSuppliers}
-          marketplaces={mockMarketplaces}
-        /> */}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import {
   Globe,
   Languages,
   LogOut,
+  NotepadText,
   Package,
   Settings,
   ShoppingCart,
@@ -82,7 +83,7 @@ const navigationData: NavigationItem[] = [
   {
     title: "orders",
     url: "/admin/orders",
-    icon: ShoppingCart,
+    icon: NotepadText,
     roles: ["OWNER", "ADMIN"],
   },
   {

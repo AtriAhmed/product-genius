@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, ExternalLink, Upload } from "lucide-react";
@@ -33,9 +26,7 @@ export default function ImportedProductsDataTable({
   isLoading,
 }: ImportedProductsDataTableProps) {
   const t = useTranslations("imported-products");
-  const [deleteMapping, setDeleteMapping] = useState<
-    ProductMapping | undefined
-  >();
+  const [deleteMapping, setDeleteMapping] = useState<ProductMapping | undefined>();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteMapping = (mapping: ProductMapping) => {
@@ -52,9 +43,7 @@ export default function ImportedProductsDataTable({
       onRefresh();
     } catch (error: any) {
       console.error("Error deleting product mapping:", error);
-      toast.error(
-        error.response?.data?.error || t("failed to delete product mapping")
-      );
+      toast.error(error.response?.data?.error || t("failed to delete product mapping"));
     } finally {
       setIsDeleting(false);
       setDeleteMapping(undefined);
@@ -92,15 +81,13 @@ export default function ImportedProductsDataTable({
 
   const emptyStateRow = (
     <TableRow>
-      <TableCell colSpan={7} className="h-32">
-        <div className="flex flex-col justify-center items-center text-muted-foreground text-center">
-          <Upload className="w-8 h-8 mb-2" />
-          <p className="font-medium text-sm">
-            {t("no imported products found")}
-          </p>
-          <p className="text-xs">
-            {t("import products to shopify to see them here")}
-          </p>
+      <TableCell colSpan={7}>
+        <div className="p-8 text-center">
+          <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
+            <Upload className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="font-bold text-slate-800 text-lg">{t("no imported products found")}</h3>
+          <p className="mb-4 text-muted-foreground text-sm">{t("import products to shopify to see them here")}</p>
         </div>
       </TableCell>
     </TableRow>
@@ -111,13 +98,13 @@ export default function ImportedProductsDataTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("image")}</TableHead>
-            <TableHead>{t("product")}</TableHead>
-            <TableHead>{t("shopify product id")}</TableHead>
-            <TableHead>{t("shopify store")}</TableHead>
-            <TableHead>{t("shop")}</TableHead>
-            <TableHead>{t("imported at")}</TableHead>
-            <TableHead className="text-right">{t("actions")}</TableHead>
+            <TableHead className="text-nowrap">{t("image")}</TableHead>
+            <TableHead className="text-nowrap">{t("product")}</TableHead>
+            <TableHead className="text-nowrap">{t("shopify product id")}</TableHead>
+            <TableHead className="text-nowrap">{t("shopify store")}</TableHead>
+            <TableHead className="text-nowrap">{t("shop")}</TableHead>
+            <TableHead className="text-nowrap">{t("imported at")}</TableHead>
+            <TableHead className="text-right text-nowrap">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -135,10 +122,7 @@ export default function ImportedProductsDataTable({
                               ? mapping.product.media[0].url
                               : mapping.product.media[0].poster
                           )}
-                          alt={
-                            mapping.product.translations?.[0]?.title ||
-                            "Product image"
-                          }
+                          alt={mapping.product.translations?.[0]?.title || "Product image"}
                           width={40}
                           height={40}
                           className="w-full h-full object-cover"
@@ -147,43 +131,31 @@ export default function ImportedProductsDataTable({
                       </div>
                     ) : (
                       <div className="flex justify-center items-center w-10 h-10 rounded bg-muted">
-                        <span className="text-muted-foreground text-xs">
-                          No img
-                        </span>
+                        <span className="text-muted-foreground text-xs">No img</span>
                       </div>
                     )}
                   </TableCell>
                   <TableCell>
                     <div>
                       <div className="font-medium">
-                        {mapping.product?.translations?.[0]?.title ||
-                          "Untitled Product"}
+                        {mapping.product?.translations?.[0]?.title || "Untitled Product"}
                       </div>
-                      <div className="text-muted-foreground text-sm">
-                        ID: {mapping.product?.id}
-                      </div>
+                      <div className="text-muted-foreground text-sm">ID: {mapping.product?.id}</div>
                       {mapping.product?.sku && (
-                        <div className="text-muted-foreground text-xs">
-                          SKU: {mapping.product.sku}
-                        </div>
+                        <div className="text-muted-foreground text-xs">SKU: {mapping.product.sku}</div>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <code className="px-2 py-1 rounded bg-muted text-sm">
-                        {mapping.shopifyProductId}
-                      </code>
+                      <code className="px-2 py-1 rounded bg-muted text-sm">{mapping.shopifyProductId}</code>
                       {mapping.shop && (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="w-6 h-6 p-0"
                           onClick={() =>
-                            window.open(
-                              `https://${mapping.shop}/admin/products/${mapping.shopifyProductId}`,
-                              "_blank"
-                            )
+                            window.open(`https://${mapping.shop}/admin/products/${mapping.shopifyProductId}`, "_blank")
                           }
                           title="Open in Shopify"
                         >
@@ -194,20 +166,14 @@ export default function ImportedProductsDataTable({
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">
-                        {mapping.shopifyStore?.name || "Unknown Store"}
-                      </div>
+                      <div className="font-medium">{mapping.shopifyStore?.name || "Unknown Store"}</div>
                       {mapping.shopifyStore?.id && (
-                        <div className="text-muted-foreground text-sm">
-                          Store ID: {mapping.shopifyStore.id}
-                        </div>
+                        <div className="text-muted-foreground text-sm">Store ID: {mapping.shopifyStore.id}</div>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">
-                      {mapping.shop?.replace(".myshopify.com", "")}
-                    </Badge>
+                    <Badge variant="secondary">{mapping.shop?.replace(".myshopify.com", "")}</Badge>
                   </TableCell>
                   <TableCell>
                     {mapping.createdAt ? (

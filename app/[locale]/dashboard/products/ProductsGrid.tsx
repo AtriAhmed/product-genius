@@ -3,7 +3,7 @@
 import ProductCard from "@/app/[locale]/dashboard/products/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product } from "@/types";
-import { Search } from "lucide-react";
+import { Package, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface ProductsGridProps {
@@ -48,15 +48,16 @@ export default function ProductsGrid({
     </div>
   ));
 
-  // Empty state
   const emptyState = (
-    <div className="col-span-full py-16 text-center">
-      <div className="flex justify-center items-center w-24 h-24 mx-auto mb-4 rounded-full bg-gray-100">
-        <Search className="w-8 h-8 text-gray-400" />
+    <div className="flex flex-col items-center col-span-full py-8 border rounded-lg text-center">
+      <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
+        <Package className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="mb-2 font-semibold text-lg">{t("no products found")}</h3>
-      <p className="text-muted-foreground">
-        {t("try adjusting your search criteria")}
+      <h3 className="font-bold text-slate-800 text-lg">
+        {t("no products found")}
+      </h3>
+      <p className="mb-4 text-muted-foreground text-sm">
+        {t("try adjusting your search or filters")}
       </p>
     </div>
   );
