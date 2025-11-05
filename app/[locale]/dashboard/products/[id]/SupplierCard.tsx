@@ -16,6 +16,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import ShopifyIcon from "@/assets/images/shopify.svg";
 
 interface SupplierCardProps {
   hasStore?: boolean;
@@ -41,7 +42,23 @@ export default function SupplierCard({
 
   const handleImportToShopify = () => {
     if (!hasStore) {
-      toast.error("Please connect a Shopify store to import products.");
+      toast.error(
+        <div className="flex justify-between items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span>Please connect a Shopify store to import products.</span>
+          </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push("/dashboard/shopify")}
+            className="flex items-center gap-1"
+          >
+            <ShopifyIcon className="w-3 h-3 text-green-600" />
+            Connect
+          </Button>
+        </div>
+      );
       return;
     }
 
