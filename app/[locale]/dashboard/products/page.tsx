@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import useSWR from "swr";
 import axios from "axios";
 import { useDebounce } from "use-debounce";
+import { getCurrentTranslation } from "@/lib/products";
 
 interface ProductsResponse {
   data: Product[];
@@ -63,16 +64,6 @@ export default function UserProductsPage() {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, filter, sortBy, sortOrder]);
-
-  // Helper function for client-side sorting
-  const getCurrentTranslation = (
-    translations: ProductTranslation[],
-    locale = "en"
-  ) => {
-    return (
-      translations.find((t) => t.locale === locale) || translations[0] || null
-    );
-  };
 
   // Process and sort products from SWR data
   const getProcessedProducts = (): Product[] => {

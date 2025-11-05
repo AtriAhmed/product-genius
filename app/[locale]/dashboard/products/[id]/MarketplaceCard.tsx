@@ -35,7 +35,7 @@ export default function MarketplaceCard({
           </div>
         </div>
 
-        <div className="min-w-0 font-semibold text-muted-foreground text-xs truncate">
+        <div className="min-w-0 font-semibold text-muted-foreground text-xs line-clamp-2">
           {supplier?.notes}
         </div>
 

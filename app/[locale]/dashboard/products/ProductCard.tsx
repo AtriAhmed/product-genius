@@ -141,12 +141,28 @@ export default function ProductCard({
             {translation?.description}
           </p>
 
-          <div className="flex flex-wrap justify-between items-center gap-2 mt-auto ml-auto">
+          {/* <div className="flex flex-wrap justify-between items-center gap-2 mt-auto ml-auto">
             {product?.price && (
               <Badge className="px-3 py-1 border-0 bg-gradient-to-r from-primary-700 to-primary-500 font-semibold text-white text-sm transition-all duration-300 transform">
                 {formatPrice(product.price, product.currency || "USD")}
               </Badge>
             )}
+          </div> */}
+          <div
+            className={`rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40 ml-auto`}
+          >
+            <div className="flex items-end gap-1">
+              {product?.compareAtPrice && (
+                <span className="me-1 opacity-70 font-medium text-white text-xs line-through">
+                  {formatPrice(product?.compareAtPrice, product?.currency)}
+                </span>
+              )}
+              {product?.price && (
+                <span className="drop-shadow-sm font-bold text-white text-sm">
+                  {formatPrice(product?.price, product?.currency)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

@@ -104,7 +104,12 @@ export default function SupplierCard({
           <div
             className={`rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40`}
           >
-            <div className="flex items-center gap-1">
+            <div className="flex items-end gap-1">
+              {compareAtPrice && (
+                <span className="me-1 opacity-70 font-medium text-[10px] text-white line-through">
+                  {formatPrice(compareAtPrice)}
+                </span>
+              )}
               <span className="drop-shadow-sm font-bold text-white text-xs">
                 {formatPrice(price)}
               </span>

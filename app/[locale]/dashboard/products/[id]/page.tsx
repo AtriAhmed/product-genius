@@ -179,6 +179,7 @@ export default function ProductPage() {
             <ProductSuppliers
               hasStore={!!user?.shopifyStores?.[0]}
               price={product?.price}
+              compareAtPrice={product?.compareAtPrice}
               suppliers={product?.suppliers || []}
               isImported={product?.productMappings?.length! > 0}
               onScrollToProviders={scrollToProviders}
