@@ -7,10 +7,7 @@ import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
 import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
-import {
-  ProductFormData,
-  productFormSchema,
-} from "@/app/[locale]/admin/products/types";
+import { ProductFormData, productFormSchema } from "@/app/[locale]/admin/products/types";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,14 +15,7 @@ import { Link } from "@/i18n/navigation";
 import { Marketplace, Plan, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import {
-  ArrowLeft,
-  Globe,
-  ImageIcon,
-  Save,
-  Trash2,
-  Package,
-} from "lucide-react";
+import { ArrowLeft, Globe, ImageIcon, Save, Trash2, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -78,9 +68,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       categoryId: product?.categoryId || undefined,
       planIds: product?.plans?.map((p) => p.id) || [],
       isActive: product?.isActive ?? true,
-      translations: product?.translations || [
-        { locale: "en", title: "", description: "" },
-      ],
+      translations: product?.translations || [{ locale: "en", title: "", description: "" }],
       media: [],
       suppliers:
         product?.suppliers?.map((s) => ({
@@ -151,9 +139,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       console.log("-------------------- data --------------------");
       console.log(data);
 
-      const mediaWithoutFiles = data.media.map(
-        ({ file, posterFile, ...rest }) => rest
-      );
+      const mediaWithoutFiles = data.media.map(({ file, posterFile, ...rest }) => rest);
 
       // Add product data as JSON
       const productData = {
@@ -175,17 +161,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
       const url = isEditMode ? `/api/products/${product!.id}` : "/api/products";
 
-      const response = isEditMode
-        ? await axios.put(url, formData)
-        : await axios.post(url, formData);
+      const response = isEditMode ? await axios.put(url, formData) : await axios.post(url, formData);
 
-      toast.success(
-        t(
-          isEditMode
-            ? "product updated successfully"
-            : "product created successfully"
-        )
-      );
+      toast.success(t(isEditMode ? "product updated successfully" : "product created successfully"));
 
       if (isCreateMode) {
         router.push("/admin/products");
@@ -197,11 +175,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       toast.error(
         axios.isAxiosError(error) && error.response?.data?.error
           ? error.response.data.error
-          : t(
-              isEditMode
-                ? "failed to update product"
-                : "failed to create product"
-            )
+          : t(isEditMode ? "failed to update product" : "failed to create product")
       );
     } finally {
       setIsSubmitting(false);
@@ -242,7 +216,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="mx-auto px-4 py-2">
+      <div className="mx-auto">
         <div className="max-w-3xl">
           <div className="flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-4">
@@ -252,13 +226,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 </Link>
               </Button>
               <div>
-                <h1 className="font-bold text-2xl">
-                  {isEditMode ? t("edit product") : t("create product")}
-                </h1>
+                <h1 className="font-bold text-2xl">{isEditMode ? t("edit product") : t("create product")}</h1>
                 <p className="text-muted-foreground text-sm">
-                  {isEditMode
-                    ? t("update product information")
-                    : t("add a new product to your catalog")}
+                  {isEditMode ? t("update product information") : t("add a new product to your catalog")}
                 </p>
               </div>
             </div>
@@ -295,13 +265,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto px-4 py-8">
+      <div className="mx-auto py-8">
         <div className="max-w-3xl">
-          <form
-            id="product-form"
-            onSubmit={handleSubmit(onSubmit)}
-            className="mb-2"
-          >
+          <form id="product-form" onSubmit={handleSubmit(onSubmit)} className="mb-2">
             {/* Main Content */}
             <div className="space-y-2 lg:col-span-2">
               {/* Basic Information */}
@@ -314,12 +280,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               />
 
               {/* Pricing Section */}
-              <PricingSection
-                setValue={setValue}
-                errors={errors}
-                currency={watch("currency")}
-                register={register}
-              />
+              <PricingSection setValue={setValue} errors={errors} currency={watch("currency")} register={register} />
 
               {/* Plan Selection */}
               <PlanSelector
@@ -351,9 +312,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                     requiredLanguages={[]}
                   />
                   {errors.translations && (
-                    <p className="mt-2 text-destructive text-sm">
-                      {errors.translations.message}
-                    </p>
+                    <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>
                   )}
                 </CardContent>
               </Card>
@@ -365,9 +324,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                     <ImageIcon className="w-5 h-5" />
                     {t("product media")}
                   </CardTitle>
-                  <p className="text-muted-foreground text-sm">
-                    {t("upload images and videos")}
-                  </p>
+                  <p className="text-muted-foreground text-sm">{t("upload images and videos")}</p>
                 </CardHeader>
                 <CardContent>
                   <MediaUpload

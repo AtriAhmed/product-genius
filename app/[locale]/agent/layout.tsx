@@ -1,13 +1,10 @@
 import "@/app/[locale]/globals.css";
 import { DashboardBreadcrumb } from "@/components/Breadcrumb";
+import { CloseSidebarOnRouteChange } from "@/components/CloseSidebarOnRouteChange";
 import Private from "@/components/Private";
 import { AgentSidebar } from "@/components/agent/Sidebar";
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
@@ -26,6 +23,7 @@ export default async function Layout({
   return (
     <Private allowedRoles={["AGENT"]}>
       <SidebarProvider className="min-h-[calc(100vh-55px)]">
+        <CloseSidebarOnRouteChange />
         <AgentSidebar />
         <SidebarInset>
           <header className="flex items-center gap-2 h-16 group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 transition-[width,height] ease-linear shrink-0">

@@ -18,14 +18,7 @@ type InvoicesResponse = {
   pages: number;
 };
 
-async function fetcher(
-  page: number,
-  limit: number,
-  type: string,
-  status: string,
-  sortBy: string,
-  sortOrder: string
-) {
+async function fetcher(page: number, limit: number, type: string, status: string, sortBy: string, sortOrder: string) {
   const params: any = { page, limit };
 
   if (type !== "all") params.type = type;
@@ -123,13 +116,11 @@ export default function InvoicesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="font-bold text-foreground text-3xl">
-              {t("invoices")}
-            </h1>
+            <h1 className="font-bold text-foreground text-3xl">{t("invoices")}</h1>
             <p className="mt-2 text-muted-foreground">{t("manage invoices")}</p>
           </div>
         </div>
@@ -156,11 +147,7 @@ export default function InvoicesPage() {
 
         {/* Pagination */}
         {!isLoading && invoices.length > 0 && pagination.pages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.pages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
 
         {/* Results Count */}

@@ -23,12 +23,7 @@ interface ProductsResponse {
   pages: number;
 }
 
-async function fetcher(
-  page: number,
-  limit: number,
-  search: string,
-  isActive: boolean | undefined
-) {
+async function fetcher(page: number, limit: number, search: string, isActive: boolean | undefined) {
   const response = await axios.get("/api/products", {
     params: { page, limit, search, active: isActive },
   });
@@ -46,8 +41,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const isActive =
-    filter === "all" ? undefined : filter === "active" ? true : false;
+  const isActive = filter === "all" ? undefined : filter === "active" ? true : false;
 
   // SWR hook for data fetching
   const { data, error, isLoading, mutate } = useSWR<ProductsResponse>(
@@ -68,10 +62,8 @@ export default function ProductsPage() {
     // Client-side sorting for unsupported API sorts
     if (sortBy === "title") {
       sortedProducts = sortedProducts.sort((a, b) => {
-        const aTitle =
-          getCurrentTranslation(a?.translations || [])?.title || "";
-        const bTitle =
-          getCurrentTranslation(b?.translations || [])?.title || "";
+        const aTitle = getCurrentTranslation(a?.translations || [])?.title || "";
+        const bTitle = getCurrentTranslation(b?.translations || [])?.title || "";
         const comparison = aTitle.localeCompare(bTitle);
         return sortOrder === "asc" ? comparison : -comparison;
       });
@@ -108,9 +100,7 @@ export default function ProductsPage() {
       mutate();
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete product"
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to delete product");
     } finally {
       setDeleteProduct(undefined);
     }
@@ -126,22 +116,14 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="font-bold text-foreground text-3xl">
-              {t("products")}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              {t("manage your products and translations")}
-            </p>
+            <h1 className="font-bold text-foreground text-3xl">{t("products")}</h1>
+            <p className="mt-2 text-muted-foreground">{t("manage your products and translations")}</p>
           </div>
-          <Button
-            onClick={() => router.push("/admin/products/new")}
-            className="gap-2"
-            variant="primary"
-          >
+          <Button onClick={() => router.push("/admin/products/new")} className="gap-2" variant="primary">
             <Plus className="w-4 h-4" />
             {t("add product")}
           </Button>
@@ -179,11 +161,7 @@ export default function ProductsPage() {
 
         {/* Pagination */}
         {!isLoading && products.length > 0 && pagination.pages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.pages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
 
         {/* Results Count */}
@@ -203,9 +181,7 @@ export default function ProductsPage() {
         open={!!deleteProduct}
         onOpenChange={() => setDeleteProduct(undefined)}
         title="Delete Product"
-        description={`Are you sure you want to delete "${
-          deleteProduct?.translations?.[0]?.title || "this product"
-        }"?`}
+        description={`Are you sure you want to delete "${deleteProduct?.translations?.[0]?.title || "this product"}"?`}
         alertMessage="This action cannot be undone."
         confirmText="Delete Product"
         cancelText="Cancel"

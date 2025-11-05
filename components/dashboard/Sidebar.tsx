@@ -15,6 +15,7 @@ import {
   Sparkles,
   Truck,
   Upload,
+  X,
   Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -48,6 +49,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -106,13 +108,12 @@ const navigationData: NavigationItem[] = [
   // },
 ];
 
-export function UserSidebar({
-  ...props
-}: React.ComponentProps<typeof Sidebar>) {
+export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("sidebar");
+  const { setOpenMobile } = useSidebar();
 
   async function handleLogout() {
     await signOut({ redirect: false });
@@ -126,21 +127,21 @@ export function UserSidebar({
     >
       <SidebarHeader className="bg-background">
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="flex gap-1">
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" className="no-ring">
                 <div className="flex justify-center items-center size-8 aspect-square rounded-lg bg-primary-500 text-sidebar-primary-foreground">
                   <Zap className="size-4" />
                 </div>
                 <div className="flex-1 grid text-sm text-left leading-tight">
-                  <span className="font-semibold truncate">
-                    {t("winwaterfall")}
-                  </span>
-                  <span className="text-muted-foreground text-xs truncate">
-                    {t("user panel")}
-                  </span>
+                  <span className="font-semibold truncate">{t("winwaterfall")}</span>
+                  <span className="text-muted-foreground text-xs truncate">{t("user panel")}</span>
                 </div>
               </Link>
+            </SidebarMenuButton>
+            <SidebarMenuButton size="lg" asChild className="sm:hidden w-fit" onClick={() => setOpenMobile(false)}>
+              {/* add a close sidebar button here */}
+              <X className="size-4 text-foreground" />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -157,12 +158,7 @@ export function UserSidebar({
                   <>
                     <SidebarMenuButton
                       asChild
-                      isActive={
-                        pathname === item.url ||
-                        item.subItems.some(
-                          (subItem) => pathname === subItem.url
-                        )
-                      }
+                      isActive={pathname === item.url || item.subItems.some((subItem) => pathname === subItem.url)}
                     >
                       <Link href={item.url} className="no-ring">
                         <item.icon />
@@ -172,10 +168,7 @@ export function UserSidebar({
                     <SidebarMenuSub>
                       {item.subItems.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={pathname === subItem.url}
-                          >
+                          <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
                             <Link href={subItem.url} className="no-ring">
                               <subItem.icon />
                               <span>{t(subItem.title)}</span>
@@ -209,21 +202,14 @@ export function UserSidebar({
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="w-8 h-8 rounded-lg">
-                    <AvatarImage
-                      src={session?.user?.image || ""}
-                      alt={session?.user?.name || ""}
-                    />
+                    <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                     <AvatarFallback className="rounded-lg">
                       {session?.user?.name?.slice(0, 2)?.toUpperCase() || "US"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 grid text-sm text-left leading-tight">
-                    <span className="font-semibold truncate">
-                      {session?.user?.name || t("user")}
-                    </span>
-                    <span className="text-muted-foreground text-xs truncate">
-                      {session?.user?.email}
-                    </span>
+                    <span className="font-semibold truncate">{session?.user?.name || t("user")}</span>
+                    <span className="text-muted-foreground text-xs truncate">{session?.user?.email}</span>
                   </div>
                   <ChevronsUpDown className="size-4 ml-auto" />
                 </SidebarMenuButton>
@@ -238,22 +224,14 @@ export function UserSidebar({
                   {/* User info header */}
                   <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
                     <Avatar className="w-8 h-8 rounded-lg">
-                      <AvatarImage
-                        src={session?.user?.image || ""}
-                        alt={session?.user?.name || ""}
-                      />
+                      <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                       <AvatarFallback className="rounded-lg">
-                        {session?.user?.name?.slice(0, 2)?.toUpperCase() ||
-                          "US"}
+                        {session?.user?.name?.slice(0, 2)?.toUpperCase() || "US"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 grid text-sm text-left leading-tight">
-                      <span className="font-semibold truncate">
-                        {session?.user?.name || t("user")}
-                      </span>
-                      <span className="text-muted-foreground text-xs truncate">
-                        {session?.user?.email}
-                      </span>
+                      <span className="font-semibold truncate">{session?.user?.name || t("user")}</span>
+                      <span className="text-muted-foreground text-xs truncate">{session?.user?.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>

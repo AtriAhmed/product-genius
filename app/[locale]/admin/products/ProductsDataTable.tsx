@@ -2,14 +2,7 @@
 
 import ProductRow from "@/app/[locale]/admin/products/ProductRow";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Product } from "@/types";
 import { Eye } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -32,10 +25,7 @@ export default function ProductsDataTable({
   const t = useTranslations("products");
 
   const skeletonRows = Array.from({ length: 4 }).map((_, idx) => (
-    <TableRow
-      key={`skeleton-${idx}`}
-      className="border-border transition-colors"
-    >
+    <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
       {/* Image */}
       <TableCell>
         <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
@@ -52,9 +42,9 @@ export default function ProductsDataTable({
       </TableCell>
 
       {/* SKU */}
-      <TableCell>
+      {/* <TableCell>
         <Skeleton className="w-20 h-4 rounded" />
-      </TableCell>
+      </TableCell> */}
 
       {/* Category */}
       <TableCell>
@@ -92,15 +82,13 @@ export default function ProductsDataTable({
 
   const emptyStateRow = (
     <TableRow>
-      <TableCell colSpan={8}>
+      <TableCell colSpan={7}>
         <div className="p-8 text-center">
           <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
             <Eye className="w-8 h-8 text-muted-foreground" />
           </div>
           <h3 className="mb-2 font-medium text-lg">{t("no products found")}</h3>
-          <p className="mb-4 text-muted-foreground">
-            {t("try adjusting your search or filters")}
-          </p>
+          <p className="mb-4 text-muted-foreground">{t("try adjusting your search or filters")}</p>
         </div>
       </TableCell>
     </TableRow>
@@ -113,28 +101,19 @@ export default function ProductsDataTable({
           <TableRow className="border-border hover:bg-muted/50">
             <TableHead className="w-16 font-medium">{t("image")}</TableHead>
             <TableHead className="font-medium">{t("name")}</TableHead>
-            <TableHead className="font-medium">{t("sku")}</TableHead>
+            {/* <TableHead className="font-medium">{t("sku")}</TableHead> */}
             <TableHead className="font-medium">{t("category")}</TableHead>
             <TableHead className="font-medium">{t("price")}</TableHead>
             <TableHead className="font-medium">{t("status")}</TableHead>
             <TableHead className="font-medium">{t("translations")}</TableHead>
-            <TableHead className="font-medium text-center">
-              {t("actions")}
-            </TableHead>
+            <TableHead className="font-medium text-center">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading
             ? skeletonRows
             : products.length > 0
-            ? products.map((p) => (
-                <ProductRow
-                  key={p.id}
-                  product={p}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
-              ))
+            ? products.map((p) => <ProductRow key={p.id} product={p} onEdit={onEdit} onDelete={onDelete} />)
             : emptyStateRow}
         </TableBody>
       </Table>
