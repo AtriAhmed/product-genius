@@ -4,6 +4,7 @@ import SupplierCard from "./SupplierCard";
 import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceCard";
 
 interface ProvidersPreviewProps {
+  hasStore?: boolean;
   suppliers: Supplier[];
   price?: number;
   compareAtPrice?: number;
@@ -12,6 +13,7 @@ interface ProvidersPreviewProps {
 }
 
 export function ProductSuppliers({
+  hasStore = false,
   price,
   compareAtPrice,
   suppliers,
@@ -47,6 +49,7 @@ export function ProductSuppliers({
             </h4>
             <div className="gap-2 grid xl:grid-cols-2">
               <SupplierCard
+                hasStore={hasStore}
                 price={price}
                 compareAtPrice={compareAtPrice}
                 compact={true}

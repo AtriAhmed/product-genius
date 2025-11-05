@@ -12,12 +12,17 @@ import { ImageGallery } from "./ImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { ProductSkeleton } from "./ProductSkeleton";
 import { ProductSuppliers } from "./ProductSuppliers";
-import { Product } from "@/types";
+import { Product, User } from "@/types";
 import axios from "axios";
 import useSWR from "swr";
 
 async function fetcher(id: string) {
   const response = await axios.get(`/api/products/${id}`);
+  return response.data;
+}
+
+async function userFetcher(): Promise<User> {
+  const response = await axios.get("/api/users/current");
   return response.data;
 }
 
@@ -36,6 +41,15 @@ export default function ProductPage() {
     error,
     isLoading,
   } = useSWR<Product>(["product", productId], () => fetcher(productId), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
+
+  const {
+    data: user,
+    error: userError,
+    isLoading: userIsLoading,
+  } = useSWR<User>("current-user", userFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
@@ -163,6 +177,8 @@ export default function ProductPage() {
             />
 
             <ProductSuppliers
+              hasStore={!!user?.shopifyStores?.[0]}
+              price={product?.price}
               suppliers={product?.suppliers || []}
               isImported={product?.productMappings?.length! > 0}
               onScrollToProviders={scrollToProviders}

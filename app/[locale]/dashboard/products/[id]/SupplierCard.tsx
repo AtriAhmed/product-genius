@@ -18,6 +18,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 interface SupplierCardProps {
+  hasStore?: boolean;
   productId?: number;
   price: number;
   compareAtPrice?: number;
@@ -26,6 +27,7 @@ interface SupplierCardProps {
 }
 
 export default function SupplierCard({
+  hasStore = false,
   productId,
   price,
   compareAtPrice,
@@ -38,6 +40,11 @@ export default function SupplierCard({
   const [isImporting, setIsImporting] = useState(false);
 
   const handleImportToShopify = () => {
+    if (!hasStore) {
+      toast.error("Please connect a Shopify store to import products.");
+      return;
+    }
+
     setShowConfirmDialog(true);
   };
 
@@ -74,7 +81,7 @@ export default function SupplierCard({
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center">
               <h4 className="font-semibold text-foreground text-sm truncate">
-                {"WinWaterfall"}
+                WinWaterfall
               </h4>
               <div className="flex items-center gap-1">
                 <Star
@@ -86,12 +93,13 @@ export default function SupplierCard({
           </div>
         </div>
 
-        {/* <div className="min-w-0 font-semibold text-primary-700 dark:text-primary-300 text-xs truncate">
-          {supplier?.notes}
-        </div> */}
+        <div className="min-w-0 font-semibold text-primary-700 dark:text-primary-300 text-xs line-camp-2">
+          {/* {supplier?.notes} */}
+          Our best supplier for high-quality products at competitive prices.
+        </div>
 
         {/* Price & Domain Row */}
-        <div className="flex justify-between items-center gap-2 mt-auto">
+        <div className="flex justify-end items-center gap-2 mt-auto">
           {/* Enhanced Price Badge */}
           <div
             className={`rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40`}

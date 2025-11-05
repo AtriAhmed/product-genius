@@ -130,7 +130,7 @@ export function ProductInfo({
         {product.sellingPrice && (
           <div>
             <div className="mb-1 text-muted-foreground text-sm">
-              Suggested Price
+              Suggested Selling Price
             </div>
             <div className="font-bold text-primary text-3xl">
               {currencyMap[product.currency!]?.symbol || product.currency}
