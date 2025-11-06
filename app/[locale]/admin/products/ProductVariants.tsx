@@ -5,17 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Package, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ProductOptionFormData } from "./types";
+import { ProductFormData, ProductOptionFormData } from "./types";
 import ProductOptionItem from "./ProductOptionItem";
 import { cn } from "@/lib/utils";
+import { useFormContext } from "react-hook-form";
 
 type ProductVariantsProps = {
   value: ProductOptionFormData[];
   onChange: (options: ProductOptionFormData[]) => void;
   maxOptions?: number;
   maxValuesPerOption?: number;
-  error?: string;
-  fieldErrors?: any; // React Hook Form field errors
 };
 
 export default function ProductVariants({
@@ -23,10 +22,11 @@ export default function ProductVariants({
   onChange,
   maxOptions = 3,
   maxValuesPerOption = 50,
-  error,
-  fieldErrors,
 }: ProductVariantsProps) {
   const t = useTranslations("products");
+  const {
+    formState: { errors },
+  } = useFormContext<ProductFormData>();
 
   const addOption = () => {
     if (value.length >= maxOptions) return;
@@ -51,18 +51,19 @@ export default function ProductVariants({
 
   const addValue = (optionIndex: number, newValue: string) => {
     const newOptions = [...value];
-    newOptions[optionIndex].values = [
-      ...newOptions[optionIndex].values,
-      newValue,
-    ];
+    newOptions[optionIndex].values = [...newOptions[optionIndex].values, newValue];
+    onChange(newOptions);
+  };
+
+  const updateValue = (optionIndex: number, valueIndex: number, newValue: string) => {
+    const newOptions = [...value];
+    newOptions[optionIndex].values[valueIndex] = newValue;
     onChange(newOptions);
   };
 
   const removeValue = (optionIndex: number, valueIndex: number) => {
     const newOptions = [...value];
-    newOptions[optionIndex].values = newOptions[optionIndex].values.filter(
-      (_: string, i: number) => i !== valueIndex
-    );
+    newOptions[optionIndex].values = newOptions[optionIndex].values.filter((_: string, i: number) => i !== valueIndex);
     onChange(newOptions);
   };
 
@@ -72,41 +73,24 @@ export default function ProductVariants({
     onChange(newOptions);
   };
 
-  const hasErrors =
-    error ||
-    (fieldErrors &&
-      Array.isArray(fieldErrors) &&
-      fieldErrors.some((optionError) => optionError));
+  const hasErrors = !!errors?.productOptions;
 
   return (
-    <Card
-      className={cn(
-        "bg-background",
-        hasErrors && "border-red-200 dark:border-red-800"
-      )}
-    >
+    <Card className={cn("bg-background", hasErrors && "border-red-200 dark:border-red-800")}>
       <CardContent>
         <div className="space-y-4">
           {/* Header */}
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="flex justify-center items-center w-8 h-8 rounded-lg bg-primary/10">
                 <Package className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-base">
-                  {t("product variants")}
-                </h3>
+                <h3 className="font-semibold text-base">{t("product variants")}</h3>
               </div>
             </div>
             {value.length < maxOptions && (
-              <Button
-                type="button"
-                onClick={addOption}
-                className="gap-2 shadow-sm"
-                size="sm"
-                variant="primary"
-              >
+              <Button type="button" onClick={addOption} className="gap-2 ms-auto shadow-sm" size="sm" variant="primary">
                 <Plus className="w-4 h-4" />
                 {t("add option")}
               </Button>
@@ -121,17 +105,11 @@ export default function ProductVariants({
                   <Package className="w-6 h-6 text-muted-foreground" />
                 </div>
                 <div className="space-y-1 mb-3">
-                  <h3 className="font-medium text-sm">
-                    {t("no options configured")}
-                  </h3>
-                  <p className="max-w-md mx-auto text-muted-foreground text-xs">
-                    {t("add your first option")}
-                  </p>
+                  <h3 className="font-medium text-sm">{t("no options configured")}</h3>
+                  <p className="max-w-md mx-auto text-muted-foreground text-xs">{t("add your first option")}</p>
                 </div>
                 <div className="pt-2 border-t border-dashed">
-                  <p className="mb-1 font-medium text-muted-foreground text-xs">
-                    {t("examples")}:
-                  </p>
+                  <p className="mb-1 font-medium text-muted-foreground text-xs">{t("examples")}:</p>
                   <div className="flex flex-wrap justify-center gap-1.5 text-xs">
                     <Badge
                       variant="outline"
@@ -168,10 +146,10 @@ export default function ProductVariants({
                   onUpdateName={updateOptionName}
                   onRemoveOption={removeOption}
                   onAddValue={addValue}
+                  onUpdateValue={updateValue}
                   onRemoveValue={removeValue}
                   onReorderValues={reorderValues}
                   maxValuesPerOption={maxValuesPerOption}
-                  fieldError={fieldErrors?.[optionIndex]}
                 />
               ))}
 

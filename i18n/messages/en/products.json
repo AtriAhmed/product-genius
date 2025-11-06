@@ -193,5 +193,6 @@
   "select plans": "Select Plans",
   "select all": "Select All",
   "clear all": "Clear All",
-  "no plans available": "No plans available"
+  "no plans available": "No plans available",
+  "please fix the errors in the form before submitting": "Please fix the errors in the form before submitting"
 }

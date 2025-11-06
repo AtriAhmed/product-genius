@@ -27,7 +27,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { AlertCircle, GripVertical, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { ProductOptionFormData } from "./types";
+import { ProductFormData, ProductOptionFormData } from "./types";
+import { useFormContext } from "react-hook-form";
 
 type ProductOptionItemProps = {
   option: ProductOptionFormData;
@@ -35,10 +36,10 @@ type ProductOptionItemProps = {
   onUpdateName: (index: number, name: string) => void;
   onRemoveOption: (index: number) => void;
   onAddValue: (optionIndex: number, value: string) => void;
+  onUpdateValue: (optionIndex: number, valueIndex: number, newValue: string) => void;
   onRemoveValue: (optionIndex: number, valueIndex: number) => void;
   onReorderValues: (optionIndex: number, newValues: string[]) => void;
   maxValuesPerOption: number;
-  fieldError?: any; // Validation errors for this specific option
 };
 
 // Sortable Value Item Component
@@ -47,6 +48,7 @@ interface SortableValueItemProps {
   valueId: string;
   optionIndex: number;
   valueIndex: number;
+  onUpdateValue: (optionIndex: number, valueIndex: number, newValue: string) => void;
   onRemoveValue: (optionIndex: number, valueIndex: number) => void;
   t: (key: string) => string;
 }
@@ -56,55 +58,48 @@ function SortableValueItem({
   valueId,
   optionIndex,
   valueIndex,
+  onUpdateValue,
   onRemoveValue,
   t,
 }: SortableValueItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: valueId });
   const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: valueId });
+    formState: { errors },
+  } = useFormContext<ProductFormData>();
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  const handleValueKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onRemoveValue(optionIndex, valueIndex);
-    }
+  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onUpdateValue(optionIndex, valueIndex, e.target.value);
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        "group inline-flex items-center gap-1 px-2 py-0.5 border border-blue-200 hover:border-red-200 dark:border-blue-800 dark:hover:border-red-800 rounded-full bg-blue-50 hover:bg-red-50 dark:bg-blue-950 dark:hover:bg-red-950 text-blue-700 hover:text-red-700 dark:hover:text-red-300 dark:text-blue-300 text-xs transition-transform hover:-translate-y-0.5 transform",
-        isDragging && "opacity-50 z-10"
-      )}
+      className={cn("flex items-center gap-2 bg-card transition-all", isDragging && "opacity-50 z-10")}
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-      >
-        <GripVertical className="w-3 h-3" />
+      <div {...attributes} {...listeners} className="p-1 rounded hover:bg-muted cursor-grab active:cursor-grabbing">
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
-      <span className="text-xs">{value}</span>
-      <button
+      <Input
+        value={value}
+        onChange={handleValueChange}
+        placeholder={t("enter value")}
+        className="flex-1 py-1 text-xs"
+      />
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => onRemoveValue(optionIndex, valueIndex)}
-        onKeyDown={handleValueKeyDown}
-        className="ml-0.5 focus:outline-none focus:ring-1 focus:ring-primary/30"
+        className="p-1 hover:bg-destructive/10 hover:text-destructive"
       >
-        <X className="w-3 h-3" />
-      </button>
+        <X className="w-4 h-4" />
+      </Button>
     </div>
   );
 }
@@ -115,14 +110,16 @@ export default function ProductOptionItem({
   onUpdateName,
   onRemoveOption,
   onAddValue,
+  onUpdateValue,
   onRemoveValue,
   onReorderValues,
   maxValuesPerOption,
-  fieldError,
 }: ProductOptionItemProps) {
   const t = useTranslations("products");
-  const [newValue, setNewValue] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const {
+    formState: { errors },
+  } = useFormContext<ProductFormData>();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -134,29 +131,6 @@ export default function ProductOptionItem({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  const handleAddValue = () => {
-    const trimmedValue = newValue.trim();
-    if (!trimmedValue) return;
-
-    if (option.values.includes(trimmedValue)) {
-      return; // Duplicate value
-    }
-
-    if (option.values.length >= maxValuesPerOption) return;
-
-    onAddValue(optionIndex, trimmedValue);
-    setNewValue("");
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddValue();
-    } else if (e.key === "Escape") {
-      setNewValue("");
-    }
-  };
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -205,10 +179,7 @@ export default function ProductOptionItem({
 
         <div className="flex sm:flex-row flex-col sm:items-start sm:gap-4">
           <div className="flex-1">
-            <Label
-              htmlFor={`option-name-${optionIndex}`}
-              className="block font-medium text-xs"
-            >
+            <Label htmlFor={`option-name-${optionIndex}`} className="block font-medium text-xs">
               {t("option name")}
             </Label>
             <Input
@@ -216,15 +187,11 @@ export default function ProductOptionItem({
               value={option.name}
               onChange={(e) => onUpdateName(optionIndex, e.target.value)}
               placeholder={t("enter option name")}
-              className={cn(
-                "w-full mt-1 py-1 focus:ring-1 focus:ring-primary/30 text-xs",
-                fieldError?.name &&
-                  "border-red-500 focus:border-red-500 focus:ring-red-200"
-              )}
+              className={cn("w-full mt-1 py-1 focus:ring-1 focus:ring-primary/30 text-xs")}
             />
-            {fieldError?.name?.message && (
+            {errors?.productOptions?.[optionIndex]?.name?.message && (
               <p className="mt-1 text-red-600 dark:text-red-400 text-xs">
-                {fieldError.name.message}
+                {errors?.productOptions?.[optionIndex]?.name?.message}
               </p>
             )}
           </div>
@@ -232,30 +199,20 @@ export default function ProductOptionItem({
 
         {/* Values Section */}
         <div className="space-y-2 mt-3">
-          <Label className="font-medium text-xs">{t("option values")}</Label>
+          <div className="flex items-center gap-2">
+            <Label className="font-medium text-xs">{t("option values")}</Label>
 
-          {/* Add Value Input */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Input
-              value={newValue}
-              onChange={(e) => setNewValue(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder={t("enter value")}
-              className="flex-1 min-w-[140px] py-1 text-xs"
-              disabled={option.values.length >= maxValuesPerOption}
-            />
+            {/* Add Value Button */}
             <Button
               type="button"
               variant="outline"
-              onClick={handleAddValue}
-              disabled={
-                !newValue.trim() ||
-                option.values.length >= maxValuesPerOption ||
-                option.values.includes(newValue.trim())
-              }
-              className="p-1 shrink-0"
+              onClick={() => onAddValue(optionIndex, "")}
+              disabled={option.values.length >= maxValuesPerOption}
+              className="gap-2 text-xs"
+              size="sm"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
+              {t("add value")}
             </Button>
           </div>
 
@@ -268,11 +225,8 @@ export default function ProductOptionItem({
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
             >
-              <SortableContext
-                items={option.values}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="flex flex-wrap gap-2">
+              <SortableContext items={option.values} strategy={verticalListSortingStrategy}>
+                <div className="space-y-2">
                   {option.values.map((value: string, valueIndex: number) => (
                     <SortableValueItem
                       key={value}
@@ -280,6 +234,7 @@ export default function ProductOptionItem({
                       valueId={value}
                       optionIndex={optionIndex}
                       valueIndex={valueIndex}
+                      onUpdateValue={onUpdateValue}
                       onRemoveValue={onRemoveValue}
                       t={t}
                     />
@@ -289,10 +244,12 @@ export default function ProductOptionItem({
 
               <DragOverlay>
                 {activeId ? (
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 border border-blue-200 dark:border-blue-800 rounded-full bg-blue-50 dark:bg-blue-950 shadow-lg text-blue-700 dark:text-blue-300 text-xs">
-                    <GripVertical className="w-3 h-3" />
-                    <span className="text-xs">{activeId}</span>
-                    <X className="w-3 h-3 ml-0.5" />
+                  <div className="flex items-center gap-2 bg-card">
+                    <GripVertical className="w-4 h-4 text-muted-foreground" />
+                    <Input value={activeId as string} readOnly className="flex-1 py-1 text-xs" />
+                    <Button variant="ghost" size="sm" className="p-1" disabled>
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
                 ) : null}
               </DragOverlay>
@@ -302,41 +259,6 @@ export default function ProductOptionItem({
           {option.values.length > 1 && (
             <div className="text-muted-foreground text-xs">
               <strong>Drag</strong> the grip icon to reorder values
-            </div>
-          )}
-
-          {/* Validation Messages */}
-          {(option.values.length >= maxValuesPerOption ||
-            (newValue && option.values.includes(newValue.trim())) ||
-            option.values.length === 0 ||
-            fieldError?.values) && (
-            <div className="space-y-1">
-              {/* Form validation error for values */}
-              {fieldError?.values?.message && (
-                <p className="flex items-center gap-1 text-red-600 dark:text-red-400 text-xs">
-                  <AlertCircle className="w-3 h-3" />
-                  {fieldError.values.message}
-                </p>
-              )}
-
-              {/* Runtime validation messages */}
-              {option.values.length >= maxValuesPerOption && (
-                <p className="flex items-center gap-1 text-amber-600 text-xs">
-                  <AlertCircle className="w-3 h-3" />
-                  {t("maximum 50 values allowed")}
-                </p>
-              )}
-              {newValue && option.values.includes(newValue.trim()) && (
-                <p className="flex items-center gap-1 text-destructive text-xs">
-                  <AlertCircle className="w-3 h-3" />
-                  {t("duplicate values not allowed")}
-                </p>
-              )}
-              {option.values.length === 0 && !fieldError?.values?.message && (
-                <p className="text-muted-foreground text-xs">
-                  {t("at least one value required")}
-                </p>
-              )}
             </div>
           )}
         </div>

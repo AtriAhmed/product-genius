@@ -19,7 +19,7 @@ import { ArrowLeft, Globe, ImageIcon, Save, Trash2, Package } from "lucide-react
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 type ProductFormProps = {
@@ -51,14 +51,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     fetchCategories();
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors, isValid, isDirty },
-  } = useForm<ProductFormData>({
+  const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema) as any,
     defaultValues: {
       price: product?.price || undefined,
@@ -83,6 +76,15 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         })) || [],
     },
   });
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isValid, isDirty },
+  } = form;
 
   console.log("-------------------- errors --------------------");
   console.log(errors);
@@ -182,6 +184,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     }
   };
 
+  function onError() {
+    toast.error(t("please fix the errors in the form before submitting"));
+  }
+
   const handleDelete = () => {
     setShowDeleteDialog(true);
   };
@@ -267,69 +273,69 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       {/* Main Content */}
       <div className="mx-auto py-8">
         <div className="max-w-3xl">
-          <form id="product-form" onSubmit={handleSubmit(onSubmit)} className="mb-2">
-            {/* Main Content */}
-            <div className="space-y-2 lg:col-span-2">
-              {/* Basic Information */}
-              <BasicInformation
-                setValue={setValue}
-                errors={errors}
-                categories={categories}
-                categoryValue={watch("categoryId")}
-                isActive={watch("isActive")}
-              />
+          <FormProvider {...form}>
+            <form id="product-form" onSubmit={handleSubmit(onSubmit, onError)} className="mb-2">
+              {/* Main Content */}
+              <div className="space-y-2 lg:col-span-2">
+                {/* Basic Information */}
+                <BasicInformation
+                  setValue={setValue}
+                  errors={errors}
+                  categories={categories}
+                  categoryValue={watch("categoryId")}
+                  isActive={watch("isActive")}
+                />
 
-              {/* Pricing Section */}
-              <PricingSection setValue={setValue} errors={errors} currency={watch("currency")} register={register} />
+                {/* Pricing Section */}
+                <PricingSection setValue={setValue} errors={errors} currency={watch("currency")} register={register} />
 
-              {/* Plan Selection */}
-              <PlanSelector
-                selectedPlanIds={watch("planIds") || []}
-                onChange={(planIds) => {
-                  setValue("planIds", planIds, {
-                    shouldDirty: true,
-                  });
-                }}
-                error={errors.planIds?.message}
-              />
+                {/* Plan Selection */}
+                <PlanSelector
+                  selectedPlanIds={watch("planIds") || []}
+                  onChange={(planIds) => {
+                    setValue("planIds", planIds, {
+                      shouldDirty: true,
+                    });
+                  }}
+                  error={errors.planIds?.message}
+                />
 
-              {/* Multi-language Content */}
-              <ProductContentForm
-                value={watch("translations") || []}
-                onChange={(newTranslations) => {
-                  setValue("translations", newTranslations, {
-                    shouldDirty: true,
-                  });
-                }}
-                requiredLanguages={[]}
-              />
-              {errors.translations && <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>}
+                {/* Multi-language Content */}
+                <ProductContentForm
+                  value={watch("translations") || []}
+                  onChange={(newTranslations) => {
+                    setValue("translations", newTranslations, {
+                      shouldDirty: true,
+                    });
+                  }}
+                  requiredLanguages={[]}
+                />
+                {errors.translations && <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>}
 
-              {/* Media Upload */}
-              <MediaUpload
-                value={watch("media") || []}
-                onChange={(newMedia) => {
-                  setValue("media", newMedia, {
-                    shouldDirty: true,
-                  });
-                }}
-                maxFiles={100}
-                maxFileSize={500}
-              />
+                {/* Media Upload */}
+                <MediaUpload
+                  value={watch("media") || []}
+                  onChange={(newMedia) => {
+                    setValue("media", newMedia, {
+                      shouldDirty: true,
+                    });
+                  }}
+                  maxFiles={100}
+                  maxFileSize={500}
+                />
 
-              {/* Product Variants */}
-              <ProductVariants
-                value={watch("productOptions") || []}
-                onChange={(newOptions) => {
-                  setValue("productOptions", newOptions, {
-                    shouldDirty: true,
-                  });
-                }}
-                error={errors.productOptions?.message}
-                fieldErrors={errors.productOptions}
-              />
-            </div>
-          </form>
+                {/* Product Variants */}
+                <ProductVariants
+                  value={watch("productOptions") || []}
+                  onChange={(newOptions) => {
+                    setValue("productOptions", newOptions, {
+                      shouldDirty: true,
+                    });
+                  }}
+                />
+              </div>
+            </form>
+          </FormProvider>
           <ProductSuppliers setValue={setValue} watch={watch} />
         </div>
       </div>
