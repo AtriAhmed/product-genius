@@ -43,10 +43,24 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
             translations: true,
           },
         },
-        productOptions: {
+        options: {
+          include: {
+            values: {
+              orderBy: { position: "asc" },
+            },
+          },
           orderBy: { position: "asc" },
         },
-        productVariants: true,
+        variants: {
+          include: {
+            options: {
+              include: {
+                option: true,
+                value: true,
+              },
+            },
+          },
+        },
         productMappings: {
           where: { shopifyStoreId },
         },
@@ -97,9 +111,9 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
       }));
 
     // Prepare product options in the new format
-    const productOptions = product.productOptions.map((option) => ({
+    const productOptions = product.options.map((option) => ({
       name: option.name,
-      values: (option.values as string[]).map((value) => ({ name: value })),
+      values: option.values.map((value) => ({ name: value.value })),
     }));
 
     // Prepare product data for Shopify GraphQL
@@ -200,34 +214,31 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
     });
 
     // Handle variant mapping
-    if (shopifyProduct.variants.nodes.length > 0) {
+    if (shopifyProduct.variants.nodes.length > 0 && product.variants.length > 0) {
       // Create mappings for all variants created by Shopify
       const variantMappings = [];
 
       for (const shopifyVariant of shopifyProduct.variants.nodes) {
         // Find matching local variant by comparing option values
-        const matchingLocalVariant = product.productVariants.find((localVariant) => {
-          // If no options, match the first local variant
-          if (product.productOptions.length === 0) {
+        const matchingLocalVariant = product.variants.find((localVariant) => {
+          // If no options, match the first available local variant (default variant)
+          if (product.options.length === 0 || localVariant.options.length === 0) {
             return true;
           }
 
-          // Match by option values
+          // Match by option values - ensure all shopify options match local variant options
           const shopifyOptions = shopifyVariant.selectedOptions;
-          return shopifyOptions.every((shopifyOption: any) => {
-            const optionName = shopifyOption.name;
-            const optionValue = shopifyOption.value;
+          return (
+            shopifyOptions.every((shopifyOption: any) => {
+              const optionName = shopifyOption.name;
+              const optionValue = shopifyOption.value;
 
-            // Check if local variant has matching option value
-            if (optionName === product.productOptions[0]?.name) {
-              return localVariant.option1 === optionValue;
-            } else if (optionName === product.productOptions[1]?.name) {
-              return localVariant.option2 === optionValue;
-            } else if (optionName === product.productOptions[2]?.name) {
-              return localVariant.option3 === optionValue;
-            }
-            return false;
-          });
+              // Check if local variant has matching option value by looking at variant's options
+              return localVariant.options.some((variantOption) => {
+                return variantOption.option.name === optionName && variantOption.value.value === optionValue;
+              });
+            }) && shopifyOptions.length === localVariant.options.length
+          );
         });
 
         if (matchingLocalVariant) {
@@ -238,7 +249,7 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
             shopifyVariantId: shopifyVariant.id.replace("gid://shopify/ProductVariant/", ""),
             shopifyProductId,
             shop: shopifyStore.shop!,
-            sku: shopifyVariant.sku,
+            sku: matchingLocalVariant.sku || shopifyVariant.sku,
           });
         }
       }

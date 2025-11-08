@@ -34,6 +34,7 @@ export default function ProductsPage() {
   const t = useTranslations("products");
   const router = useRouter();
   const [deleteProduct, setDeleteProduct] = useState<Product | undefined>();
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
@@ -94,6 +95,7 @@ export default function ProductsPage() {
   const confirmDelete = async () => {
     if (!deleteProduct) return;
 
+    setIsDeletingProduct(true);
     try {
       await axios.delete(`/api/products/${deleteProduct.id}`);
       toast.success("Product deleted successfully");
@@ -102,6 +104,7 @@ export default function ProductsPage() {
       console.error("Error deleting product:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete product");
     } finally {
+      setIsDeletingProduct(false);
       setDeleteProduct(undefined);
     }
   };
@@ -187,6 +190,7 @@ export default function ProductsPage() {
         cancelText="Cancel"
         onConfirm={confirmDelete}
         variant="destructive"
+        isLoading={isDeletingProduct}
       />
     </div>
   );
