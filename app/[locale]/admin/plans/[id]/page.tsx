@@ -15,7 +15,6 @@ async function getPlan(id: number): Promise<Plan | null> {
     const plan = await prisma.plan.findUnique({
       where: { id },
       include: {
-        prices: true,
         _count: {
           select: {
             subscriptions: true,
