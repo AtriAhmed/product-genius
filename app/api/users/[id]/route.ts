@@ -17,10 +17,7 @@ const updateUserSchema = z.object({
   role: z.enum(["OWNER", "ADMIN", "EDITOR", "AGENT", "USER"]).optional(),
 });
 
-export async function GET(
-  request: NextRequest,
-  ctx: RouteContext<"/api/users/[id]">
-) {
+export async function GET(request: NextRequest, ctx: RouteContext<"/api/users/[id]">) {
   const params = await ctx.params;
 
   try {
@@ -41,15 +38,11 @@ export async function GET(
       select: { role: true },
     });
 
-    const isOwnerOrAdmin =
-      currentUser && ["OWNER", "ADMIN"].includes(currentUser.role);
+    const isOwnerOrAdmin = currentUser && ["OWNER", "ADMIN"].includes(currentUser.role);
     const isOwnProfile = parseInt(session.user.id) === userId;
 
     if (!isOwnerOrAdmin && !isOwnProfile) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const user = await prisma.user.findUnique({
@@ -71,8 +64,6 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
-                price: true,
-                interval: true,
               },
             },
           },
@@ -118,17 +109,11 @@ export async function GET(
     return NextResponse.json({ user });
   } catch (error) {
     console.error("User fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  ctx: RouteContext<"/api/users/[id]">
-) {
+export async function PUT(request: NextRequest, ctx: RouteContext<"/api/users/[id]">) {
   const params = await ctx.params;
 
   try {
@@ -148,16 +133,12 @@ export async function PUT(
       select: { role: true },
     });
 
-    const isOwnerOrAdmin =
-      currentUser && ["OWNER", "ADMIN"].includes(currentUser.role);
+    const isOwnerOrAdmin = currentUser && ["OWNER", "ADMIN"].includes(currentUser.role);
     const isOwnProfile = parseInt(session.user.id) === userId;
 
     // Users can update their own profile (except role), admins can update all
     if (!isOwnerOrAdmin && !isOwnProfile) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const body = await request.json();
@@ -174,10 +155,7 @@ export async function PUT(
 
     // Prevent non-admins from changing roles
     if (validatedData.role && !isOwnerOrAdmin) {
-      return NextResponse.json(
-        { error: "Cannot change role" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Cannot change role" }, { status: 403 });
     }
 
     // Check email uniqueness if email is being updated
@@ -187,10 +165,7 @@ export async function PUT(
       });
 
       if (emailExists) {
-        return NextResponse.json(
-          { error: "Email already in use" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Email already in use" }, { status: 400 });
       }
     }
 
@@ -198,8 +173,7 @@ export async function PUT(
 
     if (validatedData.email) updateData.email = validatedData.email;
     if (validatedData.name) updateData.name = validatedData.name;
-    if (validatedData.role && isOwnerOrAdmin)
-      updateData.role = validatedData.role;
+    if (validatedData.role && isOwnerOrAdmin) updateData.role = validatedData.role;
 
     // Hash password if provided
     if (validatedData.password) {
@@ -222,24 +196,15 @@ export async function PUT(
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid input", details: error.issues }, { status: 400 });
     }
 
     console.error("User update error:", error);
-    return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  ctx: RouteContext<"/api/users/[id]">
-) {
+export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/users/[id]">) {
   const params = await ctx.params;
 
   try {
@@ -261,18 +226,12 @@ export async function DELETE(
     });
 
     if (!currentUser || !["OWNER", "ADMIN"].includes(currentUser.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     // Prevent self-deletion
     if (parseInt(session.user.id) === userId) {
-      return NextResponse.json(
-        { error: "Cannot delete your own account" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
     }
 
     // Check if user exists
@@ -292,9 +251,6 @@ export async function DELETE(
     return NextResponse.json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("User deletion error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
   }
 }

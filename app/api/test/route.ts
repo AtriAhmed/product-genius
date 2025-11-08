@@ -1,7 +1,6 @@
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { prisma } from "@/lib/prisma";
 import { createShopifyClient } from "@/lib/shopify-client";
-import { generateVariants } from "@/lib/variant-generator";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -11,10 +10,7 @@ export async function GET(request: NextRequest) {
   const shop = shopifyStore?.shop;
 
   if (!shopifyStore) {
-    return NextResponse.json(
-      { error: "Shopify store not connected" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Shopify store not connected" }, { status: 400 });
   }
 
   const query = `
@@ -75,19 +71,14 @@ export async function GET(request: NextRequest) {
 
   const variables = { id: orderId };
 
-  const shopifyClient = createShopifyClient(
-    shopifyStore.shop!,
-    shopifyStore.accessToken!
-  );
+  const shopifyClient = createShopifyClient(shopifyStore.shop!, shopifyStore.accessToken!);
 
   const response = await shopifyClient.post("/graphql.json", {
     query,
     variables,
   });
 
-  console.log(
-    "-------------------- JSON.stringify(response.data, null, 2) --------------------"
-  );
+  console.log("-------------------- JSON.stringify(response.data, null, 2) --------------------");
   console.log(JSON.stringify(response.data, null, 2));
 
   return NextResponse.json({ data: response.data });
