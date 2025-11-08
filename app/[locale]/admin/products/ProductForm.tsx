@@ -86,6 +86,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     formState: { errors, isValid, isDirty },
   } = form;
 
+  const options = watch("options");
+
   console.log("-------------------- errors --------------------");
   console.log(errors);
 
@@ -342,7 +344,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 <ProductOptions />
 
                 {/* Variants Preview */}
-                <ProductVariants />
+                {options && options.length > 0 && <ProductVariants />}
               </div>
             </form>
           </FormProvider>
