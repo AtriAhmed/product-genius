@@ -1,167 +1,121 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { DollarSign, Package2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ProductFormData, ProductOptionFormData } from "./types";
-import ProductOptionItem from "./ProductOptionItem";
-import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 import { useFormContext } from "react-hook-form";
+import { ProductFormData, ProductVariantFormData } from "./types";
+import { hueFromString } from "@/lib/utils";
+import { useIsMounted } from "@/hooks/use-is-mounted";
 
-type ProductVariantsProps = {
-  value: ProductOptionFormData[];
-  onChange: (options: ProductOptionFormData[]) => void;
-  maxOptions?: number;
-  maxValuesPerOption?: number;
-};
+type ProductVariantsPreviewProps = {};
 
-export default function ProductVariants({
-  value = [],
-  onChange,
-  maxOptions = 3,
-  maxValuesPerOption = 50,
-}: ProductVariantsProps) {
+export default function ProductVariants({}: ProductVariantsPreviewProps) {
   const t = useTranslations("products");
-  const {
-    formState: { errors },
-  } = useFormContext<ProductFormData>();
+  const { watch, setValue } = useFormContext<ProductFormData>();
+  const { theme } = useTheme();
+  const isMounted = useIsMounted();
 
-  const addOption = () => {
-    if (value.length >= maxOptions) return;
+  const variants = watch("variants") || [];
+  const options = watch("options") || [];
 
-    const newOption: ProductOptionFormData = {
-      name: "",
-      values: [],
-    };
-    onChange([...value, newOption]);
+  function onVariantPriceChange(variantId: string | number, price: number | undefined) {
+    const updatedVariants = variants.map((variant) => (variant.id === variantId ? { ...variant, price } : variant));
+    setValue("variants", updatedVariants, { shouldDirty: true });
+  }
+
+  if (variants.length === 0) {
+    return null;
+  }
+
+  // Helper to get option and value names for display
+  const getVariantDisplayInfo = (variant: ProductVariantFormData) => {
+    const variantInfo: string[] = [];
+
+    Object.entries(variant.options).forEach(([optionId, valueId]) => {
+      const option = options.find((opt) => opt.id == optionId);
+      const value = option?.values.find((val) => val.id == valueId);
+
+      if (option && value) {
+        variantInfo.push(`${option.name}: ${value.value}`);
+      }
+    });
+
+    return variantInfo;
   };
-
-  const removeOption = (index: number) => {
-    const newOptions = value.filter((_, i) => i !== index);
-    onChange(newOptions);
-  };
-
-  const updateOptionName = (index: number, name: string) => {
-    const newOptions = [...value];
-    newOptions[index].name = name;
-    onChange(newOptions);
-  };
-
-  const addValue = (optionIndex: number, newValue: string) => {
-    const newOptions = [...value];
-    newOptions[optionIndex].values = [...newOptions[optionIndex].values, newValue];
-    onChange(newOptions);
-  };
-
-  const updateValue = (optionIndex: number, valueIndex: number, newValue: string) => {
-    const newOptions = [...value];
-    newOptions[optionIndex].values[valueIndex] = newValue;
-    onChange(newOptions);
-  };
-
-  const removeValue = (optionIndex: number, valueIndex: number) => {
-    const newOptions = [...value];
-    newOptions[optionIndex].values = newOptions[optionIndex].values.filter((_: string, i: number) => i !== valueIndex);
-    onChange(newOptions);
-  };
-
-  const reorderValues = (optionIndex: number, newValues: string[]) => {
-    const newOptions = [...value];
-    newOptions[optionIndex].values = newValues;
-    onChange(newOptions);
-  };
-
-  const hasErrors = !!errors?.productOptions;
 
   return (
-    <Card className={cn("bg-background", hasErrors && "border-red-200 dark:border-red-800")}>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Package2 className="w-5 h-5" />
+          {t("generated variants")} ({variants.length})
+        </CardTitle>
+      </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {/* Header */}
-          <div className="flex flex-wrap justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="flex justify-center items-center w-8 h-8 rounded-lg bg-primary/10">
-                <Package className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base">{t("product variants")}</h3>
-              </div>
-            </div>
-            {value.length < maxOptions && (
-              <Button type="button" onClick={addOption} className="gap-2 ms-auto shadow-sm" size="sm" variant="primary">
-                <Plus className="w-4 h-4" />
-                {t("add option")}
-              </Button>
-            )}
-          </div>
+        <div className="space-y-2">
+          {variants.map((variant, index) => {
+            const displayInfo = getVariantDisplayInfo(variant);
 
-          {/* Empty State */}
-          {value.length === 0 && (
-            <div className="p-6 border-2 border-muted-foreground/25 border-dashed rounded-lg">
-              <div className="space-y-1 text-center">
-                <div className="flex justify-center items-center w-12 h-12 mx-auto rounded-full bg-muted">
-                  <Package className="w-6 h-6 text-muted-foreground" />
+            return (
+              <div key={variant.id} className="flex flex-wrap items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                {/* Variant Info */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-medium text-sm">
+                      {t("variant")} #{index + 1}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      ID: {variant.id}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {displayInfo.map((info, infoIndex) => (
+                      <Badge
+                        key={infoIndex}
+                        className="text-xs"
+                        style={{
+                          backgroundColor:
+                            !isMounted || theme === "dark"
+                              ? `hsl(${hueFromString(info.split(":")[0].trim())}, 40%, 25%)` // darker background for dark mode
+                              : `hsl(${hueFromString(info.split(":")[0].trim())}, 65%, 85%)`, // softer pastel for light mode
+                          color: !isMounted || theme === "dark" ? "white" : "black",
+                        }}
+                      >
+                        {info}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-1 mb-3">
-                  <h3 className="font-medium text-sm">{t("no options configured")}</h3>
-                  <p className="max-w-md mx-auto text-muted-foreground text-xs">{t("add your first option")}</p>
-                </div>
-                <div className="pt-2 border-t border-dashed">
-                  <p className="mb-1 font-medium text-muted-foreground text-xs">{t("examples")}:</p>
-                  <div className="flex flex-wrap justify-center gap-1.5 text-xs">
-                    <Badge
-                      variant="outline"
-                      className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
-                    >
-                      {t("color red blue green")}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300"
-                    >
-                      {t("size s m l xl")}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300"
-                    >
-                      {t("material cotton polyester")}
-                    </Badge>
+
+                {/* Price Input */}
+                <div className="flex items-center gap-1">
+                  <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  <div className="space-x-3 space-y-1">
+                    <Label htmlFor={`variant-price-${variant.id}`} className="text-xs">
+                      {t("price")}
+                    </Label>
+                    <Input
+                      id={`variant-price-${variant.id}`}
+                      type="number"
+                      step="0.5"
+                      value={variant.price ?? ""}
+                      onChange={(e) => {
+                        const price = e.target.value ? parseFloat(e.target.value) : undefined;
+                        onVariantPriceChange(variant.id, price);
+                      }}
+                      className="w-24 text-sm"
+                      placeholder="0.00"
+                    />
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Options List */}
-          {value.length > 0 && (
-            <div className="space-y-3">
-              {value.map((option, optionIndex) => (
-                <ProductOptionItem
-                  key={optionIndex}
-                  option={option}
-                  optionIndex={optionIndex}
-                  onUpdateName={updateOptionName}
-                  onRemoveOption={removeOption}
-                  onAddValue={addValue}
-                  onUpdateValue={updateValue}
-                  onRemoveValue={removeValue}
-                  onReorderValues={reorderValues}
-                  maxValuesPerOption={maxValuesPerOption}
-                />
-              ))}
-
-              {/* Max Options Warning */}
-              {value.length >= maxOptions && (
-                <div className="flex items-center gap-2 p-2.5 border border-amber-200 dark:border-amber-800 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <p className="text-xs">{t("maximum 3 options allowed")}</p>
-                </div>
-              )}
-            </div>
-          )}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

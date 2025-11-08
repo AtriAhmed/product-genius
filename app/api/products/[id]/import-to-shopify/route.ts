@@ -11,10 +11,7 @@ const importProductSchema = z.object({
   shopifyStoreId: z.number().int().positive(),
 });
 
-export async function POST(
-  request: NextRequest,
-  ctx: RouteContext<"/api/products/[id]/import-to-shopify">
-) {
+export async function POST(request: NextRequest, ctx: RouteContext<"/api/products/[id]/import-to-shopify">) {
   const params = await ctx.params;
   try {
     // Check authentication
@@ -25,10 +22,7 @@ export async function POST(
 
     const productId = parseInt(params.id);
     if (isNaN(productId)) {
-      return NextResponse.json(
-        { error: "Invalid product ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
 
     // const body = await request.json();
@@ -65,10 +59,7 @@ export async function POST(
 
     // Check if product is already imported to this store
     if (product.productMappings.length > 0) {
-      return NextResponse.json(
-        { error: "Product already imported to this Shopify store" },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: "Product already imported to this Shopify store" }, { status: 409 });
     }
 
     // Get Shopify store credentials
@@ -80,21 +71,12 @@ export async function POST(
     });
 
     if (!shopifyStore) {
-      return NextResponse.json(
-        { error: "Shopify store not found or access denied" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Shopify store not found or access denied" }, { status: 404 });
     }
 
-    const shopifyClient = createShopifyClient(
-      shopifyStore.shop!,
-      shopifyStore.accessToken!
-    );
+    const shopifyClient = createShopifyClient(shopifyStore.shop!, shopifyStore.accessToken!);
 
-    const primaryTranslation = getCurrentTranslation(
-      product.translations,
-      "en"
-    );
+    const primaryTranslation = getCurrentTranslation(product.translations, "en");
 
     const categoryTranslation = getCurrentTranslation(
       (product.category?.translations as CategoryTranslation[]) || [],
@@ -102,19 +84,14 @@ export async function POST(
     );
 
     if (!primaryTranslation) {
-      return NextResponse.json(
-        { error: "No product translations found" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No product translations found" }, { status: 400 });
     }
 
     // Prepare images for media parameter
     const mediaInput = product.media
       .filter((media) => media.type === "IMAGE")
       .map((media) => ({
-        originalSource: media.url?.startsWith("/")
-          ? `${process.env.NEXTAUTH_URL}${getMediaUrl(media.url)}`
-          : media.url,
+        originalSource: media.url?.startsWith("/") ? `${process.env.NEXTAUTH_URL}${getMediaUrl(media.url)}` : media.url,
         alt: media.alt || primaryTranslation.title,
         mediaContentType: "IMAGE" as const,
       }));
@@ -209,10 +186,7 @@ export async function POST(
     }
 
     const shopifyProduct = data.productCreate.product;
-    const shopifyProductId = shopifyProduct.id.replace(
-      "gid://shopify/Product/",
-      ""
-    );
+    const shopifyProductId = shopifyProduct.id.replace("gid://shopify/Product/", "");
 
     // Create product mapping
     await prisma.productMapping.create({
@@ -232,41 +206,36 @@ export async function POST(
 
       for (const shopifyVariant of shopifyProduct.variants.nodes) {
         // Find matching local variant by comparing option values
-        const matchingLocalVariant = product.productVariants.find(
-          (localVariant) => {
-            // If no options, match the first local variant
-            if (product.productOptions.length === 0) {
-              return true;
-            }
-
-            // Match by option values
-            const shopifyOptions = shopifyVariant.selectedOptions;
-            return shopifyOptions.every((shopifyOption: any) => {
-              const optionName = shopifyOption.name;
-              const optionValue = shopifyOption.value;
-
-              // Check if local variant has matching option value
-              if (optionName === product.productOptions[0]?.name) {
-                return localVariant.option1 === optionValue;
-              } else if (optionName === product.productOptions[1]?.name) {
-                return localVariant.option2 === optionValue;
-              } else if (optionName === product.productOptions[2]?.name) {
-                return localVariant.option3 === optionValue;
-              }
-              return false;
-            });
+        const matchingLocalVariant = product.productVariants.find((localVariant) => {
+          // If no options, match the first local variant
+          if (product.productOptions.length === 0) {
+            return true;
           }
-        );
+
+          // Match by option values
+          const shopifyOptions = shopifyVariant.selectedOptions;
+          return shopifyOptions.every((shopifyOption: any) => {
+            const optionName = shopifyOption.name;
+            const optionValue = shopifyOption.value;
+
+            // Check if local variant has matching option value
+            if (optionName === product.productOptions[0]?.name) {
+              return localVariant.option1 === optionValue;
+            } else if (optionName === product.productOptions[1]?.name) {
+              return localVariant.option2 === optionValue;
+            } else if (optionName === product.productOptions[2]?.name) {
+              return localVariant.option3 === optionValue;
+            }
+            return false;
+          });
+        });
 
         if (matchingLocalVariant) {
           variantMappings.push({
             userId: user.id,
             variantId: matchingLocalVariant.id,
             productId: product.id,
-            shopifyVariantId: shopifyVariant.id.replace(
-              "gid://shopify/ProductVariant/",
-              ""
-            ),
+            shopifyVariantId: shopifyVariant.id.replace("gid://shopify/ProductVariant/", ""),
             shopifyProductId,
             shop: shopifyStore.shop!,
             sku: shopifyVariant.sku,
@@ -281,9 +250,7 @@ export async function POST(
         });
       }
 
-      console.log(
-        `Created ${variantMappings.length} variant mappings for product ${product.id}`
-      );
+      console.log(`Created ${variantMappings.length} variant mappings for product ${product.id}`);
     }
 
     return NextResponse.json({

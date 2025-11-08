@@ -221,8 +221,8 @@ model Product {
   views           Int                  @default(0)
   likes           Int                  @default(0)
   orderItems      OrderItem[]
-  productOptions  ProductOption[]
-  productVariants ProductVariant[]
+  options         ProductOption[]
+  variants        ProductVariant[]
   productMappings ProductMapping[]
   variantMappings VariantMapping[]
 }
@@ -232,14 +232,31 @@ model ProductOption {
   productId Int
   name      String // "Color", "Size", "Material"
   position  Int // 1, 2, or 3 (Shopify allows max 3 options)
-  values    Json // e.g., ["Red", "Blue", "Green"] or ["S", "M", "L"]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product                    Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values                     ProductOptionValue[]
+  productVariantOptionValues ProductVariantOptionValue[]
 
   @@unique([productId, position])
+}
+
+model ProductOptionValue {
+  id       Int    @id @default(autoincrement())
+  optionId Int
+  value    String // "Red", "Blue", "Green", "S", "M", "L", etc.
+  position Int    @default(0) // For ordering values within an option
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  option                     ProductOption               @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  productVariantOptionValues ProductVariantOptionValue[]
+
+  @@unique([optionId, value])
+  @@index([optionId])
 }
 
 // Product variants (combinations of options)
@@ -247,15 +264,10 @@ model ProductVariant {
   id        Int @id @default(autoincrement())
   productId Int
 
-  // Option values for this variant
-  option1 String? // e.g., "Red"
-  option2 String? // e.g., "Small"
-  option3 String? // e.g., "Cotton"
-
   // Pricing and inventory
-  price          String
-  compareAtPrice String? // Original price (for discounts)
-  costPrice      String? // Your cost
+  price          Float
+  compareAtPrice Float? // Original price (for discounts)
+  sellingPrice   Float? // Your cost
   sku            String? // Optional SKU
 
   // Inventory
@@ -266,12 +278,28 @@ model ProductVariant {
   updatedAt DateTime @updatedAt
 
   // Relations
-  product         Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product         Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantMappings VariantMapping[]
   orderItems      OrderItem[]
+  options         ProductVariantOptionValue[]
 
   @@index([productId])
   @@index([sku])
+}
+
+model ProductVariantOptionValue {
+  id Int @id @default(autoincrement())
+
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId Int
+
+  option   ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  optionId Int
+
+  value   ProductOptionValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  valueId Int
+
+  @@unique([productVariantId, optionId])
 }
 
 // Mapping between WinWaterfall variants and Shopify variants

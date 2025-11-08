@@ -34,3 +34,11 @@ export function formatPriceCents(cents: number, currency: string = "USD") {
     currency: currency,
   }).format(cents / 100);
 }
+
+export function hueFromString(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash) % 360; // return hue (0–360)
+}

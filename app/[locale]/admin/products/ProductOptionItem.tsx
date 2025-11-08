@@ -38,31 +38,28 @@ type ProductOptionItemProps = {
   onAddValue: (optionIndex: number, value: string) => void;
   onUpdateValue: (optionIndex: number, valueIndex: number, newValue: string) => void;
   onRemoveValue: (optionIndex: number, valueIndex: number) => void;
-  onReorderValues: (optionIndex: number, newValues: string[]) => void;
+  onReorderValues: (optionIndex: number, sourceIndex: number, destinationIndex: number) => void;
   maxValuesPerOption: number;
 };
 
 // Sortable Value Item Component
 interface SortableValueItemProps {
-  value: string;
-  valueId: string;
+  valueObj: { id: string | number; value: string; position: number };
   optionIndex: number;
   valueIndex: number;
   onUpdateValue: (optionIndex: number, valueIndex: number, newValue: string) => void;
   onRemoveValue: (optionIndex: number, valueIndex: number) => void;
-  t: (key: string) => string;
 }
 
 function SortableValueItem({
-  value,
-  valueId,
+  valueObj,
   optionIndex,
   valueIndex,
   onUpdateValue,
   onRemoveValue,
-  t,
 }: SortableValueItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: valueId });
+  const t = useTranslations("products");
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: valueObj.id });
   const {
     formState: { errors },
   } = useFormContext<ProductFormData>();
@@ -86,7 +83,7 @@ function SortableValueItem({
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
       <Input
-        value={value}
+        value={valueObj.value}
         onChange={handleValueChange}
         placeholder={t("enter value")}
         className="flex-1 py-1 text-xs"
@@ -140,12 +137,11 @@ export default function ProductOptionItem({
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const oldIndex = option.values.findIndex((value) => value === active.id);
-      const newIndex = option.values.findIndex((value) => value === over?.id);
+      const oldIndex = option.values.findIndex((value) => value.id === active.id);
+      const newIndex = option.values.findIndex((value) => value.id === over?.id);
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newValues = arrayMove(option.values, oldIndex, newIndex);
-        onReorderValues(optionIndex, newValues);
+        onReorderValues(optionIndex, oldIndex, newIndex);
       }
     }
   };
@@ -189,9 +185,9 @@ export default function ProductOptionItem({
               placeholder={t("enter option name")}
               className={cn("w-full mt-1 py-1 focus:ring-1 focus:ring-primary/30 text-xs")}
             />
-            {errors?.productOptions?.[optionIndex]?.name?.message && (
+            {errors?.options?.[optionIndex]?.name?.message && (
               <p className="mt-1 text-red-600 dark:text-red-400 text-xs">
-                {errors?.productOptions?.[optionIndex]?.name?.message}
+                {errors?.options?.[optionIndex]?.name?.message}
               </p>
             )}
           </div>
@@ -225,18 +221,16 @@ export default function ProductOptionItem({
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
             >
-              <SortableContext items={option.values} strategy={verticalListSortingStrategy}>
+              <SortableContext items={option.values.map((v) => v.id)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-2">
-                  {option.values.map((value: string, valueIndex: number) => (
+                  {option.values.map((valueObj, valueIndex: number) => (
                     <SortableValueItem
-                      key={value}
-                      value={value}
-                      valueId={value}
+                      key={valueObj.id}
+                      valueObj={valueObj}
                       optionIndex={optionIndex}
                       valueIndex={valueIndex}
                       onUpdateValue={onUpdateValue}
                       onRemoveValue={onRemoveValue}
-                      t={t}
                     />
                   ))}
                 </div>
@@ -246,7 +240,11 @@ export default function ProductOptionItem({
                 {activeId ? (
                   <div className="flex items-center gap-2 bg-card">
                     <GripVertical className="w-4 h-4 text-muted-foreground" />
-                    <Input value={activeId as string} readOnly className="flex-1 py-1 text-xs" />
+                    <Input
+                      value={option.values.find((v) => v.id === activeId)?.value || ""}
+                      readOnly
+                      className="flex-1 py-1 text-xs"
+                    />
                     <Button variant="ghost" size="sm" className="p-1" disabled>
                       <X className="w-4 h-4" />
                     </Button>

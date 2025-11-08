@@ -5,6 +5,7 @@ import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
 import ProductContentForm from "@/app/[locale]/admin/products/ProductContentForm";
 import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
+import ProductOptions from "@/app/[locale]/admin/products/ProductOptions";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
 import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
 import { ProductFormData, productFormSchema } from "@/app/[locale]/admin/products/types";
@@ -68,12 +69,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           ...s,
           marketplace: s.marketplace as Marketplace,
         })) || [],
-      productOptions:
-        product?.productOptions?.map((option) => ({
-          id: option.id,
-          name: option.name || "",
-          values: Array.isArray(option.values) ? option.values : [],
-        })) || [],
+      options: product?.options || [],
+      variants: product?.variants?.map((v) => ({
+        ...v,
+        options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
+      })),
     },
   });
 
@@ -108,7 +108,12 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             ...s,
             marketplace: s.marketplace as Marketplace,
           })) || [],
-        productOptions: product?.productOptions,
+        options: product?.options || [],
+        // variants: (product?.variants as any[]) || [],
+        variants: product?.variants?.map((v) => ({
+          ...v,
+          options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
+        })),
       });
     } else if (isCreateMode) {
       // Initialize with default values for create mode
@@ -123,7 +128,8 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         translations: [{ locale: "en", title: "", description: "" }],
         media: [],
         suppliers: [],
-        productOptions: [],
+        options: [],
+        variants: [],
       });
     }
   }, [product, isEditMode, isCreateMode, reset]);
@@ -143,10 +149,18 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
       const mediaWithoutFiles = data.media.map(({ file, posterFile, ...rest }) => rest);
 
+      const variantsWithValueIds = data.variants.map((variant) => ({
+        ...variant,
+        optionValueIds: Object.values(variant.options),
+      }));
+
       // Add product data as JSON
+      const { variants, ...dataWithoutVariants } = data;
+
       const productData = {
-        ...data,
+        ...dataWithoutVariants,
         media: mediaWithoutFiles,
+        variants: variantsWithValueIds,
       };
 
       formData.append("productData", JSON.stringify(productData));
@@ -324,15 +338,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   maxFileSize={500}
                 />
 
-                {/* Product Variants */}
-                <ProductVariants
-                  value={watch("productOptions") || []}
-                  onChange={(newOptions) => {
-                    setValue("productOptions", newOptions, {
-                      shouldDirty: true,
-                    });
-                  }}
-                />
+                {/* Product Options */}
+                <ProductOptions />
+
+                {/* Variants Preview */}
+                <ProductVariants />
               </div>
             </form>
           </FormProvider>

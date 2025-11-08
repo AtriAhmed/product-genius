@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { uploadFile, getMediaType } from "@/lib/file-upload";
-import { generateVariants, validateVariants, type OptionDefinition } from "@/lib/variant-generator";
+// Removed variant-generator import as we now use proper table relationships
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
 // Validation schemas (unchanged media/translation/supplier/productOption)
@@ -31,17 +31,24 @@ const supplierSchema = z.object({
   notes: z.string().optional(),
 });
 
-const productOptionSchema = z.object({
-  name: z.string().min(1),
-  values: z.array(z.string().min(1)).min(1).max(50),
+const productOptionValueSchema = z.object({
+  id: z.string(), // temp ID
+  value: z.string().min(1),
 });
 
-// Variant schema: allow numeric or numeric-string price, optional sku/inventory/trackInventory
+const productOptionSchema = z.object({
+  id: z.string(), // temp ID
+  name: z.string().min(1),
+  values: z.array(productOptionValueSchema).min(1).max(50),
+});
+
+// Variant schema for the new table structure
 const variantSchema = z.object({
-  option1: z.string().nullable().optional(),
-  option2: z.string().nullable().optional(),
-  option3: z.string().nullable().optional(),
-  price: z.union([z.number().positive(), z.string().regex(/^\d+(\.\d+)?$/)]),
+  id: z.string(), // temp ID
+  optionValueIds: z.array(z.string()).optional().default([]), // temp IDs of option values
+  price: z.number().positive(),
+  compareAtPrice: z.number().positive().optional().nullable(),
+  sellingPrice: z.number().positive().optional().nullable(),
   sku: z.string().optional().nullable(),
   inventory: z.number().int().min(0).optional().default(0),
   trackInventory: z.boolean().optional().default(false),
@@ -58,8 +65,7 @@ const createProductSchema = z.object({
   translations: z.array(translationSchema).min(1),
   media: z.array(mediaSchema).optional().default([]),
   suppliers: z.array(supplierSchema).optional().default([]),
-  productOptions: z.array(productOptionSchema).max(3).optional().default([]),
-  // New: variants are provided from client when you want to control prices/skus
+  options: z.array(productOptionSchema).max(3).optional().default([]),
   variants: z.array(variantSchema).optional().default([]),
 });
 
@@ -187,107 +193,104 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // === Create product options and variants (updated to accept client-provided variants) ===
-    if (validatedData.productOptions.length > 0) {
-      // Create product options
-      await Promise.all(
-        validatedData.productOptions.map((option, index) =>
-          prisma.productOption.create({
-            data: {
-              productId: product.id,
-              name: option.name,
-              position: index + 1,
-              values: option.values,
-            },
-          })
-        )
-      );
+    // === Create product options and variants using new table structure ===
+    if (validatedData.options.length > 0) {
+      // Create mapping from temp IDs to database IDs
+      const optionIdMap = new Map<string, number>();
+      const valueIdMap = new Map<string, number>();
 
-      // Build optionDefinitions for validation
-      const optionDefinitions: OptionDefinition[] = validatedData.productOptions.map((opt) => ({
-        name: opt.name,
-        values: opt.values,
-      }));
+      // Create product options with their values
+      for (let index = 0; index < validatedData.options.length; index++) {
+        const option = validatedData.options[index];
 
-      // If client provided variants, use them; otherwise generate
-      if (validatedData.variants.length > 0) {
-        // Validate provided variants against options
-        // normalize prices to string for validateVariants if needed by your validator
-        const normalizedProvided = validatedData.variants.map((v) => ({
-          ...v,
-          price: typeof v.price === "number" ? v.price.toString() : v.price,
-        }));
-
-        const validation = validateVariants(normalizedProvided, optionDefinitions);
-
-        if (!validation.valid) {
-          throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
-        }
-
-        // Create provided variants in DB
-        await prisma.productVariant.createMany({
-          data: validatedData.variants.map((variant) => ({
+        const createdOption = await prisma.productOption.create({
+          data: {
             productId: product.id,
-            option1: variant.option1 || null,
-            option2: variant.option2 || null,
-            option3: variant.option3 || null,
-            price: typeof variant.price === "number" ? variant.price.toString() : variant.price,
+            name: option.name,
+            position: index + 1,
+          },
+        });
+
+        optionIdMap.set(option.id, createdOption.id);
+
+        // Create option values
+        for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
+          const value = option.values[valueIndex];
+
+          const createdValue = await prisma.productOptionValue.create({
+            data: {
+              optionId: createdOption.id,
+              value: value.value,
+              position: valueIndex,
+            },
+          });
+
+          valueIdMap.set(value.id, createdValue.id);
+        }
+      }
+
+      // Create variants from client-provided data only
+      for (const variant of validatedData.variants) {
+        const createdVariant = await prisma.productVariant.create({
+          data: {
+            productId: product.id,
+            price: variant.price,
+            compareAtPrice: variant.compareAtPrice || null,
+            sellingPrice: variant.sellingPrice || null,
             sku: variant.sku || null,
             inventory: variant.inventory ?? 0,
             trackInventory: variant.trackInventory ?? false,
-          })),
+          },
         });
-      } else {
-        // Fall back to generating variants (old behavior)
-        const basePrice = (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
-        const productCode = `PROD${product.id}`;
 
-        const generatedVariants = generateVariants(optionDefinitions, basePrice, productCode, true);
-        const validation = validateVariants(generatedVariants, optionDefinitions);
+        // Link variant to option values using temp ID mappings
+        for (const tempValueId of variant.optionValueIds) {
+          const realValueId = valueIdMap.get(tempValueId);
+          if (realValueId) {
+            // Find the option ID for this value
+            const optionValue = await prisma.productOptionValue.findUnique({
+              where: { id: realValueId },
+              select: { optionId: true },
+            });
 
-        if (!validation.valid) {
-          throw new Error(`Invalid variants: ${validation.errors.join(", ")}`);
+            if (optionValue) {
+              await prisma.productVariantOptionValue.create({
+                data: {
+                  productVariantId: createdVariant.id,
+                  optionId: optionValue.optionId,
+                  valueId: realValueId,
+                },
+              });
+            }
+          }
         }
-
-        await prisma.productVariant.createMany({
-          data: generatedVariants.map((variant) => ({
-            productId: product.id,
-            option1: variant.option1 || null,
-            option2: variant.option2 || null,
-            option3: variant.option3 || null,
-            price: variant.price,
-            sku: variant.sku || null,
-            inventory: 0,
-            trackInventory: false,
-          })),
-        });
       }
     } else {
-      // No product options
-      if (validatedData.variants.length > 0) {
-        // Accept provided single-variant or multiple variants (option fields will be ignored / null)
-        await prisma.productVariant.createMany({
-          data: validatedData.variants.map((variant) => ({
-            productId: product.id,
-            option1: variant.option1 || null,
-            option2: variant.option2 || null,
-            option3: variant.option3 || null,
-            price: typeof variant.price === "number" ? variant.price.toString() : variant.price,
-            sku: variant.sku || null,
-            inventory: variant.inventory ?? 0,
-            trackInventory: variant.trackInventory ?? false,
-          })),
-        });
-      } else {
-        // Create a single default variant for products without options (unchanged)
-        const basePrice = (validatedData.price || validatedData.sellingPrice)?.toString() || "0";
-        const productCode = `PROD${product.id}`;
+      // No product options - create variant(s) without options
+      const basePrice = validatedData.price || validatedData.sellingPrice || 0;
 
+      if (validatedData.variants.length > 0) {
+        // Use provided variant(s) even without options
+        for (const variant of validatedData.variants) {
+          await prisma.productVariant.create({
+            data: {
+              productId: product.id,
+              price: variant.price,
+              compareAtPrice: variant.compareAtPrice || null,
+              sellingPrice: variant.sellingPrice || null,
+              sku: variant.sku || `PROD${product.id}`,
+              inventory: variant.inventory ?? 0,
+              trackInventory: variant.trackInventory ?? false,
+            },
+          });
+        }
+      } else {
+        // Create single default variant
         await prisma.productVariant.create({
           data: {
             productId: product.id,
             price: basePrice,
-            sku: productCode,
+            sku: `PROD${product.id}`,
             inventory: 0,
             trackInventory: false,
           },
@@ -305,8 +308,24 @@ export async function POST(request: NextRequest) {
         },
         category: true,
         suppliers: true,
-        productOptions: true,
-        productVariants: true,
+        options: {
+          include: {
+            values: {
+              orderBy: { position: "asc" },
+            },
+          },
+          orderBy: { position: "asc" },
+        },
+        variants: {
+          include: {
+            options: {
+              include: {
+                option: true,
+                value: true,
+              },
+            },
+          },
+        },
         plans: {
           include: {
             prices: true,
@@ -443,9 +462,24 @@ export async function GET(request: NextRequest) {
             },
           },
           suppliers: true,
-          productOptions: true,
-          productVariants: {
+          options: {
+            include: {
+              values: {
+                orderBy: { position: "asc" },
+              },
+            },
+            orderBy: { position: "asc" },
+          },
+          variants: {
             take: 5, // Limit variants in list view
+            include: {
+              options: {
+                include: {
+                  option: true,
+                  value: true,
+                },
+              },
+            },
           },
           productMappings: {
             where: {

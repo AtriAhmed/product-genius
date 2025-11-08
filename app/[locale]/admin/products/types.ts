@@ -1,8 +1,10 @@
 import { MARKETPLACES } from "@/types";
 import z from "zod";
 
+const idSchema = z.union([z.number(), z.string()]);
+
 export const supplierSchema = z.object({
-  id: z.union([z.number(), z.string()]).optional(),
+  id: idSchema.optional(),
   url: z.url().optional().or(z.literal("")).nullable(),
   marketplace: z.enum(MARKETPLACES).optional().nullable(),
   price: z.number().optional().nullable(),
@@ -11,17 +13,35 @@ export const supplierSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
-// Product option schema for variants
-export const productOptionSchema = z.object({
-  id: z.number().optional(),
-  name: z.string().min(1, "Option name is required"),
-  values: z
-    .array(z.string().min(1, "Value cannot be empty"))
-    .min(1, "At least one value is required")
-    .max(50, "Maximum 50 values allowed"),
+// ---- NEW: OPTIONS + VALUES with POSITIONS ----
+export const productOptionValueSchema = z.object({
+  id: idSchema,
+  value: z.string().min(1, "Value cannot be empty"),
+  position: z.number().int().min(0), // required for ordering
 });
 
-// Form validation schema
+export const optionSchema = z.object({
+  id: idSchema,
+  name: z.string().min(1, "Option name is required"),
+  position: z.number().int().min(0), // required for ordering
+  values: z
+    .array(productOptionValueSchema)
+    .min(1, "Option must have at least one value")
+    .refine((arr) => {
+      // Ensure positions are unique inside the option
+      const positions = arr.map((v) => v.position);
+      return new Set(positions).size === positions.length;
+    }, "Values positions must be unique"),
+});
+
+// ---- NEW: VARIANTS ----
+export const productVariantSchema = z.object({
+  id: idSchema,
+  price: z.number().gte(0, "Price must be >= 0").optional().nullable(),
+  options: z.record(idSchema, idSchema), // optionId -> valueId
+});
+
+// ---- MAIN PRODUCT FORM ----
 export const productFormSchema = z.object({
   price: z.number().gte(0).optional().nullable(),
   compareAtPrice: z.number().gte(0).optional().nullable(),
@@ -30,6 +50,7 @@ export const productFormSchema = z.object({
   categoryId: z.number().int().positive().optional().nullable(),
   planIds: z.array(z.number().positive()).default([]),
   isActive: z.boolean(),
+
   translations: z
     .array(
       z.object({
@@ -39,16 +60,16 @@ export const productFormSchema = z.object({
       })
     )
     .min(1, "At least one translation is required"),
+
   media: z.array(z.any()),
   suppliers: z.array(supplierSchema).optional(),
-  productOptions: z
-    .array(productOptionSchema)
-    .max(3, "Maximum 3 options allowed")
-    .optional(),
+
+  // ---- NEW ----
+  options: z.array(optionSchema).default([]),
+  variants: z.array(productVariantSchema).default([]),
 });
 
 export type ProductFormData = z.infer<typeof productFormSchema>;
-
+export type ProductOptionFormData = z.infer<typeof optionSchema>;
+export type ProductVariantFormData = z.infer<typeof productVariantSchema>;
 export type AddSupplierFormData = z.infer<typeof supplierSchema>;
-
-export type ProductOptionFormData = z.infer<typeof productOptionSchema>;

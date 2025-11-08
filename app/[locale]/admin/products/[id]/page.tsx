@@ -34,7 +34,22 @@ async function getProduct(id: number): Promise<Product | null> {
           },
         },
         suppliers: true,
-        productOptions: true,
+        options: {
+          include: {
+            values: {
+              orderBy: { position: "asc" },
+            },
+          },
+        },
+        variants: {
+          omit: {
+            createdAt: true,
+            updatedAt: true,
+          },
+          include: {
+            options: true,
+          },
+        },
       },
     });
 
@@ -43,7 +58,7 @@ async function getProduct(id: number): Promise<Product | null> {
     }
 
     // Transform the product to match the Product type
-    return product as Product;
+    return product as any;
   } catch (error) {
     console.error("Failed to fetch product:", error);
     return null;

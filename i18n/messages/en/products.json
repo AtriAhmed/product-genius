@@ -194,5 +194,7 @@
   "select all": "Select All",
   "clear all": "Clear All",
   "no plans available": "No plans available",
-  "please fix the errors in the form before submitting": "Please fix the errors in the form before submitting"
+  "please fix the errors in the form before submitting": "Please fix the errors in the form before submitting",
+  "generated variants": "Generated Variants",
+  "variant": "Variant"
 }

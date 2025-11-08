@@ -5,34 +5,13 @@ export type Role = "OWNER" | "ADMIN" | "EDITOR" | "AGENT" | "USER";
 
 export type MediaType = "IMAGE" | "VIDEO";
 
-export type SubscriptionStatus =
-  | "TRIALING"
-  | "ACTIVE"
-  | "PAST_DUE"
-  | "CANCELED"
-  | "INCOMPLETE"
-  | "UNPAID";
+export type SubscriptionStatus = "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INCOMPLETE" | "UNPAID";
 
 export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
 
-export type CardBrand =
-  | "visa"
-  | "mastercard"
-  | "amex"
-  | "discover"
-  | "diners"
-  | "jcb"
-  | "unionpay"
-  | "unknown";
+export type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "diners" | "jcb" | "unionpay" | "unknown";
 
-export type OrderStatus =
-  | "DRAFT"
-  | "UNPAID"
-  | "PAID"
-  | "PROCESSING"
-  | "COMPLETED"
-  | "CANCELED"
-  | "REFUNDED";
+export type OrderStatus = "DRAFT" | "UNPAID" | "PAID" | "PROCESSING" | "COMPLETED" | "CANCELED" | "REFUNDED";
 
 export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
 
@@ -201,10 +180,10 @@ export type Product = {
   media?: Media[];
   suppliers?: Supplier[];
   orderItems?: OrderItem[];
-  productOptions?: ProductOption[]; // new
-  productVariants?: ProductVariant[]; // new
-  productMappings?: ProductMapping[]; // matches schema name
-  variantMappings?: VariantMapping[]; // new
+  options?: ProductOption[];
+  variants?: ProductVariant[];
+  productMappings?: ProductMapping[];
+  variantMappings?: VariantMapping[];
   plans?: Plan[];
 };
 
@@ -213,22 +192,32 @@ export type ProductOption = {
   productId?: number;
   name?: string; // "Color", "Size", "Material"
   position?: number; // 1,2,3
-  values?: any; // Json, e.g., ["Red","Blue"] or ["S","M","L"]
   createdAt?: Date;
   updatedAt?: Date;
   // Relations
   product?: Product;
+  values?: ProductOptionValue[];
+  productVariantOptionValues?: ProductVariantOptionValue[];
+};
+
+export type ProductOptionValue = {
+  id: number;
+  optionId?: number;
+  value?: string; // "Red", "Blue", "Green", "S", "M", "L", etc.
+  position?: number; // For ordering values within an option
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  option?: ProductOption;
+  productVariantOptionValues?: ProductVariantOptionValue[];
 };
 
 export type ProductVariant = {
   id: number;
   productId?: number;
-  option1?: string;
-  option2?: string;
-  option3?: string;
-  price?: string;
-  compareAtPrice?: string;
-  costPrice?: string;
+  price?: number;
+  compareAtPrice?: number;
+  costPrice?: number;
   sku?: string;
   inventory?: number;
   trackInventory?: boolean;
@@ -238,10 +227,23 @@ export type ProductVariant = {
   product?: Product;
   variantMappings?: VariantMapping[];
   orderItems?: OrderItem[];
+  options?: ProductVariantOptionValue[];
+};
+
+export type ProductVariantOptionValue = {
+  id: number;
+  productVariantId?: number;
+  optionId?: number;
+  valueId?: number;
+  // Relations
+  productVariant?: ProductVariant;
+  option?: ProductOption;
+  value?: ProductOptionValue;
 };
 
 export type VariantMapping = {
   id: number;
+  userId?: number;
   variantId?: number;
   productId?: number;
   shopifyVariantId?: string;
@@ -253,10 +255,12 @@ export type VariantMapping = {
   // Relations
   variant?: ProductVariant;
   product?: Product;
+  user?: User;
 };
 
 export type ProductMapping = {
   id: number;
+  userId?: number;
   productId?: number;
   shopifyProductId?: string;
   shopifyStoreId?: number;
@@ -265,6 +269,7 @@ export type ProductMapping = {
   // Relations
   product?: Product;
   shopifyStore?: ShopifyStore;
+  user?: User;
 };
 
 export type ProductTranslation = {
@@ -339,11 +344,11 @@ export type OrderItem = {
   title?: string;
   unitPriceCents?: number;
   quantity?: number;
-  productVariantId?: number; // new
-  productVariant?: ProductVariant; // new
+  productVariantId?: number;
   // Relations
   order?: Order;
   product?: Product;
+  ProductVariant?: ProductVariant;
 };
 
 export type AgentProfile = {
@@ -373,13 +378,8 @@ export type ShopifyStore = {
 };
 
 // Utility types for creating/updating records
-export type CreateTempAccount = Omit<
-  TempAccount,
-  "id" | "createdAt" | "updatedAt"
->;
-export type UpdateTempAccount = Partial<
-  Omit<TempAccount, "id" | "createdAt" | "updatedAt">
->;
+export type CreateTempAccount = Omit<TempAccount, "id" | "createdAt" | "updatedAt">;
+export type UpdateTempAccount = Partial<Omit<TempAccount, "id" | "createdAt" | "updatedAt">>;
 
 export type CreateUser = Omit<User, "id" | "createdAt" | "updatedAt">;
 export type UpdateUser = Partial<Omit<User, "id" | "createdAt" | "updatedAt">>;
@@ -387,34 +387,23 @@ export type UpdateUser = Partial<Omit<User, "id" | "createdAt" | "updatedAt">>;
 export type CreatePlan = Omit<Plan, "id" | "createdAt" | "updatedAt">;
 export type UpdatePlan = Partial<Omit<Plan, "id" | "createdAt" | "updatedAt">>;
 
-export type CreateSubscription = Omit<
-  Subscription,
-  "id" | "createdAt" | "updatedAt"
->;
-export type UpdateSubscription = Partial<
-  Omit<Subscription, "id" | "createdAt" | "updatedAt">
->;
+export type CreateSubscription = Omit<Subscription, "id" | "createdAt" | "updatedAt">;
+export type UpdateSubscription = Partial<Omit<Subscription, "id" | "createdAt" | "updatedAt">>;
 
 export type CreateInvoice = Omit<Invoice, "id" | "createdAt">;
 export type UpdateInvoice = Partial<Omit<Invoice, "id" | "createdAt">>;
 
 export type CreateCategory = Omit<Category, "id" | "createdAt" | "updatedAt">;
-export type UpdateCategory = Partial<
-  Omit<Category, "id" | "createdAt" | "updatedAt">
->;
+export type UpdateCategory = Partial<Omit<Category, "id" | "createdAt" | "updatedAt">>;
 
 export type CreateProduct = Omit<Product, "id" | "createdAt" | "updatedAt">;
-export type UpdateProduct = Partial<
-  Omit<Product, "id" | "createdAt" | "updatedAt">
->;
+export type UpdateProduct = Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>;
 
 export type CreateSupplier = Omit<Supplier, "id">;
 export type UpdateSupplier = Partial<Omit<Supplier, "id">>;
 
 export type CreateOrder = Omit<Order, "id" | "createdAt" | "updatedAt">;
-export type UpdateOrder = Partial<
-  Omit<Order, "id" | "createdAt" | "updatedAt">
->;
+export type UpdateOrder = Partial<Omit<Order, "id" | "createdAt" | "updatedAt">>;
 
 export type CreateOrderItem = Omit<OrderItem, "id">;
 export type UpdateOrderItem = Partial<Omit<OrderItem, "id">>;
