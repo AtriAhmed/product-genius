@@ -3,21 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  X,
-  Upload,
-  Image as ImageIcon,
-  Video,
-  Save,
-  FileImage,
-  Camera,
-} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { X, Upload, Image as ImageIcon, Video, Save, FileImage, Camera } from "lucide-react";
 import { cn, getMediaUrl } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { MediaItem } from "@/app/[locale]/admin/products/MediaUpload";
@@ -30,12 +17,7 @@ interface MediaPreviewDialogProps {
   onUpdateMedia: (updatedItem: MediaItem) => void;
 }
 
-export default function MediaPreviewDialog({
-  open,
-  onOpenChange,
-  mediaItem,
-  onUpdateMedia,
-}: MediaPreviewDialogProps) {
+export default function MediaPreviewDialog({ open, onOpenChange, mediaItem, onUpdateMedia }: MediaPreviewDialogProps) {
   const t = useTranslations("products");
   const [alt, setAlt] = useState(mediaItem?.alt || "");
   const [newPosterFile, setNewPosterFile] = useState<File | null>(null);
@@ -129,23 +111,20 @@ export default function MediaPreviewDialog({
       <DialogContent className="flex flex-col !max-w-5xl h-[90vh] p-1">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
-            {mediaItem.type === "VIDEO" ? (
-              <Video className="w-5 h-5" />
-            ) : (
-              <ImageIcon className="w-5 h-5" />
-            )}
+            {mediaItem.type === "VIDEO" ? <Video className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
             {t("media preview")}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 h-0 flex flex-col lg:flex-row overflow-y-auto">
+        <div className="flex lg:flex-row flex-col flex-1 h-0 overflow-y-auto">
           {/* Media Preview Area */}
-          <div className="flex-1 p-6 flex items-center justify-center ">
-            <div className="relative max-w-full max-h-full">
+          <div className="flex flex-1 justify-center items-center p-6">
+            <div className="relative flex justify-center items-center w-full h-full">
               {mediaItem.type === "VIDEO" ? (
                 <video
                   ref={videoRef}
                   src={getMediaUrl(mediaItem.url!)}
+                  poster={getMediaUrl(mediaItem.poster)}
                   controls
                   className="max-w-full max-h-full rounded-lg shadow-lg"
                   //   poster={
@@ -156,21 +135,21 @@ export default function MediaPreviewDialog({
                 <img
                   src={getMediaUrl(mediaItem.url!)}
                   alt={alt || "Media preview"}
-                  className="max-w-full max-h-[500px] rounded-lg shadow-lg object-contain"
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
                 />
               )}
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="flex flex-col w-full lg:w-80 border-l p-1">
+          <div className="flex flex-col w-full lg:w-80 p-1 border-l">
             {/* Alt Text Section */}
-            <div className="flex-1 px-6 space-y-6 overflow-y-auto">
+            <div className="flex-1 space-y-6 overflow-y-auto px-6">
               {/* Alt Text Section */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                  <label className="text-sm font-medium">{t("alt text")}</label>
+                  <label className="font-medium text-sm">{t("alt text")}</label>
                 </div>
                 <Input
                   value={alt}
@@ -178,9 +157,7 @@ export default function MediaPreviewDialog({
                   placeholder={t("describe this media")}
                   className="w-full"
                 />
-                <p className="text-xs text-muted-foreground">
-                  {t("provide descriptive alt text")}
-                </p>
+                <p className="text-muted-foreground text-xs">{t("provide descriptive alt text")}</p>
               </div>
 
               {/* Poster Upload Section - Only for Videos */}
@@ -188,30 +165,28 @@ export default function MediaPreviewDialog({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <FileImage className="w-4 h-4 text-muted-foreground" />
-                    <label className="text-sm font-medium">
-                      {t("video thumbnail")}
-                    </label>
+                    <label className="font-medium text-sm">{t("video thumbnail")}</label>
                   </div>
 
                   {/* Current Poster Preview */}
                   {currentPosterUrl && (
-                    <div className="relative group">
+                    <div className="group relative">
                       <img
                         src={getMediaUrl(currentPosterUrl)}
                         alt="Video thumbnail"
-                        className="w-full h-32 object-cover rounded-lg border"
+                        className="w-full h-32 object-cover border rounded-lg"
                       />
                       <Button
                         type="button"
                         variant="destructive"
                         size="sm"
                         onClick={handleRemovePoster}
-                        className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="top-2 right-2 absolute w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-4 h-4" />
                       </Button>
                       {newPosterFile && (
-                        <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                        <div className="bottom-2 left-2 absolute px-2 py-1 rounded bg-black/70 text-white text-xs">
                           New
                         </div>
                       )}
@@ -227,9 +202,7 @@ export default function MediaPreviewDialog({
                       onClick={() => posterInputRef.current?.click()}
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      {currentPosterUrl
-                        ? t("change thumbnail")
-                        : t("upload thumbnail")}
+                      {currentPosterUrl ? t("change thumbnail") : t("upload thumbnail")}
                     </Button>
 
                     {/* Generate Poster from Current Timestamp */}
@@ -238,15 +211,10 @@ export default function MediaPreviewDialog({
                       variant="outline"
                       className="w-full"
                       onClick={handleGeneratePosterFromTimestamp}
-                      disabled={
-                        isGeneratingPoster ||
-                        (!mediaItem?.file && !mediaItem?.url)
-                      }
+                      disabled={isGeneratingPoster || (!mediaItem?.file && !mediaItem?.url)}
                     >
                       <Camera className="w-4 h-4 mr-2" />
-                      {isGeneratingPoster
-                        ? t("generating;;;")
-                        : t("capture current frame")}
+                      {isGeneratingPoster ? t("generating;;;") : t("capture current frame")}
                     </Button>
                   </div>
 
@@ -258,9 +226,7 @@ export default function MediaPreviewDialog({
                     className="hidden"
                   />
 
-                  <p className="text-xs text-muted-foreground">
-                    {t("custom thumbnail description")}
-                  </p>
+                  <p className="text-muted-foreground text-xs">{t("custom thumbnail description")}</p>
                 </div>
               )}
 
@@ -272,11 +238,7 @@ export default function MediaPreviewDialog({
                 <Save className="w-4 h-4 mr-2" />
                 {t("save changes")}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
                 {t("cancel")}
               </Button>
             </div>
