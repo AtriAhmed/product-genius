@@ -23,14 +23,7 @@ type UsersResponse = {
   pages: number;
 };
 
-async function fetcher(
-  page: number,
-  limit: number,
-  search: string,
-  role: string,
-  sortBy: string,
-  sortOrder: string
-) {
+async function fetcher(page: number, limit: number, search: string, role: string, sortBy: string, sortOrder: string) {
   const params: any = { page, limit };
 
   if (search) params.search = search;
@@ -112,7 +105,7 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
@@ -144,20 +137,11 @@ export default function UsersPage() {
         />
 
         {/* Users Data Table */}
-        <UsersDataTable
-          users={users}
-          onEdit={setEditUser}
-          onDelete={handleDeleteUser}
-          isLoading={isLoading}
-        />
+        <UsersDataTable users={users} onEdit={setEditUser} onDelete={handleDeleteUser} isLoading={isLoading} />
 
         {/* Pagination */}
         {!isLoading && users.length > 0 && pagination.pages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.pages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
 
         {/* Results Count */}

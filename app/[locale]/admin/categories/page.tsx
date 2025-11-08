@@ -34,12 +34,7 @@ interface CategoriesResponse {
   categories: Category[];
 }
 
-async function fetcher(
-  search: string,
-  filter: string,
-  sortBy: string,
-  sortOrder: string
-) {
+async function fetcher(search: string, filter: string, sortBy: string, sortOrder: string) {
   const params = new URLSearchParams({
     search,
     filter,
@@ -54,9 +49,7 @@ async function fetcher(
 export default function CategoriesPage() {
   const t = useTranslations("categories");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<
-    Category | undefined
-  >();
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
   const [deleteCategory, setDeleteCategory] = useState<Category | undefined>();
   const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
@@ -106,9 +99,7 @@ export default function CategoriesPage() {
       mutate();
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast.error(
-        error instanceof Error ? error.message : t("failed to delete category")
-      );
+      toast.error(error instanceof Error ? error.message : t("failed to delete category"));
     } finally {
       setIsDeleting(false);
       setDeleteCategory(undefined);
@@ -117,21 +108,14 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-4 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="font-bold text-foreground text-3xl">
-              {t("categories")}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              Manage your product categories and translations
-            </p>
+            <h1 className="font-bold text-foreground text-3xl">{t("categories")}</h1>
+            <p className="mt-2 text-muted-foreground">Manage your product categories and translations</p>
           </div>
-          <Button
-            onClick={handleAddCategory}
-            className="lg:hidden gap-2 ms-auto"
-          >
+          <Button onClick={handleAddCategory} className="lg:hidden gap-2 ms-auto">
             <Plus className="w-4 h-4" />
             {t("add category")}
           </Button>
@@ -246,9 +230,7 @@ export default function CategoriesPage() {
         cancelText={t("cancel")}
         onConfirm={confirmDelete}
         variant="destructive"
-        disabled={Boolean(
-          deleteCategory?._count?.products && deleteCategory._count.products > 0
-        )}
+        disabled={Boolean(deleteCategory?._count?.products && deleteCategory._count.products > 0)}
         isLoading={isDeleting}
       />
     </div>

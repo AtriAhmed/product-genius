@@ -21,14 +21,7 @@ interface PlansResponse {
   pages: number;
 }
 
-async function fetcher(
-  page: number,
-  limit: number,
-  search: string,
-  filter: string,
-  sortBy: string,
-  sortOrder: string
-) {
+async function fetcher(page: number, limit: number, search: string, filter: string, sortBy: string, sortOrder: string) {
   const response = await axios.get("/api/plans", {
     params: { page, limit, search, filter, sortBy, sortOrder },
   });
@@ -92,9 +85,7 @@ export default function PlansPage() {
       mutate();
     } catch (error) {
       console.error("Error deleting plan:", error);
-      toast.error(
-        error instanceof Error ? error.message : t("failed to delete plan")
-      );
+      toast.error(error instanceof Error ? error.message : t("failed to delete plan"));
     } finally {
       setDeletePlan(undefined);
     }
@@ -127,14 +118,12 @@ export default function PlansPage() {
 
   return (
     <div>
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto container">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
             <h1 className="font-bold text-foreground text-3xl">{t("plans")}</h1>
-            <p className="mt-2 text-muted-foreground">
-              {t("manage your plans")}
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("manage your plans")}</p>
           </div>
           <Button onClick={handleAddPlan} className="gap-2">
             <Plus className="w-4 h-4" />
@@ -155,22 +144,12 @@ export default function PlansPage() {
         />
 
         {/* Plans Data Table */}
-        <PlansDataTable
-          plans={plans}
-          onEdit={handleEditPlan}
-          onDelete={handleDeletePlan}
-          isLoading={isLoading}
-        />
+        <PlansDataTable plans={plans} onEdit={handleEditPlan} onDelete={handleDeletePlan} isLoading={isLoading} />
 
         {/* Pagination */}
         {!isLoading && plans.length > 0 && pagination.pages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
               Previous
             </Button>
             {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
@@ -196,12 +175,7 @@ export default function PlansPage() {
                 </Button>
               );
             })}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === pagination.pages}
-              onClick={() => setPage(page + 1)}
-            >
+            <Button variant="outline" size="sm" disabled={page === pagination.pages} onClick={() => setPage(page + 1)}>
               Next
             </Button>
           </div>
