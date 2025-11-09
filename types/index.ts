@@ -89,6 +89,7 @@ export type Plan = {
   active?: boolean;
   features?: PlanFeature[];
   mostPopular?: boolean;
+  isFree?: boolean;
   sortOrder?: number;
   createdAt?: Date;
   updatedAt?: Date;
