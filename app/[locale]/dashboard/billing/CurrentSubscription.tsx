@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, CreditCard, Info, Clock } from "lucide-react";
+import { Calendar, CreditCard, Info, Clock, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
@@ -124,16 +124,23 @@ export default function CurrentSubscription() {
         </CardHeader>
         <CardContent>
           {!subscription ? (
-            <div className="py-6 text-center">
-              <div className="flex justify-center items-center w-10 h-10 mx-auto mb-2 rounded-full bg-muted">
-                <Calendar className="w-5 h-5 text-muted-foreground" />
+            // <div className="py-6 text-center">
+            //   <div className="flex justify-center items-center w-10 h-10 mx-auto mb-2 rounded-full bg-muted">
+            //     <Calendar className="w-5 h-5 text-muted-foreground" />
+            //   </div>
+            //   <h3 className="mb-1 font-medium text-sm">
+            //     {t("no subscription")}
+            //   </h3>
+            //   <p className="text-muted-foreground text-xs">
+            //     {t("no subscription description")}
+            //   </p>
+            // </div>
+            <div className="flex flex-col items-center col-span-full text-center">
+              <div className="flex justify-center items-center size-8 mx-auto mb-2 rounded-full bg-muted">
+                <Star className="size-5 text-muted-foreground" />
               </div>
-              <h3 className="mb-1 font-medium text-sm">
-                {t("no subscription")}
-              </h3>
-              <p className="text-muted-foreground text-xs">
-                {t("no subscription description")}
-              </p>
+              <h3 className="font-bold text-slate-800 text-sm">{t("no active subscription")}</h3>
+              <p className="mb-4 text-muted-foreground text-xs">{t("choose a plan to enjoy our premium features")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -142,10 +149,7 @@ export default function CurrentSubscription() {
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-base">{plan?.name}</h3>
-                    <Badge
-                      variant={getStatusBadgeVariant(subscription.status || "")}
-                      className="h-5 py-0 text-xs"
-                    >
+                    <Badge variant={getStatusBadgeVariant(subscription.status || "")} className="h-5 py-0 text-xs">
                       {getStatusLabel(subscription?.status || "")}
                     </Badge>
                   </div>
@@ -153,15 +157,11 @@ export default function CurrentSubscription() {
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="font-semibold text-sm">
                         {(() => {
-                          const currentPrice = plan.prices?.find(
-                            (price) => price.interval === subscription.interval
-                          );
+                          const currentPrice = plan.prices?.find((price) => price.interval === subscription.interval);
                           return formatPrice(currentPrice?.price || 0);
                         })()}
                       </span>
-                      <span className="text-xs">
-                        {getIntervalLabel(subscription.interval || "")}
-                      </span>
+                      <span className="text-xs">{getIntervalLabel(subscription.interval || "")}</span>
                     </div>
                   )}
                 </div>
@@ -171,35 +171,23 @@ export default function CurrentSubscription() {
               <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
                 {subscription.startsAt && (
                   <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-muted-foreground">
-                      {t("starts at")}:
-                    </span>
-                    <span className="font-medium">
-                      {formatDate(subscription.startsAt)}
-                    </span>
+                    <span className="font-medium text-muted-foreground">{t("starts at")}:</span>
+                    <span className="font-medium">{formatDate(subscription.startsAt)}</span>
                   </div>
                 )}
 
                 {subscription.endsAt && (
                   <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-muted-foreground">
-                      {t("ends at")}:
-                    </span>
-                    <span className="font-medium">
-                      {formatDate(subscription.endsAt)}
-                    </span>
+                    <span className="font-medium text-muted-foreground">{t("ends at")}:</span>
+                    <span className="font-medium">{formatDate(subscription.endsAt)}</span>
                   </div>
                 )}
 
                 {subscription.trialEndsAt && (
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3 h-3 text-muted-foreground" />
-                    <span className="font-medium text-muted-foreground">
-                      {t("trial ends at")}:
-                    </span>
-                    <span className="font-medium">
-                      {formatDate(subscription.trialEndsAt)}
-                    </span>
+                    <span className="font-medium text-muted-foreground">{t("trial ends at")}:</span>
+                    <span className="font-medium">{formatDate(subscription.trialEndsAt)}</span>
                   </div>
                 )}
               </div>
@@ -208,8 +196,7 @@ export default function CurrentSubscription() {
               {subscription.cancelAtPeriodEnd && (
                 <div className="p-2.5 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50 dark:bg-orange-900/20">
                   <p className="text-orange-800 dark:text-orange-200 text-xs">
-                    Your subscription will be canceled at the end of the current
-                    billing period.
+                    Your subscription will be canceled at the end of the current billing period.
                   </p>
                 </div>
               )}

@@ -2,14 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plan, PlanFeature, User } from "@/types";
 import { Check, Crown, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,12 +17,7 @@ type Props = {
   selectedInterval?: string;
 };
 
-export default function PlanCard({
-  plan,
-  user,
-  onSelect,
-  selectedInterval,
-}: Props) {
+export default function PlanCard({ plan, user, onSelect, selectedInterval }: Props) {
   const t = useTranslations("pricing");
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
 
@@ -37,13 +25,12 @@ export default function PlanCard({
   console.log(user);
   const hasActiveSubscription = !!user?.currentSubscription;
   const isCurrentPlan = user?.currentSubscription?.plan?.id === plan.id;
-  const isFreePlan = plan.prices?.every((price) => price.price === 0);
+  const isFreePlan = plan?.isFree;
 
   // Get the price for the selected interval, fallback to first available price
   const selectedPrice = selectedInterval
-    ? plan.prices?.find(
-        (price) => price.interval === selectedInterval && price.price != null
-      ) || plan.prices?.find((price) => price.price != null)
+    ? plan.prices?.find((price) => price.interval === selectedInterval) ||
+      plan.prices?.find((price) => price.price != null)
     : plan.prices?.find((price) => price.price != null);
 
   const handleSelectPlan = () => {
@@ -121,10 +108,7 @@ export default function PlanCard({
           <div className="py-4 rounded-xl bg-muted/20 dark:bg-muted/10">
             <ul className="space-y-2">
               {(plan.features as PlanFeature[]).map((feature, index) => (
-                <li
-                  key={index}
-                  className="group/feature flex items-start space-x-3"
-                >
+                <li key={index} className="group/feature flex items-start space-x-3">
                   <div
                     className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                       feature.included
@@ -134,9 +118,7 @@ export default function PlanCard({
                   >
                     <Check
                       className={`w-3 h-3 transition-all duration-300 ${
-                        feature.included
-                          ? "text-white"
-                          : "text-muted-foreground"
+                        feature.included ? "text-white" : "text-muted-foreground"
                       }`}
                     />
                   </div>
@@ -150,11 +132,7 @@ export default function PlanCard({
                     >
                       {feature.description}
                     </span>
-                    {feature.note && (
-                      <p className="mt-1 text-muted-foreground text-xs italic">
-                        {feature.note}
-                      </p>
-                    )}
+                    {feature.note && <p className="mt-1 text-muted-foreground text-xs italic">{feature.note}</p>}
                   </div>
                 </li>
               ))}
@@ -172,24 +150,12 @@ export default function PlanCard({
               ? "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50 hover:scale-105 active:scale-95"
               : "border-2 border-primary-500 text-primary-600 hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 hover:text-white hover:border-primary-600 hover:shadow-xl hover:shadow-primary-200 dark:hover:shadow-primary-800/30 hover:scale-105 active:scale-95"
           }`}
-          variant={
-            hasActiveSubscription
-              ? "secondary"
-              : plan.mostPopular
-              ? "default"
-              : "outline"
-          }
+          variant={hasActiveSubscription ? "secondary" : plan.mostPopular ? "default" : "outline"}
           onClick={handleSelectPlan}
           disabled={hasActiveSubscription || isFreePlan}
         >
-          <span
-            className={`flex items-center justify-center gap-2 ${
-              hasActiveSubscription ? "opacity-80" : ""
-            }`}
-          >
-            {!hasActiveSubscription && plan.mostPopular && (
-              <Star className="w-3 h-3 fill-current" />
-            )}
+          <span className={`flex items-center justify-center gap-2 ${hasActiveSubscription ? "opacity-80" : ""}`}>
+            {!hasActiveSubscription && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
             {isFreePlan
               ? t("included")
               : hasActiveSubscription
@@ -197,9 +163,7 @@ export default function PlanCard({
                 ? t("current plan")
                 : t("already subscribed")
               : t("choose plan")}
-            {!hasActiveSubscription && plan.mostPopular && (
-              <Star className="w-3 h-3 fill-current" />
-            )}
+            {!hasActiveSubscription && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
           </span>
         </Button>
 

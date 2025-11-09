@@ -39,11 +39,10 @@ async function userFetcher() {
 
 export default function PlansList() {
   const t = useTranslations("pricing");
-  const { data, error, isLoading } = useSWR<PlansResponse>(
-    ["plans", "active"],
-    fetcher,
-    { revalidateOnFocus: false, revalidateOnReconnect: true }
-  );
+  const { data, error, isLoading } = useSWR<PlansResponse>(["plans", "active"], fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
   const { data: user } = useSWR("current-user", userFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
@@ -66,10 +65,7 @@ export default function PlansList() {
             <div className="flex justify-center mb-12">
               <div className="grid grid-cols-4 p-2 border-2 border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-900 shadow-xl">
                 {intervals.map((interval) => (
-                  <Skeleton
-                    key={interval}
-                    className="w-20 h-12 mx-1 rounded-xl"
-                  />
+                  <Skeleton key={interval} className="w-20 h-12 mx-1 rounded-xl" />
                 ))}
               </div>
             </div>
@@ -94,9 +90,7 @@ export default function PlansList() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="py-8 text-muted-foreground text-center">
-            {t("failed to load plans")}
-          </div>
+          <div className="py-8 text-muted-foreground text-center">{t("failed to load plans")}</div>
         </CardContent>
       </Card>
     );
@@ -106,14 +100,11 @@ export default function PlansList() {
 
   // Get all available intervals from all plans that have prices with values
   const availableIntervals = intervals.filter((interval) => {
-    return plans.some((plan) =>
-      plan.prices?.some((price) => price.interval === interval && !!price.price)
-    );
+    return plans.some((plan) => plan.prices?.some((price) => price.interval === interval && !!price.price));
   });
 
   // Set default active interval to first available, or fallback to "MONTH"
-  const defaultInterval =
-    availableIntervals.length > 0 ? availableIntervals[0] : "MONTH";
+  const defaultInterval = availableIntervals.length > 0 ? availableIntervals[0] : "MONTH";
 
   return (
     <Card className="bg-background">
@@ -126,11 +117,7 @@ export default function PlansList() {
       <CardContent>
         <div className="w-full max-w-7xl mx-auto">
           <Tabs
-            value={
-              availableIntervals.includes(activeInterval as any)
-                ? activeInterval
-                : defaultInterval
-            }
+            value={availableIntervals.includes(activeInterval as any) ? activeInterval : defaultInterval}
             onValueChange={setActiveInterval}
             className="w-full"
           >
@@ -171,18 +158,10 @@ export default function PlansList() {
                 <div className="justify-center gap-x-2 gap-y-4 grid sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
                   {plans
                     .filter((plan) =>
-                      plan.prices?.some(
-                        (price) =>
-                          price.interval === interval && price.price != null
-                      )
+                      plan.prices?.some((price) => price.interval === interval && (price.price != null || plan?.isFree))
                     )
                     .map((plan) => (
-                      <PlanCard
-                        key={plan.id}
-                        plan={plan}
-                        user={user}
-                        selectedInterval={interval}
-                      />
+                      <PlanCard key={plan.id} plan={plan} user={user} selectedInterval={interval} />
                     ))}
                 </div>
               </TabsContent>
@@ -194,12 +173,8 @@ export default function PlansList() {
                   <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
                     <Star className="w-8 h-8 text-muted-foreground" />
                   </div>
-                  <h3 className="mb-2 font-semibold text-foreground text-lg">
-                    {t("no plans available")}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {t("check back later for more options")}
-                  </p>
+                  <h3 className="mb-2 font-semibold text-foreground text-lg">{t("no plans available")}</h3>
+                  <p className="text-muted-foreground">{t("check back later for more options")}</p>
                 </div>
               </div>
             )}

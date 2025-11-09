@@ -39,5 +39,7 @@
   "canceled": "Canceled",
   "incomplete": "Incomplete",
   "unpaid": "Unpaid",
-  "subscription created successfully": "Subscription created successfully"
+  "subscription created successfully": "Subscription created successfully",
+  "no active subscription": "No active subscription",
+  "choose a plan to enjoy our premium features": "Choose a plan to enjoy our premium features"
 }
