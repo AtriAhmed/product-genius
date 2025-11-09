@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { uploadFile, getMediaType } from "@/lib/file-upload";
 // Removed variant-generator import as we now use proper table relationships
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
+import { isAuthorized } from "@/lib/authUtils";
 
 // Validation schemas (unchanged media/translation/supplier/productOption)
 const mediaSchema = z.object({
@@ -384,7 +385,7 @@ const getProductsSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
-  const user = await isAuthenticatedServerSide([], false);
+  const user = await isAuthenticatedServerSide([], true);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -430,6 +431,19 @@ export async function GET(request: NextRequest) {
 
     if (query.isActive) {
       where.isActive = query.isActive === "true";
+    }
+
+    if (!isAuthorized(user, ["ADMIN", "OWNER", "EDITOR"])) {
+      if (user?.currentSubscription?.planId) {
+        where.plans = { some: { id: user.currentSubscription.planId } };
+      } else {
+        const freePlan = await prisma.plan.findFirst({
+          where: { isFree: true },
+        });
+        if (freePlan) {
+          where.plans = { some: { id: freePlan.id } };
+        }
+      }
     }
 
     // Build orderBy based on sortBy and sortOrder
@@ -483,7 +497,7 @@ export async function GET(request: NextRequest) {
           },
           productMappings: {
             where: {
-              userId: parseInt(user.id),
+              userId: user.id,
             },
           },
           plans: {
