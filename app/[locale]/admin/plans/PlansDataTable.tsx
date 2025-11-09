@@ -165,15 +165,17 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
                         <Edit className="w-4 h-4" />
                         <span className="sr-only">{t("edit")}</span>
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(plan)}
-                        className="w-8 h-8 p-0 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span className="sr-only">{t("delete")}</span>
-                      </Button>
+                      {!plan?.isFree && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDelete(plan)}
+                          className="w-8 h-8 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span className="sr-only">{t("delete")}</span>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

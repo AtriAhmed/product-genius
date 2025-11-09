@@ -32,9 +32,15 @@ const CreatePlanSchema = z.object({
   sortOrder: z.number().default(0),
   prices: z
     .array(PlanPriceSchema)
-    .refine((prices) => prices.some((price) => price.price !== undefined), {
+    .refine((prices) => prices.some((price) => price.price !== undefined && price.price !== null), {
       message: "At least one price must have a value",
-    }),
+    })
+    .refine(
+      (prices) => prices.every((price) => price.price === null || price.price === undefined || price.price >= 1),
+      {
+        message: "Prices must be at least 1",
+      }
+    ),
 });
 
 export async function GET(request: NextRequest) {
@@ -51,10 +57,7 @@ export async function GET(request: NextRequest) {
     const where: any = {};
 
     if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { description: { contains: search } },
-      ];
+      where.OR = [{ name: { contains: search } }, { description: { contains: search } }];
     }
 
     // Apply filters
@@ -115,10 +118,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching plans:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch plans" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch plans" }, { status: 500 });
   }
 }
 
@@ -204,22 +204,13 @@ export async function POST(request: NextRequest) {
     console.error("Error creating plan:", error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
     }
 
     if (error instanceof Stripe.errors.StripeError) {
-      return NextResponse.json(
-        { error: "Stripe error", details: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Stripe error", details: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Failed to create plan" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to create plan" }, { status: 500 });
   }
 }

@@ -25,13 +25,13 @@ export const planFormSchema = z.object({
   // manual prices check: at least one price should have a value
   prices: z
     .array(planPriceSchema)
+    .refine((prices) => prices.some((price) => price.price !== undefined && price.price !== null), {
+      message: "At least one price must have a value",
+    })
     .refine(
-      (prices) =>
-        prices.some(
-          (price) => price.price !== undefined && price.price !== null
-        ),
+      (prices) => prices.every((price) => price.price === null || price.price === undefined || price.price >= 1),
       {
-        message: "At least one price must have a value",
+        message: "Prices must be at least 1",
       }
     ),
 });

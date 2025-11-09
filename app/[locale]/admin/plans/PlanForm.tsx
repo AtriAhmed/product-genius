@@ -46,12 +46,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
       features: plan?.features || [],
       mostPopular: plan?.mostPopular || false,
       sortOrder: plan?.sortOrder || 0,
-      prices: plan?.prices || [
-        { interval: "DAY" },
-        { interval: "WEEK" },
-        { interval: "MONTH" },
-        { interval: "YEAR" },
-      ],
+      prices: plan?.prices || [{ interval: "DAY" }, { interval: "WEEK" }, { interval: "MONTH" }, { interval: "YEAR" }],
     },
   });
 
@@ -68,10 +63,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
         router.push("/admin/plans");
       }
     } catch (error) {
-      const message =
-        mode === "create"
-          ? t("failed to create plan")
-          : t("failed to update plan");
+      const message = mode === "create" ? t("failed to create plan") : t("failed to update plan");
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -93,6 +85,10 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     }
   };
 
+  function onError() {
+    toast.error(t("please fix the errors in the form before submitting"));
+  }
+
   return (
     <div className="mx-auto px-4 py-2 container">
       <div className="max-w-3xl">
@@ -103,35 +99,22 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="font-bold text-2xl">
-                {mode === "create" ? t("create plan") : t("edit plan")}
-              </h1>
+              <h1 className="font-bold text-2xl">{mode === "create" ? t("create plan") : t("edit plan")}</h1>
               <p className="text-muted-foreground">
-                {mode === "create"
-                  ? t("add a new plan to your catalog")
-                  : t("update plan information")}
+                {mode === "create" ? t("add a new plan to your catalog") : t("update plan information")}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 ms-auto">
-            {mode === "edit" && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                className=""
-              >
+            {mode === "edit" && !plan?.isFree && (
+              <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="">
                 <Trash2 className="w-4 h-4 mr-2" />
                 {t("delete")}
               </Button>
             )}
 
-            <Button
-              onClick={handleSubmit(onSubmit)}
-              disabled={isSubmitting || !isDirty}
-              size="sm"
-            >
+            <Button onClick={handleSubmit(onSubmit, onError)} disabled={isSubmitting || !isDirty} size="sm">
               <Save className="w-4 h-4 mr-2" />
               {isSubmitting
                 ? mode === "create"
@@ -154,18 +137,15 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
         {/* Form Content */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 mb-2">
           {/* Basic Information */}
-          <PlanBasicInformation
-            register={register}
-            setValue={setValue}
-            watch={watch}
-            errors={errors}
-          />
+          <PlanBasicInformation register={register} setValue={setValue} watch={watch} errors={errors} />
         </form>
 
         {/* Pricing */}
-        <div className="mb-4">
-          <PlanPricing setValue={setValue} watch={watch} errors={errors} />
-        </div>
+        {!plan?.isFree && (
+          <div className="mb-4">
+            <PlanPricing setValue={setValue} watch={watch} errors={errors} />
+          </div>
+        )}
 
         {/* Features */}
         <PlanFeatures watch={watch} setValue={setValue} />

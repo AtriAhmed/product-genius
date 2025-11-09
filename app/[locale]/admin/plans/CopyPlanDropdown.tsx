@@ -21,10 +21,7 @@ type CopyPlanDropdownProps = {
   currentPlanId?: number;
 };
 
-export default function CopyPlanDropdown({
-  setValue,
-  currentPlanId,
-}: CopyPlanDropdownProps) {
+export default function CopyPlanDropdown({ setValue, currentPlanId }: CopyPlanDropdownProps) {
   const t = useTranslations("plans");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,9 +31,7 @@ export default function CopyPlanDropdown({
       setIsLoading(true);
       try {
         const response = await axios.get("/api/plans?limit=100");
-        const filteredPlans = response.data.data.filter(
-          (plan: Plan) => plan.id !== currentPlanId
-        );
+        const filteredPlans = response.data.data.filter((plan: Plan) => plan.id !== currentPlanId);
         setPlans(filteredPlans);
       } catch (error) {
         toast.error(t("failed to fetch plans"));
@@ -69,15 +64,33 @@ export default function CopyPlanDropdown({
       );
     } else {
       // Default structure if no prices
-      setValue("prices", [
-        { interval: "DAY" },
-        { interval: "WEEK" },
-        { interval: "MONTH" },
-        { interval: "YEAR" },
-      ]);
+      setValue("prices", [{ interval: "DAY" }, { interval: "WEEK" }, { interval: "MONTH" }, { interval: "YEAR" }]);
     }
 
     toast.success(t("plan data copied successfully"));
+  };
+
+  const getIntervalLabel = (interval: string) => {
+    switch (interval) {
+      case "DAY":
+        return t("daily");
+      case "WEEK":
+        return t("weekly");
+      case "MONTH":
+        return t("monthly");
+      case "YEAR":
+        return t("yearly");
+      default:
+        return interval;
+    }
+  };
+
+  const formatPrice = (price: number, interval: string) => {
+    const formatted = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "EUR",
+    }).format(price);
+    return `${formatted}/${getIntervalLabel(interval).toLowerCase()}`;
   };
 
   if (plans.length === 0 && !isLoading) {
@@ -95,21 +108,13 @@ export default function CopyPlanDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
         {plans.map((plan) => {
-          const monthlyPrice = plan.prices?.find((p) => p.interval === "MONTH");
-          const priceDisplay = monthlyPrice
-            ? `€${monthlyPrice.price}/month`
-            : "Multiple prices";
+          const priceObj = plan.prices?.find((p) => p.interval === "MONTH") || plan.prices?.[0];
+          const priceDisplay = formatPrice(priceObj?.price || 0, priceObj?.interval || "MONTH");
 
           return (
-            <DropdownMenuItem
-              key={plan.id}
-              onClick={() => handleCopyPlan(plan)}
-              className="flex gap-2 px-2 py-1"
-            >
+            <DropdownMenuItem key={plan.id} onClick={() => handleCopyPlan(plan)} className="flex gap-2 px-2 py-1">
               <div className="font-medium text-sm">{plan.name}</div>
-              <div className="font-medium text-muted-foreground text-sm">
-                ({priceDisplay})
-              </div>
+              <div className="font-medium text-muted-foreground text-sm">({priceDisplay})</div>
             </DropdownMenuItem>
           );
         })}
