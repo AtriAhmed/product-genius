@@ -1,11 +1,4 @@
-import {
-  Building2,
-  ExternalLink,
-  Store,
-  Star,
-  Loader2,
-  CheckCircle,
-} from "lucide-react";
+import { Building2, ExternalLink, Store, Star, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,20 +59,19 @@ export default function SupplierCard({
   };
 
   const handleConfirmImport = async () => {
+    console.log("-------------------- productId --------------------");
+    console.log(productId);
+
     if (!productId) return;
 
     setIsImporting(true);
 
     try {
-      const response = await axios.post(
-        `/api/products/${productId}/import-to-shopify`
-      );
+      const response = await axios.post(`/api/products/${productId}/import-to-shopify`);
       toast.success("Product successfully imported to Shopify!");
       router.push("/dashboard/imported-products");
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.error || "Failed to import product to Shopify"
-      );
+      toast.error(error.response?.data?.error || "Failed to import product to Shopify");
     } finally {
       setIsImporting(false);
       setShowConfirmDialog(false);
@@ -97,14 +89,9 @@ export default function SupplierCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center">
-              <h4 className="font-semibold text-foreground text-sm truncate">
-                WinWaterfall
-              </h4>
+              <h4 className="font-semibold text-foreground text-sm truncate">WinWaterfall</h4>
               <div className="flex items-center gap-1">
-                <Star
-                  className="flex-shrink-0 w-3.5 h-3.5 drop-shadow-sm text-yellow-400"
-                  fill="currentColor"
-                />
+                <Star className="flex-shrink-0 w-3.5 h-3.5 drop-shadow-sm text-yellow-400" fill="currentColor" />
               </div>
             </div>
           </div>
@@ -127,9 +114,7 @@ export default function SupplierCard({
                   {formatPrice(compareAtPrice)}
                 </span>
               )}
-              <span className="drop-shadow-sm font-bold text-white text-xs">
-                {formatPrice(price)}
-              </span>
+              <span className="drop-shadow-sm font-bold text-white text-xs">{formatPrice(price)}</span>
             </div>
           </div>
         </div>
@@ -153,11 +138,7 @@ export default function SupplierCard({
           ) : (
             <Store className="w-3 h-3" />
           )}
-          {isImporting
-            ? "Importing..."
-            : isImported
-            ? "Already Imported"
-            : "Import to Shopify"}
+          {isImporting ? "Importing..." : isImported ? "Already Imported" : "Import to Shopify"}
         </Button>
       </CardContent>
 

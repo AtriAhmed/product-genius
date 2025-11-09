@@ -30,8 +30,7 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("products");
-  const { setBreadcrumbs, resetBreadcrumbs, createProductBreadcrumbs } =
-    useBreadcrumb();
+  const { setBreadcrumbs, resetBreadcrumbs, createProductBreadcrumbs } = useBreadcrumb();
   const [isLiked, setIsLiked] = useState(false);
 
   const productId = params.id as string;
@@ -62,9 +61,7 @@ export default function ProductPage() {
   function updateBreadcrumbs() {
     if (product) {
       const translation = getCurrentTranslation(product.translations || []);
-      const categoryTranslation = getCurrentTranslation(
-        product.category?.translations || []
-      );
+      const categoryTranslation = getCurrentTranslation(product.category?.translations || []);
       const breadcrumbs = createProductBreadcrumbs(
         translation?.title || "Product",
         categoryTranslation?.title,
@@ -119,11 +116,7 @@ export default function ProductPage() {
       <div className="min-h-screen bg-background">
         <div className="mx-auto px-0 sm:px-4 container">
           <div className="mb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push("/dashboard/products")}
-            >
+            <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to products
             </Button>
@@ -139,20 +132,14 @@ export default function ProductPage() {
   }
 
   const translation = getCurrentTranslation(product?.translations || []);
-  const categoryTranslation = getCurrentTranslation(
-    product?.category?.translations || []
-  );
+  const categoryTranslation = getCurrentTranslation(product?.category?.translations || []);
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push("/dashboard/products")}
-          >
+          <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to products
           </Button>
@@ -169,20 +156,12 @@ export default function ProductPage() {
           <div>
             <ProductInfo
               product={product}
+              user={user as User}
               translation={translation}
               categoryTranslation={categoryTranslation}
               isLiked={isLiked}
               onLike={handleLike}
               onShare={handleShare}
-            />
-
-            <ProductSuppliers
-              hasStore={!!user?.shopifyStores?.[0]}
-              price={product?.price}
-              compareAtPrice={product?.compareAtPrice}
-              suppliers={product?.suppliers || []}
-              isImported={product?.productMappings?.length! > 0}
-              onScrollToProviders={scrollToProviders}
             />
           </div>
         </div>

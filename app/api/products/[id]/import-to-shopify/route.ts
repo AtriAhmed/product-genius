@@ -103,11 +103,11 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
 
     // Prepare images for media parameter
     const mediaInput = product.media
-      .filter((media) => media.type === "IMAGE")
+      // .filter((media) => media.type === "IMAGE")
       .map((media) => ({
         originalSource: media.url?.startsWith("/") ? `${process.env.NEXTAUTH_URL}${getMediaUrl(media.url)}` : media.url,
         alt: media.alt || primaryTranslation.title,
-        mediaContentType: "IMAGE" as const,
+        mediaContentType: media?.type === "IMAGE" ? "IMAGE" : "EXTERNAL_VIDEO",
       }));
 
     // Prepare product options in the new format

@@ -1,25 +1,22 @@
-import { Supplier } from "@/types";
+import { Product, Supplier, User } from "@/types";
 import { Search } from "lucide-react";
 import SupplierCard from "./SupplierCard";
 import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceCard";
 
 interface ProvidersPreviewProps {
-  hasStore?: boolean;
-  suppliers: Supplier[];
-  price?: number;
-  compareAtPrice?: number;
-  isImported: boolean;
-  onScrollToProviders: () => void;
+  product: Product;
+  user: User;
 }
 
-export function ProductSuppliers({
-  hasStore = false,
-  price,
-  compareAtPrice,
-  suppliers,
-  isImported,
-}: ProvidersPreviewProps) {
-  if (!suppliers?.length)
+export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
+  const suppliers = product.suppliers || [];
+  const price = product.price;
+  const compareAtPrice = product.compareAtPrice;
+  const productId = product.id;
+  const hasStore = !!user.shopifyStores?.[0];
+  const isImported = product?.productMappings?.length! > 0;
+
+  if (!suppliers?.length && !price)
     return (
       <>
         {/* Compact Suppliers & Marketplaces */}
@@ -28,9 +25,7 @@ export function ProductSuppliers({
 
           <div className="flex flex-col justify-center items-center space-y-2 py-8 text-center">
             <Search className="w-8 h-8 text-muted-foreground" />
-            <div className="font-bold text-muted-foreground text-sm">
-              No providers available for this product.
-            </div>
+            <div className="font-bold text-muted-foreground text-sm">No providers available for this product.</div>
           </div>
         </div>
       </>
@@ -44,11 +39,10 @@ export function ProductSuppliers({
         {/* Show first few suppliers */}
         {price && (
           <div className="space-y-2">
-            <h4 className="font-medium text-muted-foreground text-sm">
-              Our Suppliers
-            </h4>
+            <h4 className="font-medium text-muted-foreground text-sm">Our Suppliers</h4>
             <div className="gap-2 grid xl:grid-cols-2">
               <SupplierCard
+                productId={productId}
                 hasStore={hasStore}
                 price={price}
                 compareAtPrice={compareAtPrice}
@@ -62,16 +56,10 @@ export function ProductSuppliers({
         {/* Show first few marketplaces */}
         {suppliers.length > 0 && (
           <div className="space-y-2">
-            <h4 className="font-medium text-muted-foreground text-sm">
-              Marketplaces
-            </h4>
+            <h4 className="font-medium text-muted-foreground text-sm">Marketplaces</h4>
             <div className="gap-2 grid xl:grid-cols-2">
               {suppliers.map((supplier) => (
-                <MarketplaceCard
-                  key={supplier.id}
-                  supplier={supplier}
-                  compact={true}
-                />
+                <MarketplaceCard key={supplier.id} supplier={supplier} compact={true} />
               ))}
             </div>
           </div>

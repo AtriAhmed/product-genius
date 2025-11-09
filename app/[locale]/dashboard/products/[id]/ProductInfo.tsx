@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Product, ProductTranslation } from "@/types";
+import { Product, ProductTranslation, User } from "@/types";
 import ShopifyIcon from "@/assets/images/shopify.svg";
 import sanitizeHtml from "sanitize-html";
+import { ProductSuppliers } from "@/app/[locale]/dashboard/products/[id]/ProductSuppliers";
 
 interface ProductInfoProps {
   product: Product;
@@ -16,6 +17,7 @@ interface ProductInfoProps {
   isLiked: boolean;
   onLike: () => void;
   onShare: () => void;
+  user: User;
 }
 
 const currencies = [
@@ -31,7 +33,15 @@ const currencies = [
 
 const currencyMap = Object.fromEntries(currencies.map((currency) => [currency.code, currency]));
 
-export function ProductInfo({ product, translation, categoryTranslation, isLiked, onLike, onShare }: ProductInfoProps) {
+export function ProductInfo({
+  product,
+  translation,
+  categoryTranslation,
+  isLiked,
+  onLike,
+  onShare,
+  user,
+}: ProductInfoProps) {
   const t = useTranslations("products");
   const isImportedToShopify = product.productMappings && product.productMappings.length > 0;
   const shopifyMapping = product.productMappings?.[0];
@@ -100,8 +110,10 @@ export function ProductInfo({ product, translation, categoryTranslation, isLiked
         </div>
       </div>
 
+      <ProductSuppliers product={product} user={user as User} />
+
       {/* Price and SKU */}
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         {product.sellingPrice && (
           <div>
             <div className="mb-1 text-muted-foreground text-sm">Suggested Selling Price</div>
@@ -112,7 +124,7 @@ export function ProductInfo({ product, translation, categoryTranslation, isLiked
           </div>
         )}
         {product.sku && <div className="text-muted-foreground text-sm">SKU: {product.sku}</div>}
-      </div>
+      </div> */}
 
       {/* Description */}
       <div
