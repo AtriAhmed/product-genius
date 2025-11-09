@@ -118,7 +118,12 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/products
         },
         variants: {
           include: {
-            options: true,
+            options: {
+              include: {
+                option: true,
+                value: true,
+              },
+            },
           },
         },
         productMappings: {
