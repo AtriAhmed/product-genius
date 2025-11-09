@@ -98,5 +98,9 @@
   "create": "Create",
   "subscription plans": "Subscription Plans",
   "try adjusting your search or filters": "Try adjusting your search or filters",
-  "please fix the errors in the form before submitting": "Please fix the errors in the form before submitting"
+  "please fix the errors in the form before submitting": "Please fix the errors in the form before submitting",
+  "actions": "Actions",
+  "cancel": "Cancel",
+  "no features available": "No features available",
+  "add features to your plan": "Add features to your plan"
 }
