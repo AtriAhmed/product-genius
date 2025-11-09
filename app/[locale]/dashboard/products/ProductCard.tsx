@@ -35,15 +35,13 @@ export default function ProductCard({ product }: { product: Product }) {
       }
     }
   }, [isVideoHovered, mainMedia?.type]);
-  const categoryTranslation = getCurrentTranslation(
-    product?.category?.translations || []
-  );
+  const categoryTranslation = getCurrentTranslation(product?.category?.translations || []);
 
   const isImported = (product.productMappings || []).length > 0;
 
   return (
     <Link href={`/dashboard/products/${product.id}`}>
-      <Card className="group flex flex-col gap-2 overflow-hidden pt-0 pb-2 hover:shadow-lg transition-all duration-300 cursor-pointer">
+      <Card className="group flex flex-col gap-2 h-full overflow-hidden pt-0 pb-2 hover:shadow-lg transition-all duration-300 cursor-pointer">
         <div className="relative h-[200px] overflow-hidden bg-gray-100">
           {isImported && (
             <div
@@ -55,9 +53,7 @@ export default function ProductCard({ product }: { product: Product }) {
               <div className="w-4 h-4">
                 <ShopifyIcon className="text-white" height={15} />
               </div>
-              <span className="font-semibold text-[12px] text-white">
-                {t("imported") || "Imported"}
-              </span>
+              <span className="font-semibold text-[12px] text-white">{t("imported") || "Imported"}</span>
             </div>
           )}
 
@@ -113,29 +109,24 @@ export default function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        <CardContent className="grow p-4 pt-0">
+        <CardContent className="flex flex-col grow !p-2 !pt-0">
           <div className="flex flex-col space-y-2 h-full">
             <div className="flex justify-between items-start gap-2">
-              <h3 className="font-semibold group-hover:text-primary text-lg line-clamp-2 transition-colors">
+              <h3 className="font-semibold group-hover:text-primary text-base line-clamp-2 transition-colors">
                 {translation?.title || "Untitled"}
               </h3>
             </div>
 
             {categoryTranslation?.title && (
-              <Badge
-                variant="secondary"
-                className="!bg-yellow-500 text-white text-xs"
-              >
+              <Badge variant="secondary" className="!bg-yellow-500 text-white text-xs">
                 {categoryTranslation.title}
               </Badge>
             )}
 
-            <p className="text-muted-foreground text-sm line-clamp-3">
-              {translation?.description}
-            </p>
+            <p className="text-muted-foreground text-sm line-clamp-3">{translation?.description}</p>
 
             <div
-              className={`rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40 ml-auto`}
+              className={`mt-auto rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40 ml-auto`}
             >
               <div className="flex items-end gap-1">
                 {product?.compareAtPrice && (
