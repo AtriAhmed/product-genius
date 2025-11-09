@@ -4,7 +4,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { getCurrentTranslation } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import { ProductTranslation } from "@/types";
@@ -213,13 +213,11 @@ export default function ProductContentForm({
                       <label className="font-medium text-sm">
                         Description <span className="text-destructive">*</span>
                       </label>
-                      <Textarea
+                      <RichTextEditor
                         value={currentTranslation?.description}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                          updateTranslation(activeTab, "description", e.target.value)
-                        }
+                        onChange={(value) => updateTranslation(activeTab, "description", value)}
                         placeholder={`Enter product description in ${getLanguageInfo(activeTab).name}`}
-                        className={cn(!currentTranslation?.description?.trim() && "border-destructive", "h-40")}
+                        className={cn(!currentTranslation?.description?.trim() && "border-destructive")}
                       />
                       {!currentTranslation?.description?.trim() && (
                         <p className="text-destructive text-sm">Description is required</p>
