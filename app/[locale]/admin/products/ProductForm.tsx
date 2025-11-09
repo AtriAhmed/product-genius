@@ -149,37 +149,73 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       console.log("-------------------- data --------------------");
       console.log(data);
 
-      const mediaWithoutFiles = data.media.map(({ file, posterFile, ...rest }) => rest);
+      let productData: any;
 
-      const variantsWithValueIds = data.variants.map((variant) => ({
-        ...variant,
-        optionValueIds: Object.values(variant.options),
-      }));
+      if (isEditMode) {
+        // Get dirty fields for PATCH request
+        const dirtyFields = form.formState.dirtyFields;
+        productData = {};
 
-      // Add product data as JSON
-      const { variants, ...dataWithoutVariants } = data;
+        // Only include dirty fields
+        if (dirtyFields.price) productData.price = data.price;
+        if (dirtyFields.compareAtPrice) productData.compareAtPrice = data.compareAtPrice;
+        if (dirtyFields.sellingPrice) productData.sellingPrice = data.sellingPrice;
+        if (dirtyFields.currency) productData.currency = data.currency;
+        if (dirtyFields.categoryId) productData.categoryId = data.categoryId;
+        if (dirtyFields.planIds) productData.planIds = data.planIds;
+        if (dirtyFields.isActive) productData.isActive = data.isActive;
+        if (dirtyFields.translations) productData.translations = data.translations;
+        if (dirtyFields.suppliers) productData.suppliers = data.suppliers;
 
-      const productData = {
-        ...dataWithoutVariants,
-        media: mediaWithoutFiles,
-        variants: variantsWithValueIds,
-      };
+        // Handle media separately since it has files
+        if (dirtyFields.media) {
+          productData.media = data.media.map(({ file, posterFile, ...rest }) => rest);
+        }
+
+        // Handle options and variants together (they're tightly coupled)
+        if (dirtyFields.options || dirtyFields.variants) {
+          productData.options = data.options;
+          productData.variants = data.variants.map((variant) => ({
+            ...variant,
+            optionValueIds: Object.values(variant.options),
+          }));
+        }
+      } else {
+        // Create mode - send all data
+        const mediaWithoutFiles = data.media.map(({ file, posterFile, ...rest }) => rest);
+
+        const variantsWithValueIds = data.variants.map((variant) => ({
+          ...variant,
+          optionValueIds: Object.values(variant.options),
+        }));
+
+        // Add product data as JSON
+        const { variants, ...dataWithoutVariants } = data;
+
+        productData = {
+          ...dataWithoutVariants,
+          media: mediaWithoutFiles,
+          variants: variantsWithValueIds,
+        };
+      }
 
       formData.append("productData", JSON.stringify(productData));
 
-      // Add media files
-      data.media.forEach((item: any) => {
-        if (item.file) {
-          formData.append(`media_${item.sortOrder}`, item.file);
-        }
-        if (item.posterFile) {
-          formData.append(`poster_${item.sortOrder}`, item.posterFile);
-        }
-      });
+      // Add media files (only if media is dirty in edit mode, or always in create mode)
+      if (!isEditMode || form.formState.dirtyFields.media) {
+        data.media.forEach((item: any) => {
+          if (item.file) {
+            formData.append(`media_${item.sortOrder}`, item.file);
+          }
+          if (item.posterFile) {
+            formData.append(`poster_${item.sortOrder}`, item.posterFile);
+          }
+        });
+      }
 
       const url = isEditMode ? `/api/products/${product!.id}` : "/api/products";
 
-      const response = isEditMode ? await axios.put(url, formData) : await axios.post(url, formData);
+      const response = isEditMode ? await axios.patch(url, formData) : await axios.post(url, formData);
 
       toast.success(t(isEditMode ? "product updated successfully" : "product created successfully"));
 
