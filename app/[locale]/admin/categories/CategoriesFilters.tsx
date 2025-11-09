@@ -5,13 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, ArrowUpDown, X } from "lucide-react";
 
 interface CategoriesFiltersProps {
@@ -37,11 +31,7 @@ export default function CategoriesFilters({
 }: CategoriesFiltersProps) {
   const t = useTranslations("categories");
 
-  const hasActiveFilters =
-    search ||
-    filter !== "all" ||
-    sortBy !== "createdAt" ||
-    sortOrder !== "desc";
+  const hasActiveFilters = search || filter !== "all" || sortBy !== "createdAt" || sortOrder !== "desc";
 
   const handleSortChange = (value: string) => {
     const [field, order] = value.split("_");
@@ -49,11 +39,11 @@ export default function CategoriesFilters({
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between flex-wrap">
+    <div className="mb-2">
+      <div className="flex md:flex-row flex-col flex-wrap md:justify-between md:items-center gap-4">
         {/* Search */}
         <div className="relative flex-1 min-w-28 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
           <Input
             placeholder={t("search categories")}
             value={search}
@@ -62,7 +52,7 @@ export default function CategoriesFilters({
           />
         </div>
 
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex flex-wrap gap-3">
           {/* Filter */}
           <Select value={filter} onValueChange={onFilterChange}>
             <SelectTrigger className="w-40">
@@ -73,20 +63,13 @@ export default function CategoriesFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("all")}</SelectItem>
-              <SelectItem value="with_products">
-                {t("with products")}
-              </SelectItem>
-              <SelectItem value="without_products">
-                {t("without products")}
-              </SelectItem>
+              <SelectItem value="with_products">{t("with products")}</SelectItem>
+              <SelectItem value="without_products">{t("without products")}</SelectItem>
             </SelectContent>
           </Select>
 
           {/* Sort */}
-          <Select
-            value={`${sortBy}_${sortOrder}`}
-            onValueChange={handleSortChange}
-          >
+          <Select value={`${sortBy}_${sortOrder}`} onValueChange={handleSortChange}>
             <SelectTrigger className="w-48">
               <div className="flex items-center gap-2">
                 <ArrowUpDown className="w-4 h-4" />
@@ -94,9 +77,7 @@ export default function CategoriesFilters({
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="createdAt_desc">
-                {t("newest first")}
-              </SelectItem>
+              <SelectItem value="createdAt_desc">{t("newest first")}</SelectItem>
               <SelectItem value="createdAt_asc">{t("oldest first")}</SelectItem>
               <SelectItem value="name_asc">{t("name ascending")}</SelectItem>
               <SelectItem value="name_desc">{t("name descending")}</SelectItem>
@@ -105,12 +86,7 @@ export default function CategoriesFilters({
 
           {/* Clear Filters */}
           {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearFilters}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={onClearFilters} className="gap-2">
               <X className="w-4 h-4" />
               {t("clear filters")}
             </Button>
@@ -120,28 +96,19 @@ export default function CategoriesFilters({
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
+        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-border border-t">
           {search && (
             <Badge variant="secondary" className="gap-1">
               Search: "{search}"
-              <button
-                onClick={() => onSearchChange("")}
-                className="ml-1 hover:bg-muted rounded-full p-0.5"
-              >
+              <button onClick={() => onSearchChange("")} className="ml-1 p-0.5 rounded-full hover:bg-muted">
                 <X className="w-3 h-3" />
               </button>
             </Badge>
           )}
           {filter !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              Filter:{" "}
-              {filter === "with_products"
-                ? t("with products")
-                : t("without products")}
-              <button
-                onClick={() => onFilterChange("all")}
-                className="ml-1 hover:bg-muted rounded-full p-0.5"
-              >
+              Filter: {filter === "with_products" ? t("with products") : t("without products")}
+              <button onClick={() => onFilterChange("all")} className="ml-1 p-0.5 rounded-full hover:bg-muted">
                 <X className="w-3 h-3" />
               </button>
             </Badge>

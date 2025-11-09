@@ -110,12 +110,11 @@ export default function ProductsDataTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {emptyStateRow}
-          {/* {isLoading
+          {isLoading
             ? skeletonRows
             : products.length > 0
             ? products.map((p) => <ProductRow key={p.id} product={p} onEdit={onEdit} onDelete={onDelete} />)
-            : emptyStateRow} */}
+            : emptyStateRow}
         </TableBody>
       </Table>
     </div>
