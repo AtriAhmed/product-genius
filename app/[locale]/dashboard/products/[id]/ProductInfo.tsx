@@ -116,7 +116,7 @@ export function ProductInfo({ product, translation, categoryTranslation, isLiked
 
       {/* Description */}
       <div
-        className="max-w-none [&_blockquote]:my-4 [&_h1]:my-4 [&_h2]:my-3 [&_h3]:my-3 [&_h4]:my-2 [&_h5]:my-2 [&_h6]:my-2 [&_li]:my-1 [&_ol]:my-2 [&_ul]:my-2 [&_blockquote]:pl-4 [&_blockquote]:border-border [&_blockquote]:border-l-4 [&_h5]:font-medium [&_h6]:font-medium [&_h3]:font-semibold [&_h4]:font-semibold [&_h1]:font-bold [&_h2]:font-bold [&_strong]:font-bold [&_h6]:text-xs [&_h5]:text-sm [&_h4]:text-base [&_h3]:text-lg [&_h2]:text-xl [&_h1]:text-2xl [&_s]:line-through [&_blockquote]:italic [&_em]:italic prose prose-sm"
+        className="max-w-none [&_blockquote]:my-4 [&_h1]:my-4 [&_h2]:my-3 [&_h3]:my-3 [&_h4]:my-2 [&_h5]:my-2 [&_h6]:my-2 [&_li]:my-1 [&_ol]:my-2 [&_ul]:my-2 [&_blockquote]:pl-4 [&_blockquote]:border-border [&_blockquote]:border-l-4 [&_h5]:font-medium [&_h6]:font-medium [&_h3]:font-semibold [&_h4]:font-semibold [&_h1]:font-bold [&_h2]:font-bold [&_strong]:font-bold [&_h6]:text-xs [&_h5]:text-sm [&_h4]:text-base [&_h3]:text-lg [&_h2]:text-xl [&_h1]:text-2xl [&_s]:line-through [&_blockquote]:italic [&_em]:italic whitespace-pre-wrap prose prose-sm"
         dangerouslySetInnerHTML={{
           __html: sanitizeHtml(translation?.description || "No description available.", {
             allowedTags: false,
