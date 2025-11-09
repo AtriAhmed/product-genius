@@ -2,13 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Search, SortAsc, SortDesc, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -44,17 +38,13 @@ export default function ProductFilters({
   ];
 
   const currentSortValue = `${sortBy}-${sortOrder}`;
-  const hasActiveFilters =
-    search ||
-    filter !== "all" ||
-    sortBy !== "createdAt" ||
-    sortOrder !== "desc";
+  const hasActiveFilters = search || filter !== "all" || sortBy !== "createdAt" || sortOrder !== "desc";
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 pb-3">
+    <div className="flex lg:flex-row flex-col gap-4 pb-2">
       {/* Search */}
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
         <Input
           placeholder={t("search products")}
           value={search}
@@ -85,11 +75,7 @@ export default function ProductFilters({
         }}
       >
         <SelectTrigger className="w-full lg:w-48">
-          {sortOrder === "asc" ? (
-            <SortAsc className="w-4 h-4 mr-2" />
-          ) : (
-            <SortDesc className="w-4 h-4 mr-2" />
-          )}
+          {sortOrder === "asc" ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -103,11 +89,7 @@ export default function ProductFilters({
 
       {/* Clear Filters */}
       {hasActiveFilters && (
-        <Button
-          variant="outline"
-          onClick={onClearFilters}
-          className="lg:w-auto"
-        >
+        <Button variant="outline" onClick={onClearFilters} className="lg:w-auto">
           <X className="w-4 h-4 mr-2" />
           {t("clear filters")}
         </Button>

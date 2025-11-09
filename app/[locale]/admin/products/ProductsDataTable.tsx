@@ -4,7 +4,7 @@ import ProductRow from "@/app/[locale]/admin/products/ProductRow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Product } from "@/types";
-import { Eye } from "lucide-react";
+import { Eye, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface ProductsDataTableProps {
@@ -84,11 +84,11 @@ export default function ProductsDataTable({
     <TableRow>
       <TableCell colSpan={7}>
         <div className="p-8 text-center">
-          <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
-            <Eye className="w-8 h-8 text-muted-foreground" />
+          <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
+            <Package className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="mb-2 font-medium text-lg">{t("no products found")}</h3>
-          <p className="mb-4 text-muted-foreground">{t("try adjusting your search or filters")}</p>
+          <h3 className="font-bold text-slate-800 text-lg">{t("no products found")}</h3>
+          <p className="mb-4 text-muted-foreground text-sm">{t("try adjusting your search or filters")}</p>
         </div>
       </TableCell>
     </TableRow>
@@ -110,11 +110,12 @@ export default function ProductsDataTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {isLoading
+          {emptyStateRow}
+          {/* {isLoading
             ? skeletonRows
             : products.length > 0
             ? products.map((p) => <ProductRow key={p.id} product={p} onEdit={onEdit} onDelete={onDelete} />)
-            : emptyStateRow}
+            : emptyStateRow} */}
         </TableBody>
       </Table>
     </div>

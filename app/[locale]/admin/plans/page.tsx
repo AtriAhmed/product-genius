@@ -1,6 +1,7 @@
 "use client";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import Pagination from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { Plan } from "@/types";
 import { Plus } from "lucide-react";
@@ -88,8 +89,8 @@ export default function PlansPage() {
       toast.error(error instanceof Error ? error.message : t("failed to delete plan"));
     } finally {
       setDeletePlan(undefined);
+      setIsDeleting(false);
     }
-    setIsDeleting(false);
   };
 
   const clearFilters = () => {
@@ -117,8 +118,8 @@ export default function PlansPage() {
   };
 
   return (
-    <div>
-      <div className="mx-auto container">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
@@ -148,37 +149,7 @@ export default function PlansPage() {
 
         {/* Pagination */}
         {!isLoading && plans.length > 0 && pagination.pages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-8">
-            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
-              Previous
-            </Button>
-            {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-              let pageNumber;
-              if (pagination.pages <= 5) {
-                pageNumber = i + 1;
-              } else if (page <= 3) {
-                pageNumber = i + 1;
-              } else if (page >= pagination.pages - 2) {
-                pageNumber = pagination.pages - 4 + i;
-              } else {
-                pageNumber = page - 2 + i;
-              }
-
-              return (
-                <Button
-                  key={pageNumber}
-                  variant={page === pageNumber ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </Button>
-              );
-            })}
-            <Button variant="outline" size="sm" disabled={page === pagination.pages} onClick={() => setPage(page + 1)}>
-              Next
-            </Button>
-          </div>
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
 
         {/* Results Count */}

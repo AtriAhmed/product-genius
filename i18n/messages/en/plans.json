@@ -96,5 +96,6 @@
   "failed to fetch plans": "Failed to fetch plans",
   "plan data copied successfully": "Plan data copied successfully",
   "create": "Create",
-  "subscription plans": "Subscription Plans"
+  "subscription plans": "Subscription Plans",
+  "try adjusting your search or filters": "Try adjusting your search or filters"
 }

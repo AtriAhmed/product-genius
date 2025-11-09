@@ -2,16 +2,10 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Edit, Trash2, Eye, Star, Users } from "lucide-react";
 import { format } from "date-fns";
 import { Plan } from "@/types";
@@ -23,12 +17,7 @@ interface PlansDataTableProps {
   isLoading?: boolean;
 }
 
-export default function PlansDataTable({
-  plans,
-  onEdit,
-  onDelete,
-  isLoading = false,
-}: PlansDataTableProps) {
+export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = false }: PlansDataTableProps) {
   const t = useTranslations("plans");
 
   const getIntervalLabel = (interval: string) => {
@@ -59,115 +48,137 @@ export default function PlansDataTable({
       return t("no pricing set");
     }
 
-    const priceObj =
-      plan.prices?.find((p) => p.interval === "MONTH") || plan.prices[0];
+    const priceObj = plan.prices?.find((p) => p.interval === "MONTH") || plan.prices[0];
 
     return formatPrice(priceObj.price || 0, priceObj.interval || "MONTH");
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {/* Loading skeleton */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className="h-16 rounded-lg bg-muted"></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (plans.length === 0) {
-    return (
-      <div className="py-12 text-center">
-        <div className="mb-2 text-muted-foreground text-lg">
-          {t("no plans found")}
+  const skeletonRows = Array.from({ length: 4 }).map((_, idx) => (
+    <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
+      {/* Plan name */}
+      <TableCell className="font-medium">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="w-40 h-4 rounded" />
+          <Skeleton className="w-60 max-w-xs h-3 rounded" />
         </div>
-        <p className="text-muted-foreground text-sm">
-          Try adjusting your search or filter criteria
-        </p>
-      </div>
-    );
-  }
+      </TableCell>
+
+      {/* Price */}
+      <TableCell>
+        <Skeleton className="w-24 h-4 rounded" />
+      </TableCell>
+
+      {/* Status */}
+      <TableCell>
+        <Skeleton className="w-16 h-6 rounded-full" />
+      </TableCell>
+
+      {/* Subscriptions */}
+      <TableCell>
+        <Skeleton className="w-12 h-4 rounded" />
+      </TableCell>
+
+      {/* Created */}
+      <TableCell>
+        <Skeleton className="w-20 h-4 rounded" />
+      </TableCell>
+
+      {/* Actions */}
+      <TableCell>
+        <div className="flex justify-end gap-2">
+          <Skeleton className="w-8 h-8 rounded-full" />
+          <Skeleton className="w-8 h-8 rounded-full" />
+        </div>
+      </TableCell>
+    </TableRow>
+  ));
+
+  const emptyStateRow = (
+    <TableRow>
+      <TableCell colSpan={6}>
+        <div className="p-8 text-center">
+          <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
+            <Star className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="font-bold text-slate-800 text-lg">{t("no plans found")}</h3>
+          <p className="mb-4 text-muted-foreground text-sm">{t("try adjusting your search or filters")}</p>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
-    <div className="w-0 min-w-full border rounded-md">
+    <div className="w-0 min-w-full border rounded-md bg-background">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-[300px]">{t("plan name")}</TableHead>
-            <TableHead className="w-[150px]">{t("price")}</TableHead>
-            <TableHead className="w-[120px]">Status</TableHead>
-            <TableHead className="w-[100px]">{t("subscriptions")}</TableHead>
-            <TableHead className="w-[150px]">Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+          <TableRow className="border-border hover:bg-muted/50">
+            <TableHead className="w-[300px] font-medium">{t("plan name")}</TableHead>
+            <TableHead className="w-[150px] font-medium">{t("price")}</TableHead>
+            <TableHead className="w-[120px] font-medium">Status</TableHead>
+            <TableHead className="w-[100px] font-medium">{t("subscriptions")}</TableHead>
+            <TableHead className="w-[150px] font-medium">Created</TableHead>
+            <TableHead className="font-medium text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {plans.map((plan) => (
-            <TableRow key={plan.id} className="hover:bg-muted/50">
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{plan.name}</span>
-                    {plan.mostPopular && (
-                      <Badge variant="secondary" className="gap-1">
-                        <Star className="w-3 h-3" />
-                        {t("popular")}
-                      </Badge>
-                    )}
-                  </div>
-                  {plan.description && (
-                    <p className="text-muted-foreground text-sm line-clamp-1">
-                      {plan.description}
-                    </p>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="font-medium">{getPriceDisplay(plan)}</div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={plan.active ? "default" : "secondary"}>
-                  {plan.active ? t("active") : t("inactive")}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  <span>{(plan as any)._count?.subscriptions || 0}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {plan?.createdAt
-                  ? format(new Date(plan.createdAt), "MMM d, yyyy")
-                  : "—"}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(plan)}
-                    className="w-8 h-8 p-0"
-                  >
-                    <Edit className="w-4 h-4" />
-                    <span className="sr-only">{t("edit")}</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDelete(plan)}
-                    className="w-8 h-8 p-0 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span className="sr-only">{t("delete")}</span>
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {isLoading
+            ? skeletonRows
+            : plans.length > 0
+            ? plans.map((plan) => (
+                <TableRow key={plan.id} className="hover:bg-muted/50">
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{plan.name}</span>
+                        {plan.mostPopular && (
+                          <Badge variant="secondary" className="gap-1">
+                            <Star className="w-3 h-3" />
+                            {t("popular")}
+                          </Badge>
+                        )}
+                      </div>
+                      {plan.description && (
+                        <p className="text-muted-foreground text-sm line-clamp-1">{plan.description}</p>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium">{getPriceDisplay(plan)}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={plan.active ? "default" : "secondary"}>
+                      {plan.active ? t("active") : t("inactive")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Users className="w-4 h-4" />
+                      <span>{(plan as any)._count?.subscriptions || 0}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {plan?.createdAt ? format(new Date(plan.createdAt), "MMM d, yyyy") : "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => onEdit(plan)} className="w-8 h-8 p-0">
+                        <Edit className="w-4 h-4" />
+                        <span className="sr-only">{t("edit")}</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(plan)}
+                        className="w-8 h-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="sr-only">{t("delete")}</span>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            : emptyStateRow}
         </TableBody>
       </Table>
     </div>

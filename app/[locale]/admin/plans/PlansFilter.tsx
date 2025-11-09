@@ -2,13 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Filter, Search, SortAsc, SortDesc, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -44,11 +38,10 @@ export default function PlansFilter({
   ];
 
   const currentSortValue = `${sortBy}-${sortOrder}`;
-  const hasActiveFilters =
-    search || filter !== "all" || sortBy !== "sortOrder" || sortOrder !== "asc";
+  const hasActiveFilters = search || filter !== "all" || sortBy !== "sortOrder" || sortOrder !== "asc";
 
   return (
-    <div className="flex flex-wrap gap-2 pb-3">
+    <div className="flex flex-wrap gap-2 pb-2">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px]">
         <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
@@ -83,11 +76,7 @@ export default function PlansFilter({
         }}
       >
         <SelectTrigger className="">
-          {sortOrder === "asc" ? (
-            <SortAsc className="w-4 h-4 mr-2" />
-          ) : (
-            <SortDesc className="w-4 h-4 mr-2" />
-          )}
+          {sortOrder === "asc" ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -101,11 +90,7 @@ export default function PlansFilter({
 
       {/* Clear Filters */}
       {hasActiveFilters && (
-        <Button
-          variant="outline"
-          onClick={onClearFilters}
-          className="lg:w-auto"
-        >
+        <Button variant="outline" onClick={onClearFilters} className="lg:w-auto">
           <X className="w-4 h-4 mr-2" />
           {t("clear filters")}
         </Button>
