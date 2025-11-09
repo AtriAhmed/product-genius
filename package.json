@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "seed:user": "tsx prisma/seed.ts"
+    "seed:user": "tsx prisma/seed.ts",
+    "seed:products": "tsx prisma/seed-products.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
