@@ -7,10 +7,6 @@ import { CategoryTranslation } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const importProductSchema = z.object({
-  shopifyStoreId: z.number().int().positive(),
-});
-
 export async function POST(request: NextRequest, ctx: RouteContext<"/api/products/[id]/import-to-shopify">) {
   const params = await ctx.params;
   try {
@@ -24,9 +20,6 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
     if (isNaN(productId)) {
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
     }
-
-    // const body = await request.json();
-    // const { shopifyStoreId } = importProductSchema.parse(body);
 
     const shopifyStoreId = user?.shopifyStores?.[0]?.id!;
 
@@ -101,23 +94,45 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
       return NextResponse.json({ error: "No product translations found" }, { status: 400 });
     }
 
-    // Prepare images for media parameter
-    const mediaInput = product.media
-      // .filter((media) => media.type === "IMAGE")
-      .map((media) => ({
-        originalSource: media.url?.startsWith("/") ? `${process.env.NEXTAUTH_URL}${getMediaUrl(media.url)}` : media.url,
-        alt: media.alt || primaryTranslation.title,
-        mediaContentType: media?.type === "IMAGE" ? "IMAGE" : "EXTERNAL_VIDEO",
-      }));
-
     // Prepare product options in the new format
-    const productOptions = product.options.map((option) => ({
-      name: option.name,
-      values: option.values.map((value) => ({ name: value.value })),
-    }));
+    const productOptions = product.options?.length
+      ? product.options.map((option, index) => ({
+          name: option.name,
+          position: index + 1,
+          values: option.values.map((value) => ({ name: value.value })),
+        }))
+      : [
+          {
+            name: "Title",
+            position: 1,
+            values: [{ name: "Default Title" }],
+          },
+        ];
 
-    // Prepare product data for Shopify GraphQL
-    const productData: any = {
+    // Prepare variants data for productSet
+    const variants = product.variants.map((variant) => {
+      const optionValues = variant.options?.length
+        ? variant.options.map((variantOption) => ({
+            optionName: variantOption.option.name,
+            name: variantOption.value.value,
+          }))
+        : [
+            {
+              optionName: "Title",
+              name: "Default Title",
+            },
+          ];
+
+      return {
+        optionValues,
+        price: (variant.price * 1.5)?.toString() || "0",
+        compareAtPrice: variant.compareAtPrice?.toString(),
+        sku: variant.sku,
+      };
+    });
+
+    // Prepare product data for productSet (works for both simple and complex products)
+    const productSetInput: any = {
       title: primaryTranslation.title,
       descriptionHtml: primaryTranslation.description,
       productType: categoryTranslation?.title,
@@ -126,15 +141,32 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
       tags: [],
     };
 
-    // Add product options to product data if they exist
+    // Add product options if they exist
     if (productOptions.length > 0) {
-      productData.productOptions = productOptions;
+      productSetInput.productOptions = productOptions;
     }
 
-    // GraphQL mutation to create product using new 2025-10 API
+    // Add variants if they exist
+    if (variants.length > 0) {
+      productSetInput.variants = variants;
+    }
+
+    // Prepare media files
+    const filesInput = product.media.map((media) => ({
+      originalSource: media.url?.startsWith("/") ? `${process.env.NEXTAUTH_URL}${getMediaUrl(media.url)}` : media.url,
+      alt: media.alt || primaryTranslation.title,
+      contentType: media?.type === "IMAGE" ? "IMAGE" : "EXTERNAL_VIDEO",
+    }));
+
+    // Add media to productSet input if available
+    if (filesInput.length > 0) {
+      productSetInput.files = filesInput;
+    }
+
+    // Always use productSet mutation - it handles both simple and complex products
     const mutation = `
-      mutation productCreate($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
-        productCreate(product: $product, media: $media) {
+      mutation productSet($input: ProductSetInput!) {
+        productSet(input: $input, synchronous: true) {
           product {
             id
             handle
@@ -166,14 +198,14 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
           userErrors {
             field
             message
+            code
           }
         }
       }
     `;
 
     const variables = {
-      product: productData,
-      media: mediaInput.length > 0 ? mediaInput : undefined,
+      input: productSetInput,
     };
 
     // Execute GraphQL mutation
@@ -182,24 +214,25 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
       variables,
     });
 
-    const { data, extensions } = response.data;
+    const { data } = response.data;
 
-    console.log("-------------------- Shopify Extension --------------------");
-    console.log(JSON.stringify(extensions, null, 2));
     console.log("-------------------- Shopify Response --------------------");
     console.log(JSON.stringify(data, null, 2));
 
-    if (data.productCreate.userErrors.length > 0) {
+    // Handle response from productSet mutation
+    const result = data?.productSet;
+
+    if (result?.userErrors.length > 0) {
       return NextResponse.json(
         {
           error: "Failed to create product in Shopify",
-          details: data.productCreate.userErrors,
+          details: result.userErrors,
         },
         { status: 400 }
       );
     }
 
-    const shopifyProduct = data.productCreate.product;
+    const shopifyProduct = result?.product;
     const shopifyProductId = shopifyProduct.id.replace("gid://shopify/Product/", "");
 
     // Create product mapping

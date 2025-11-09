@@ -172,14 +172,19 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           productData.media = data.media.map(({ file, posterFile, ...rest }) => rest);
         }
 
+        // -----------------------------------------------------
+        // -----------------------------------------------------
+        // -------------------- Disabled for now, problem with synchronizing with shopify --------------------
+        // -----------------------------------------------------
+        // -----------------------------------------------------
         // Handle options and variants together (they're tightly coupled)
-        if (dirtyFields.options || dirtyFields.variants) {
-          productData.options = data.options;
-          productData.variants = data.variants.map((variant) => ({
-            ...variant,
-            optionValueIds: Object.values(variant.options),
-          }));
-        }
+        // if (dirtyFields.options || dirtyFields.variants) {
+        //   productData.options = data.options;
+        //   productData.variants = data.variants.map((variant) => ({
+        //     ...variant,
+        //     optionValueIds: Object.values(variant.options),
+        //   }));
+        // }
       } else {
         // Create mode - send all data
         const mediaWithoutFiles = data.media.map(({ file, posterFile, ...rest }) => rest);
