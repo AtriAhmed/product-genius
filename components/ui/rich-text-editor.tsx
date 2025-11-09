@@ -401,7 +401,7 @@ export default function RichTextEditor({
             "focus-within:outline-none",
             "[&_.ProseMirror]:outline-none",
             "[&_.ProseMirror]:min-h-[120px]",
-            "[&_.ProseMirror]:h-[300px]",
+            "[&_.ProseMirror]:h-[200px]",
             "[&_.ProseMirror]:resize-y",
             "[&_.ProseMirror]:overflow-y-auto",
             "[&_.ProseMirror]:text-sm",

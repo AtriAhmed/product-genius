@@ -293,6 +293,18 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
             <form id="product-form" onSubmit={handleSubmit(onSubmit, onError)} className="mb-2">
               {/* Main Content */}
               <div className="space-y-2 lg:col-span-2">
+                {/* Multi-language Content */}
+                <ProductContentForm
+                  value={watch("translations") || []}
+                  onChange={(newTranslations) => {
+                    setValue("translations", newTranslations, {
+                      shouldDirty: true,
+                    });
+                  }}
+                  requiredLanguages={[]}
+                />
+                {errors.translations && <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>}
+
                 {/* Basic Information */}
                 <BasicInformation
                   setValue={setValue}
@@ -315,18 +327,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   }}
                   error={errors.planIds?.message}
                 />
-
-                {/* Multi-language Content */}
-                <ProductContentForm
-                  value={watch("translations") || []}
-                  onChange={(newTranslations) => {
-                    setValue("translations", newTranslations, {
-                      shouldDirty: true,
-                    });
-                  }}
-                  requiredLanguages={[]}
-                />
-                {errors.translations && <p className="mt-2 text-destructive text-sm">{errors.translations.message}</p>}
 
                 {/* Media Upload */}
                 <MediaUpload

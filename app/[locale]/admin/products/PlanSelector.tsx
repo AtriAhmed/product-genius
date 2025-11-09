@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Crown, Users, Loader2, AlertCircle } from "lucide-react";
+import { Check, Crown, Users, Loader2, AlertCircle, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,7 @@ type PlanSelectorProps = {
   error?: string;
 };
 
-export default function PlanSelector({
-  selectedPlanIds,
-  onChange,
-  error,
-}: PlanSelectorProps) {
+export default function PlanSelector({ selectedPlanIds, onChange, error }: PlanSelectorProps) {
   const t = useTranslations("products");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,9 +72,7 @@ export default function PlanSelector({
     return (
       <Card className="bg-background">
         <CardHeader>
-          <CardTitle className="font-semibold text-lg">
-            {t("select plans")}
-          </CardTitle>
+          <CardTitle className="font-semibold text-lg">{t("select plans")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="gap-3 grid grid-cols-2 md:grid-cols-3">
@@ -111,9 +105,7 @@ export default function PlanSelector({
     <Card className="bg-background">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="font-semibold text-lg">
-            {t("select plans")}
-          </CardTitle>
+          <CardTitle className="font-semibold text-lg">{t("select plans")}</CardTitle>
           <div className="flex gap-2">
             <Button
               type="button"
@@ -137,8 +129,7 @@ export default function PlanSelector({
         </div>
         {selectedPlanIds.length > 0 && (
           <p className="text-muted-foreground text-sm">
-            {selectedPlanIds.length} plan{selectedPlanIds.length > 1 ? "s" : ""}{" "}
-            selected
+            {selectedPlanIds.length} plan{selectedPlanIds.length > 1 ? "s" : ""} selected
           </p>
         )}
         {error && (
@@ -150,8 +141,10 @@ export default function PlanSelector({
       </CardHeader>
       <CardContent>
         {plans.length === 0 ? (
-          <div className="py-8 text-muted-foreground text-center">
-            <p>{t("no plans available")}</p>
+          <div className="flex flex-col justify-center items-center text-muted-foreground text-center">
+            <Star className="w-8 h-8 mb-2" />
+            <p className="font-medium text-sm">{t("no plans available")}</p>
+            <p className="text-xs">{t("please create plans to assign to products")}</p>
           </div>
         ) : (
           <div className="gap-3 grid grid-cols-2 md:grid-cols-3">
@@ -164,22 +157,14 @@ export default function PlanSelector({
                   onClick={() => togglePlan(plan.id)}
                   className={`
                     relative cursor-pointer rounded-lg border p-3 transition-all duration-200
-                    ${
-                      isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    }
+                    ${isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}
                   `}
                 >
                   {/* Selection indicator */}
                   <div
                     className={`
                       absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border transition-all
-                      ${
-                        isSelected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-muted-foreground/30"
-                      }
+                      ${isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30"}
                     `}
                   >
                     {isSelected && <Check className="w-3 h-3" />}
@@ -188,25 +173,17 @@ export default function PlanSelector({
                   {/* Plan content */}
                   <div className="pr-6">
                     <div className="flex items-center gap-1 mb-1">
-                      <h3 className="font-medium text-sm truncate">
-                        {plan.name}
-                      </h3>
-                      {plan.mostPopular && (
-                        <Crown className="flex-shrink-0 w-3 h-3 text-yellow-500" />
-                      )}
+                      <h3 className="font-medium text-sm truncate">{plan.name}</h3>
+                      {plan.mostPopular && <Crown className="flex-shrink-0 w-3 h-3 text-yellow-500" />}
                     </div>
 
-                    <div className="font-medium text-primary text-xs">
-                      {formatPrice(plan)}
-                    </div>
+                    <div className="font-medium text-primary text-xs">{formatPrice(plan)}</div>
                   </div>
 
                   {/* Inactive overlay */}
                   {!plan.active && (
                     <div className="absolute inset-0 flex justify-center items-center rounded-lg bg-muted/80">
-                      <span className="text-muted-foreground text-xs">
-                        Inactive
-                      </span>
+                      <span className="text-muted-foreground text-xs">Inactive</span>
                     </div>
                   )}
                 </div>
