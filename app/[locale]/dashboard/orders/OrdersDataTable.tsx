@@ -141,22 +141,16 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {order.trackingNumber ? (
-                        <>
-                          <span className="max-w-[100px] truncate">{order.trackingNumber}</span>
-                          {order.trackingUrl && (
-                            <a
-                              href={order.trackingUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">N/A</span>
+                      <span className="max-w-[100px] truncate">{order.trackingNumber || t("n/a")}</span>
+                      {order.trackingUrl && (
+                        <a
+                          href={order.trackingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                       )}
                     </div>
                   </TableCell>

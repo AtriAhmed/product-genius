@@ -63,8 +63,8 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
               <TableHead>{t("order number")}</TableHead>
               <TableHead>{t("customer")}</TableHead>
               <TableHead>{t("order status")}</TableHead>
-              <TableHead>{t("tracking number")}</TableHead>
               <TableHead>{t("order total")}</TableHead>
+              <TableHead>{t("tracking")}</TableHead>
               <TableHead>{t("date")}</TableHead>
               <TableHead className="text-right">{t("actions")}</TableHead>
             </TableRow>
@@ -112,8 +112,8 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
             <TableHead>{t("order number")}</TableHead>
             <TableHead>{t("customer")}</TableHead>
             <TableHead>{t("shipment status")}</TableHead>
+            <TableHead>{t("tracking")}</TableHead>
             <TableHead>{t("order total")}</TableHead>
-            <TableHead>{t("tracking number")}</TableHead>
             <TableHead>{t("date")}</TableHead>
             <TableHead className="text-right">{t("actions")}</TableHead>
           </TableRow>
@@ -139,13 +139,17 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
                 </Badge>
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-1 text-sm">
-                  {order.trackingNumber ? (
-                    <>
-                      <span className="font-mono text-xs">{order.trackingNumber}</span>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">{t("n/a")}</span>
+                <div className="flex items-center gap-2">
+                  <span className="max-w-[100px] truncate">{order.trackingNumber || t("n/a")}</span>
+                  {order.trackingUrl && (
+                    <a
+                      href={order.trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
                   )}
                 </div>
               </TableCell>
