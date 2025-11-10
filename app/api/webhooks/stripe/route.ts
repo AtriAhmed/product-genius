@@ -327,8 +327,6 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
-    const bodyJson = JSON.parse(body);
     const signature = request.headers.get("Stripe-Signature");
 
     if (!signature) {
@@ -336,10 +334,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No signature found" }, { status: 400 });
     }
 
+    const body = Buffer.from(await request.arrayBuffer());
+
     let event: Stripe.Event;
 
     try {
-      event = stripe.webhooks.constructEvent(bodyJson, signature, endpointSecret);
+      event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
       return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
