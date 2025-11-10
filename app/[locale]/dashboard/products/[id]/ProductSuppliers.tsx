@@ -19,7 +19,7 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
   const variants = product.variants || [];
   const options = product.options || [];
   const productId = product.id;
-  const hasStore = !!user.shopifyStores?.[0];
+  const hasStore = !!user?.shopifyStores?.[0];
   const isImported = product?.productMappings?.length! > 0;
 
   // If no variants, no suppliers, and no internal pricing, don't render
