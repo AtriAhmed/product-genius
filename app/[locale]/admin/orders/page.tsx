@@ -8,9 +8,9 @@ import Pagination from "@/components/Pagination";
 import useSWR from "swr";
 import axios from "axios";
 import { toast } from "sonner";
-import OrdersFilters from "@/app/[locale]/agent/orders/OrdersFilters";
-import OrdersDataTable from "@/app/[locale]/agent/orders/OrdersDataTable";
-import TrackingDialog from "@/app/[locale]/agent/orders/TrackingDialog";
+import OrdersFilters from "@/app/[locale]/admin/orders/OrdersFilters";
+import OrdersDataTable from "@/app/[locale]/admin/orders/OrdersDataTable";
+import TrackingDialog from "@/app/[locale]/admin/orders/TrackingDialog";
 
 type OrdersResponse = {
   data: Order[];
@@ -70,10 +70,6 @@ export default function AgentOrdersPage() {
   if (error) {
     toast.error(t("failed to load orders"));
   }
-
-  const handleViewOrder = (order: Order) => {
-    router.push(`/agent/orders/${order.id}`);
-  };
 
   const handleEditTracking = (order: Order) => {
     setSelectedOrder(order);
@@ -147,12 +143,7 @@ export default function AgentOrdersPage() {
         />
 
         {/* Orders Data Table */}
-        <OrdersDataTable
-          orders={orders}
-          onView={handleViewOrder}
-          onEditTracking={handleEditTracking}
-          isLoading={isLoading}
-        />
+        <OrdersDataTable orders={orders} onEditTracking={handleEditTracking} isLoading={isLoading} />
 
         {/* Pagination */}
         {!isLoading && orders.length > 0 && pagination.pages > 1 && (

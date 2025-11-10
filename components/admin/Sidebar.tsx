@@ -66,7 +66,7 @@ const navigationData: NavigationItem[] = [
     title: "overview",
     url: "/admin",
     icon: BarChart3,
-    roles: ["OWNER", "ADMIN", "EDITOR"],
+    roles: ["OWNER", "ADMIN", "EDITOR", "AGENT"],
   },
   {
     title: "products",
@@ -84,7 +84,7 @@ const navigationData: NavigationItem[] = [
     title: "orders",
     url: "/admin/orders",
     icon: NotepadText,
-    roles: ["OWNER", "ADMIN"],
+    roles: ["OWNER", "ADMIN", "AGENT"],
   },
   {
     title: "users",
@@ -108,19 +108,17 @@ const navigationData: NavigationItem[] = [
     title: "analytics",
     url: "/admin/analytics",
     icon: BarChart3,
-    roles: ["OWNER", "ADMIN"],
+    roles: [],
   },
   {
     title: "settings",
     url: "/admin/settings",
     icon: Settings,
-    roles: ["OWNER", "ADMIN"],
+    roles: [],
   },
 ];
 
-export function AdminSidebar({
-  ...props
-}: React.ComponentProps<typeof Sidebar>) {
+export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -155,12 +153,8 @@ export function AdminSidebar({
                   <Zap className="size-4" />
                 </div>
                 <div className="flex-1 grid text-sm text-left leading-tight">
-                  <span className="font-semibold truncate">
-                    {t("winwaterfall")}
-                  </span>
-                  <span className="text-muted-foreground text-xs truncate">
-                    {t("admin panel")}
-                  </span>
+                  <span className="font-semibold truncate">{t("winwaterfall")}</span>
+                  <span className="text-muted-foreground text-xs truncate">{t("admin panel")}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -197,21 +191,14 @@ export function AdminSidebar({
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="w-8 h-8 rounded-lg">
-                    <AvatarImage
-                      src={session?.user?.image || ""}
-                      alt={session?.user?.name || ""}
-                    />
+                    <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                     <AvatarFallback className="rounded-lg">
                       {session?.user?.name?.slice(0, 2)?.toUpperCase() || "AD"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 grid text-sm text-left leading-tight">
-                    <span className="font-semibold truncate">
-                      {session?.user?.name || t("admin")}
-                    </span>
-                    <span className="text-muted-foreground text-xs truncate">
-                      {session?.user?.email}
-                    </span>
+                    <span className="font-semibold truncate">{session?.user?.name || t("admin")}</span>
+                    <span className="text-muted-foreground text-xs truncate">{session?.user?.email}</span>
                   </div>
                   <ChevronsUpDown className="size-4 ml-auto" />
                 </SidebarMenuButton>
@@ -226,22 +213,14 @@ export function AdminSidebar({
                   {/* User info header */}
                   <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
                     <Avatar className="w-8 h-8 rounded-lg">
-                      <AvatarImage
-                        src={session?.user?.image || ""}
-                        alt={session?.user?.name || ""}
-                      />
+                      <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                       <AvatarFallback className="rounded-lg">
-                        {session?.user?.name?.slice(0, 2)?.toUpperCase() ||
-                          "AD"}
+                        {session?.user?.name?.slice(0, 2)?.toUpperCase() || "AD"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 grid text-sm text-left leading-tight">
-                      <span className="font-semibold truncate">
-                        {session?.user?.name || t("admin")}
-                      </span>
-                      <span className="text-muted-foreground text-xs truncate">
-                        {session?.user?.email}
-                      </span>
+                      <span className="font-semibold truncate">{session?.user?.name || t("admin")}</span>
+                      <span className="text-muted-foreground text-xs truncate">{session?.user?.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>

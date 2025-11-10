@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Order, OrderStatus } from "@/types";
+import { Link } from "@/i18n/navigation";
 
 interface OrdersDataTableProps {
   orders: Order[];
-  onView: (order: Order) => void;
   onEditTracking: (order: Order) => void;
   isLoading: boolean;
 }
@@ -51,7 +51,7 @@ const formatDate = (date: Date) => {
   }).format(new Date(date));
 };
 
-export default function OrdersDataTable({ orders, onView, onEditTracking, isLoading }: OrdersDataTableProps) {
+export default function OrdersDataTable({ orders, onEditTracking, isLoading }: OrdersDataTableProps) {
   const t = useTranslations("orders");
 
   if (isLoading) {
@@ -156,8 +156,10 @@ export default function OrdersDataTable({ orders, onView, onEditTracking, isLoad
                   <Button variant="ghost" size="sm" onClick={() => onEditTracking(order)} className="gap-2">
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onView(order)} className="gap-2">
-                    <Eye className="w-4 h-4" />
+                  <Button variant="ghost" size="sm" asChild className="gap-2">
+                    <Link href={`/admin/orders/${order.id}`}>
+                      <Eye className="w-4 h-4" />
+                    </Link>
                   </Button>
                 </div>
               </TableCell>

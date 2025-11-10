@@ -15,14 +15,14 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = isAuthenticatedServerSide(["OWNER", "ADMIN", "EDITOR"], false);
+  const user = isAuthenticatedServerSide(["OWNER", "ADMIN", "EDITOR", "AGENT"], false);
 
   if (!user) {
     notFound();
   }
 
   return (
-    <Private allowedRoles={["OWNER", "ADMIN", "EDITOR"]}>
+    <Private allowedRoles={["OWNER", "ADMIN", "EDITOR", "AGENT"]}>
       <SidebarProvider className="min-h-[calc(100vh-55px)]">
         <CloseSidebarOnRouteChange />
         <AdminSidebar />
