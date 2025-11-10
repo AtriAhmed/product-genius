@@ -327,7 +327,7 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
 
 export async function POST(request: NextRequest) {
   try {
-    const signature = request.headers.get("Stripe-Signature");
+    const signature = request.headers.get("stripe-signature");
 
     if (!signature) {
       console.error("No Stripe signature found");
