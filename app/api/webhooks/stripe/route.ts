@@ -4,12 +4,6 @@ import { Invoice, SubscriptionStatus } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-export const config = {
-  api: {
-    bodyParser: false, // Disables automatic body parsing
-  },
-};
-
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 async function mapStripeStatusToDb(stripeStatus: string): Promise<SubscriptionStatus> {
@@ -334,6 +328,7 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
+    const bodyJson = JSON.parse(body);
     const signature = request.headers.get("stripe-signature");
 
     if (!signature) {
@@ -344,7 +339,7 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event;
 
     try {
-      event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+      event = stripe.webhooks.constructEvent(bodyJson, signature, endpointSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
       return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
