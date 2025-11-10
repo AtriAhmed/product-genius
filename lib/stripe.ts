@@ -76,9 +76,7 @@ export async function updateSubscription(
  * @param customerId Stripe customer ID
  * @returns Promise<string | null> payment method ID or null if none found
  */
-export async function getCustomerDefaultPaymentMethod(
-  customerId: string
-): Promise<string | null> {
+export async function getCustomerDefaultPaymentMethod(customerId: string): Promise<string | null> {
   try {
     const customer = await stripe.customers.retrieve(customerId);
 
@@ -87,11 +85,8 @@ export async function getCustomerDefaultPaymentMethod(
     }
 
     // Check if customer has a default payment method
-    if (
-      (customer as Stripe.Customer).invoice_settings?.default_payment_method
-    ) {
-      return (customer as Stripe.Customer).invoice_settings
-        ?.default_payment_method as string;
+    if ((customer as Stripe.Customer).invoice_settings?.default_payment_method) {
+      return (customer as Stripe.Customer).invoice_settings?.default_payment_method as string;
     }
 
     // If no default, get the first attached payment method
@@ -123,7 +118,7 @@ export async function createAndPayInvoice(
     currency: string;
     userId: number;
     items: Array<{
-      productId: number;
+      productId?: number;
       quantity: number;
       unitPriceCents: number;
       title: string;
@@ -163,8 +158,8 @@ export async function createAndPayInvoice(
         amount: item.unitPriceCents * item.quantity,
         description: item.title,
         metadata: {
-          productId: item.productId.toString(),
-          orderId: order.id.toString(),
+          productId: item.productId?.toString() || "",
+          orderId: order.id?.toString(),
         },
       });
     }
@@ -189,9 +184,7 @@ export async function createAndPayInvoice(
         }
 
         // Check if requires action (SCA)
-        const pi =
-          (paidInvoice as any)?.payment_intent ||
-          (finalizedInvoice as any)?.payment_intent;
+        const pi = (paidInvoice as any)?.payment_intent || (finalizedInvoice as any)?.payment_intent;
         if (pi && (pi.client_secret || pi.status === "requires_action")) {
           return {
             success: false,

@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { shopify } from "@/lib/shopify";
 import { prisma } from "@/lib/prisma";
-import { nanoid } from "nanoid";
-import {
-  createAndPayInvoice,
-  getCustomerDefaultPaymentMethod,
-} from "@/lib/stripe";
+import { createAndPayInvoice, getCustomerDefaultPaymentMethod } from "@/lib/stripe";
 import { sendOrderPaymentNotification } from "@/lib/email";
-import type { InvoiceType } from "@/types";
-import { createShopifyClient } from "@/lib/shopify-client";
 
 interface ShopifyOrderItem {
   variant_id: number;
@@ -82,15 +76,9 @@ export async function POST(request: NextRequest) {
     }
 
     const shopifyOrder: ShopifyOrder = JSON.parse(body);
-    console.log(
-      "Processing Shopify order:",
-      shopifyOrder.order_number,
-      shopifyOrder.id
-    );
+    console.log("Processing Shopify order:", shopifyOrder.order_number, shopifyOrder.id);
 
-    console.log(
-      "-------------------- JSON.stringify(shopifyOrder, null, 2) --------------------"
-    );
+    console.log("-------------------- JSON.stringify(shopifyOrder, null, 2) --------------------");
     console.log(JSON.stringify(shopifyOrder, null, 2));
 
     // Find the Shopify store owner
@@ -134,20 +122,31 @@ export async function POST(request: NextRequest) {
                 include: {
                   translations: {
                     where: { locale: "en" },
-                    select: { title: true },
+                    select: { title: true, description: true },
                   },
+                  media: {
+                    orderBy: { sortOrder: "asc" },
+                    take: 1,
+                  },
+                },
+              },
+              options: {
+                include: {
+                  option: true,
+                  value: true,
                 },
               },
             },
           },
           product: {
             include: {
-              suppliers: {
-                where: { isInternal: true },
-              },
               translations: {
                 where: { locale: "en" },
-                select: { title: true },
+                select: { title: true, description: true },
+              },
+              media: {
+                orderBy: { sortOrder: "asc" },
+                take: 1,
               },
             },
           },
@@ -155,20 +154,42 @@ export async function POST(request: NextRequest) {
       });
 
       if (variantMapping) {
-        const supplierPrice = variantMapping.product.suppliers[0]?.price || 0;
-        const unitPriceCents = Math.round(supplierPrice * 100);
+        const price = variantMapping.variant?.price || 0;
+        const unitPriceCents = Math.round(price * 100);
         const itemTotal = unitPriceCents * lineItem.quantity;
         totalCents += itemTotal;
 
-        // Use product directly from mapping
-        const productTitle =
-          variantMapping.product.translations[0]?.title || lineItem.title;
+        // Use product data from mapping
+        const productTranslation = variantMapping.product.translations[0];
+        const productTitle = productTranslation?.title || lineItem.title;
+        const productDescription = productTranslation?.description || null;
+        const productSku = variantMapping.variant?.sku || variantMapping.product.sku || null;
+
+        // Get variant options
+        const variantOptions: Record<string, string> = {};
+        if (variantMapping.variant?.options) {
+          variantMapping.variant.options.forEach((optionValue) => {
+            variantOptions[optionValue.option.name] = optionValue.value.value;
+          });
+        }
+
+        // Get image data
+        const firstMedia = variantMapping.product.media[0];
+        const imageUrl = firstMedia.type === "IMAGE" ? firstMedia?.url : firstMedia.poster || null;
+        const imageAlt = firstMedia?.alt || null;
 
         validOrderItems.push({
           productId: variantMapping.productId,
+          variantId: variantMapping.variantId,
           quantity: lineItem.quantity,
           unitPriceCents,
-          title: productTitle,
+          title: lineItem.title,
+          productTitle,
+          productDescription,
+          productSku,
+          variantOptions: Object.keys(variantOptions).length > 0 ? variantOptions : null,
+          imageUrl,
+          imageAlt,
           shopifyVariantId: lineItem.variant_id.toString(),
           shopifyProductId: lineItem.product_id.toString(),
         });
@@ -189,14 +210,12 @@ export async function POST(request: NextRequest) {
       data: {
         orderNumber: shopifyOrder.order_number?.toString(),
         userId: shopifyStore.userId,
+        shopifyStoreId: shopifyStore.id,
         totalCents,
         currency: shopifyOrder.currency || "USD",
         status: "UNPAID",
         shopifyOrderId: shopifyOrder.id.toString(),
-        deliveryName:
-          [shippingAddress?.first_name, shippingAddress?.last_name]
-            .filter(Boolean)
-            .join(" ") || null,
+        deliveryName: [shippingAddress?.first_name, shippingAddress?.last_name].filter(Boolean).join(" ") || null,
         deliveryPhone: shippingAddress?.phone,
         deliveryEmail: shopifyOrder.email,
         deliveryAddress1: shippingAddress?.address1,
@@ -208,9 +227,16 @@ export async function POST(request: NextRequest) {
         items: {
           create: validOrderItems.map((item) => ({
             productId: item.productId,
+            variantId: item.variantId,
             quantity: item.quantity,
             unitPriceCents: item.unitPriceCents,
             title: item.title,
+            productTitle: item.productTitle,
+            productDescription: item.productDescription,
+            productSku: item.productSku,
+            variantOptions: item.variantOptions as any,
+            imageUrl: item.imageUrl,
+            imageAlt: item.imageAlt,
           })),
         },
       },
@@ -233,9 +259,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get customer's default payment method
-    const defaultPaymentMethod = await getCustomerDefaultPaymentMethod(
-      order.user.stripeCustomerId
-    );
+    const defaultPaymentMethod = await getCustomerDefaultPaymentMethod(order.user.stripeCustomerId);
 
     // Create and attempt to pay invoice
     const invoiceResult = await createAndPayInvoice(
@@ -246,7 +270,7 @@ export async function POST(request: NextRequest) {
         currency: order.currency,
         userId: order.userId,
         items: order.items.map((item) => ({
-          productId: item.productId,
+          productId: item.productId || 0, // Fallback to 0 if productId is null
           quantity: item.quantity,
           unitPriceCents: item.unitPriceCents,
           title: item.title,
@@ -259,10 +283,7 @@ export async function POST(request: NextRequest) {
     if (invoiceResult.success) {
       console.log("Order invoice created and paid:", order.orderNumber);
     } else {
-      console.log(
-        "Order invoice created but payment failed:",
-        order.orderNumber
-      );
+      console.log("Order invoice created but payment failed:", order.orderNumber);
 
       // Send payment notification email for failed payments
       const customerName =
@@ -277,25 +298,18 @@ export async function POST(request: NextRequest) {
       }).format(order.totalCents / 100);
 
       const paymentUrl =
-        invoiceResult.invoice?.hosted_invoice_url ||
-        `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/orders`;
+        invoiceResult.invoice?.hosted_invoice_url || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/orders`;
 
-      await sendOrderPaymentNotification(
-        order.deliveryEmail || order.user.email,
-        {
-          customerName,
-          orderNumber: order.orderNumber,
-          orderDate: new Date(shopifyOrder.created_at).toLocaleDateString(),
-          itemCount: validOrderItems.length,
-          totalAmount,
-          paymentUrl,
-        }
-      );
+      await sendOrderPaymentNotification(order.deliveryEmail || order.user.email, {
+        customerName,
+        orderNumber: order.orderNumber,
+        orderDate: new Date(shopifyOrder.created_at).toLocaleDateString(),
+        itemCount: validOrderItems.length,
+        totalAmount,
+        paymentUrl,
+      });
 
-      console.log(
-        "Payment notification email sent for order:",
-        order.orderNumber
-      );
+      console.log("Payment notification email sent for order:", order.orderNumber);
     }
 
     return NextResponse.json({
@@ -305,9 +319,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error processing Shopify order webhook:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -27,14 +27,9 @@ export default function OrderItems({ order, t }: OrderItemsProps) {
       </CardHeader>
       <CardContent>
         {order.items && order.items.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {order.items.map((item) => (
-              <OrderItemCard
-                key={item.id}
-                item={item}
-                currency={order.currency}
-                t={t}
-              />
+              <OrderItemCard key={item.id} item={item} currency={order.currency} />
             ))}
           </div>
         ) : (

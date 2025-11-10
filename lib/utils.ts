@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import sanitizeHtml from "sanitize-html";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,4 +42,11 @@ export function hueFromString(str: string) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   return Math.abs(hash) % 360; // return hue (0–360)
+}
+
+export function htmlToText(html: string) {
+  return sanitizeHtml(html, {
+    allowedTags: [], // remove ALL tags
+    allowedAttributes: {}, // remove ALL inline attributes
+  }).trim();
 }

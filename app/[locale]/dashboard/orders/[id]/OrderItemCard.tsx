@@ -3,11 +3,12 @@
 import { Package } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OrderItem } from "@/types";
+import { getMediaUrl, htmlToText, hueFromString } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type OrderItemCardProps = {
   item: OrderItem;
   currency?: string;
-  t: (key: string) => string;
 };
 
 const formatCurrency = (cents: number, currency: string = "USD") => {
@@ -17,20 +18,18 @@ const formatCurrency = (cents: number, currency: string = "USD") => {
   }).format(cents / 100);
 };
 
-export default function OrderItemCard({
-  item,
-  currency = "USD",
-  t,
-}: OrderItemCardProps) {
+export default function OrderItemCard({ item, currency = "USD" }: OrderItemCardProps) {
+  const t = useTranslations("orders");
+
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-lg">
+    <div className="flex items-center gap-4 px-4 py-2 border rounded-lg">
       {/* Product Image */}
       <div className="flex-shrink-0">
-        {item.product?.media?.[0]?.url ? (
-          <Avatar className="w-16 h-16">
+        {item.imageUrl ? (
+          <Avatar className="w-16 h-16 rounded-md">
             <AvatarImage
-              src={item.product.media[0].url}
-              alt={item.product?.translations?.[0]?.title || item.title}
+              src={getMediaUrl(item.imageUrl)}
+              alt={item?.productTitle || item.title}
               className="object-cover"
             />
             <AvatarFallback>
@@ -46,26 +45,45 @@ export default function OrderItemCard({
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-foreground truncate">
-          {item.product?.translations?.[0]?.title ||
-            item.title ||
-            t("unknown product")}
+        <h4 className="font-semibold text-foreground text-sm truncate">
+          {item.productTitle || item.title || t("unknown product")}
         </h4>
-        {item.product?.translations?.[0]?.description && (
-          <p className="text-muted-foreground text-sm line-clamp-2">
-            {item.product.translations[0].description}
+        {item.productDescription && (
+          <p className="text-muted-foreground text-xs line-clamp-2">
+            {htmlToText(item.productDescription)?.replace(/^product description:/i, "")}
           </p>
         )}
-        <div className="flex items-center gap-4 mt-2">
-          <span className="text-muted-foreground text-sm">
+
+        {/* Product Options */}
+        {item.variantOptions && Object.keys(item.variantOptions).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {Object.entries(item.variantOptions).map(([key, value]) => {
+              const hue = hueFromString(`${key}-${value}`);
+              return (
+                <span
+                  key={key}
+                  className="inline-flex items-center px-2 py-0.5 border rounded-md font-semibold text-[10px]"
+                  style={{
+                    backgroundColor: `hsl(${hue}, 60%, 95%)`,
+                    borderColor: `hsl(${hue}, 60%, 80%)`,
+                    color: `hsl(${hue}, 60%, 30%)`,
+                  }}
+                >
+                  <span style={{ color: `hsl(${hue}, 40%, 50%)` }}>{key}:</span>
+                  <span className="ml-1">{value as string}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="flex items-center gap-4 mt-1 text-xs">
+          <span className="text-muted-foreground">
             Qty: <span className="font-medium">{item.quantity}</span>
           </span>
           {item.unitPriceCents && (
-            <span className="text-muted-foreground text-sm">
-              Unit Price:{" "}
-              <span className="font-medium">
-                {formatCurrency(item.unitPriceCents, currency)}
-              </span>
+            <span className="text-muted-foreground">
+              Unit Price: <span className="font-medium">{formatCurrency(item.unitPriceCents, currency)}</span>
             </span>
           )}
         </div>

@@ -52,14 +52,10 @@ export default function DashboardOrderDetailsPage() {
     data: order,
     error,
     isLoading,
-  } = useSWR<Order>(
-    orderId ? ["order", orderId] : null,
-    () => fetcher(orderId),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  );
+  } = useSWR<Order>(orderId ? ["order", orderId] : null, () => fetcher(orderId), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
 
   if (error) {
     return (
@@ -67,14 +63,8 @@ export default function DashboardOrderDetailsPage() {
         <div className="mx-auto px-6 py-8 container">
           <div className="p-8 border rounded-lg text-center">
             <h2 className="mb-2 font-semibold text-xl">{t("error")}</h2>
-            <p className="text-muted-foreground">
-              {t("failed to load order details")}
-            </p>
-            <Button
-              onClick={() => router.push("/dashboard/orders")}
-              className="mt-4"
-              variant="outline"
-            >
+            <p className="text-muted-foreground">{t("failed to load order details")}</p>
+            <Button onClick={() => router.push("/dashboard/orders")} className="mt-4" variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t("back to orders")}
             </Button>
@@ -86,22 +76,15 @@ export default function DashboardOrderDetailsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-6 py-8 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => router.push("/dashboard/orders")}
-            >
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => router.push("/dashboard/orders")}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="font-bold text-foreground text-3xl">
-                {t("order details")}
-              </h1>
+              <h1 className="font-bold text-foreground text-3xl">{t("order details")}</h1>
               {isLoading ? (
                 <Skeleton className="w-48 h-4 mt-2" />
               ) : (
@@ -113,12 +96,7 @@ export default function DashboardOrderDetailsPage() {
           </div>
           {!isLoading && order && (
             <div className="flex items-center gap-3">
-              <Badge
-                variant="outline"
-                className={`${getOrderStatusColor(
-                  order.status || "DRAFT"
-                )} font-medium`}
-              >
+              <Badge variant="outline" className={`${getOrderStatusColor(order.status || "DRAFT")} font-medium`}>
                 <Tag className="w-3 h-3 mr-1" />
                 {order.status || "DRAFT"}
               </Badge>
@@ -181,16 +159,9 @@ export default function DashboardOrderDetailsPage() {
           </div>
         ) : (
           <div className="p-8 border rounded-lg text-center">
-            <h2 className="mb-2 font-semibold text-xl">
-              {t("order not found")}
-            </h2>
-            <p className="mb-4 text-muted-foreground">
-              {t("order not found description")}
-            </p>
-            <Button
-              onClick={() => router.push("/dashboard/orders")}
-              variant="outline"
-            >
+            <h2 className="mb-2 font-semibold text-xl">{t("order not found")}</h2>
+            <p className="mb-4 text-muted-foreground">{t("order not found description")}</p>
+            <Button onClick={() => router.push("/dashboard/orders")} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t("back to orders")}
             </Button>

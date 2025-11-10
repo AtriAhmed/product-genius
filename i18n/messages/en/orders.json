@@ -78,6 +78,7 @@
   "draft": "Draft",
   "pending": "Pending",
   "paid": "Paid",
+  "unpaid": "Unpaid",
   "processing": "Processing",
   "completed": "Completed",
   "canceled": "Canceled",

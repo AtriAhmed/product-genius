@@ -4,7 +4,7 @@ import ShopifyIcon from "@/assets/images/shopify.svg";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentTranslation } from "@/lib/products";
-import { formatPrice, getMediaUrl } from "@/lib/utils";
+import { formatPrice, getMediaUrl, htmlToText } from "@/lib/utils";
 import { Product } from "@/types";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -123,7 +123,9 @@ export default function ProductCard({ product }: { product: Product }) {
               </Badge>
             )}
 
-            <p className="text-muted-foreground text-sm line-clamp-3">{translation?.description}</p>
+            <p className="text-muted-foreground text-sm line-clamp-3">
+              {htmlToText(translation?.description || "")?.replace(/^product description:/i, "")}
+            </p>
 
             <div
               className={`mt-auto rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40 ml-auto`}

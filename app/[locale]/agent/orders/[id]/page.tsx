@@ -3,27 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  Package,
-  User,
-  MapPin,
-  Calendar,
-  CreditCard,
-  Truck,
-  ShoppingCart,
-} from "lucide-react";
+import { ArrowLeft, Package, User, MapPin, Calendar, CreditCard, Truck, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Order, OrderStatus } from "@/types";
 import useSWR from "swr";
@@ -77,14 +62,10 @@ export default function AgentOrderDetailsPage() {
     error,
     isLoading,
     mutate,
-  } = useSWR<Order>(
-    orderId ? ["order", orderId] : null,
-    () => fetcher(orderId),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  );
+  } = useSWR<Order>(orderId ? ["order", orderId] : null, () => fetcher(orderId), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
 
   console.log("-------------------- order --------------------");
   console.log(order);
@@ -112,14 +93,8 @@ export default function AgentOrderDetailsPage() {
         <div className="mx-auto px-4 py-2 container">
           <div className="p-8 border rounded-lg text-center">
             <h2 className="mb-2 font-semibold text-xl">{t("error")}</h2>
-            <p className="text-muted-foreground">
-              {t("failed to load order details")}
-            </p>
-            <Button
-              onClick={() => router.push("/agent/orders")}
-              className="mt-4"
-              variant="outline"
-            >
+            <p className="text-muted-foreground">{t("failed to load order details")}</p>
+            <Button onClick={() => router.push("/agent/orders")} className="mt-4" variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t("back to orders")}
             </Button>
@@ -134,19 +109,12 @@ export default function AgentOrderDetailsPage() {
       <div className="mx-auto px-4 py-2 container">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-            onClick={() => router.push("/agent/orders")}
-          >
+          <Button variant="ghost" size="sm" className="gap-2" onClick={() => router.push("/agent/orders")}>
             <ArrowLeft className="w-4 h-4" />
             {t("back to orders")}
           </Button>
           <div>
-            <h1 className="font-bold text-foreground text-3xl">
-              {t("order details")}
-            </h1>
+            <h1 className="font-bold text-foreground text-3xl">{t("order details")}</h1>
             {isLoading ? (
               <Skeleton className="w-48 h-4 mt-2" />
             ) : (
@@ -198,32 +166,18 @@ export default function AgentOrderDetailsPage() {
                       <Badge className={getShipmentStatusColor(order.status!)}>
                         {t(order.status?.toLowerCase() || "pending")}
                       </Badge>
-                      <Select
-                        value={order.status}
-                        onValueChange={handleUpdateShipmentStatus}
-                        disabled={isUpdating}
-                      >
+                      <Select value={order.status} onValueChange={handleUpdateShipmentStatus} disabled={isUpdating}>
                         <SelectTrigger className="w-[140px] h-8">
                           <Truck className="w-3 h-3 mr-1" />
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="PENDING">
-                            {t("pending")}
-                          </SelectItem>
+                          <SelectItem value="PENDING">{t("pending")}</SelectItem>
                           <SelectItem value="PICKED">{t("picked")}</SelectItem>
-                          <SelectItem value="IN_TRANSIT">
-                            {t("in_transit")}
-                          </SelectItem>
-                          <SelectItem value="DELIVERED">
-                            {t("delivered")}
-                          </SelectItem>
-                          <SelectItem value="RETURNED">
-                            {t("returned")}
-                          </SelectItem>
-                          <SelectItem value="CANCELLED">
-                            {t("cancelled")}
-                          </SelectItem>
+                          <SelectItem value="IN_TRANSIT">{t("in_transit")}</SelectItem>
+                          <SelectItem value="DELIVERED">{t("delivered")}</SelectItem>
+                          <SelectItem value="RETURNED">{t("returned")}</SelectItem>
+                          <SelectItem value="CANCELLED">{t("cancelled")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -246,22 +200,12 @@ export default function AgentOrderDetailsPage() {
                   {order.items && order.items.length > 0 ? (
                     <div className="space-y-4">
                       {order.items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-4 p-4 border rounded-lg"
-                        >
+                        <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg">
                           <div className="flex-shrink-0 w-16 h-16 overflow-hidden border rounded-lg">
-                            {item.product?.media?.[0]?.url ? (
+                            {item.imageUrl ? (
                               <img
-                                src={getMediaUrl(
-                                  item.product.media[0].type === "IMAGE"
-                                    ? item.product.media[0].url
-                                    : item.product.media[0].poster
-                                )}
-                                alt={
-                                  item.product.translations?.[0]?.title ||
-                                  "Product"
-                                }
+                                src={getMediaUrl(item.imageUrl)}
+                                alt={item.imageAlt || item.productTitle || "Product"}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -271,29 +215,26 @@ export default function AgentOrderDetailsPage() {
                             )}
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-medium">
-                              {item.title ||
-                                item.product?.translations?.[0]?.title ||
-                                t("unknown product")}
-                            </h4>
-                            <p className="text-muted-foreground text-sm">
+                            <h4 className="font-medium">{item.productTitle || item.title || t("unknown product")}</h4>
+                            {item.productSku && <p className="text-muted-foreground text-xs">SKU: {item.productSku}</p>}
+                            {item.variantOptions && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {Object.entries(item.variantOptions as Record<string, string>).map(([key, value]) => (
+                                  <span key={key} className="px-2 py-1 rounded bg-gray-100 text-xs">
+                                    {key}: {value}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <p className="mt-1 text-muted-foreground text-sm">
                               {t("quantity")}: {item.quantity}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">
-                              {formatPrice(
-                                item.unitPriceCents || 0,
-                                order.currency
-                              )}
-                            </p>
+                            <p className="font-medium">{formatPrice(item.unitPriceCents || 0, order.currency)}</p>
                             <p className="text-muted-foreground text-sm">
                               {t("total")}:{" "}
-                              {formatPrice(
-                                (item.unitPriceCents || 0) *
-                                  (item.quantity || 1),
-                                order.currency
-                              )}
+                              {formatPrice((item.unitPriceCents || 0) * (item.quantity || 1), order.currency)}
                             </p>
                           </div>
                         </div>
@@ -301,15 +242,11 @@ export default function AgentOrderDetailsPage() {
                       <Separator />
                       <div className="flex justify-between items-center font-semibold text-lg">
                         <span>{t("order total")}:</span>
-                        <span>
-                          {formatPrice(order.totalCents || 0, order.currency)}
-                        </span>
+                        <span>{formatPrice(order.totalCents || 0, order.currency)}</span>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">
-                      {t("no items found")}
-                    </p>
+                    <p className="text-muted-foreground">{t("no items found")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -328,21 +265,15 @@ export default function AgentOrderDetailsPage() {
                 <CardContent className="space-y-3">
                   <div>
                     <span className="font-medium">{t("name")}:</span>
-                    <p className="text-muted-foreground">
-                      {order.user?.name || t("n/a")}
-                    </p>
+                    <p className="text-muted-foreground">{order.user?.name || t("n/a")}</p>
                   </div>
                   <div>
                     <span className="font-medium">{t("email")}:</span>
-                    <p className="text-muted-foreground">
-                      {order.user?.email || t("n/a")}
-                    </p>
+                    <p className="text-muted-foreground">{order.user?.email || t("n/a")}</p>
                   </div>
                   <div>
                     <span className="font-medium">{t("phone")}:</span>
-                    <p className="text-muted-foreground">
-                      {order.deliveryPhone || t("n/a")}
-                    </p>
+                    <p className="text-muted-foreground">{order.deliveryPhone || t("n/a")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -356,27 +287,15 @@ export default function AgentOrderDetailsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="font-medium">
-                    {order.deliveryName || t("n/a")}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {order.deliveryAddress1 || t("n/a")}
-                  </p>
-                  {order.deliveryAddress2 && (
-                    <p className="text-muted-foreground">
-                      {order.deliveryAddress2}
-                    </p>
-                  )}
+                  <p className="font-medium">{order.deliveryName || t("n/a")}</p>
+                  <p className="text-muted-foreground">{order.deliveryAddress1 || t("n/a")}</p>
+                  {order.deliveryAddress2 && <p className="text-muted-foreground">{order.deliveryAddress2}</p>}
                   <p className="text-muted-foreground">
                     {order.deliveryCity && order.deliveryState
-                      ? `${order.deliveryCity}, ${order.deliveryState} ${
-                          order.deliveryZip || ""
-                        }`
+                      ? `${order.deliveryCity}, ${order.deliveryState} ${order.deliveryZip || ""}`
                       : t("n/a")}
                   </p>
-                  <p className="text-muted-foreground">
-                    {order.deliveryCountry || t("n/a")}
-                  </p>
+                  <p className="text-muted-foreground">{order.deliveryCountry || t("n/a")}</p>
                 </CardContent>
               </Card>
 
@@ -391,15 +310,11 @@ export default function AgentOrderDetailsPage() {
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
                     <span>{t("currency")}:</span>
-                    <span className="text-muted-foreground">
-                      {order.currency || "USD"}
-                    </span>
+                    <span className="text-muted-foreground">{order.currency || "USD"}</span>
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>{t("total amount")}:</span>
-                    <span>
-                      {formatPrice(order.totalCents || 0, order.currency)}
-                    </span>
+                    <span>{formatPrice(order.totalCents || 0, order.currency)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -407,16 +322,9 @@ export default function AgentOrderDetailsPage() {
           </div>
         ) : (
           <div className="p-8 border rounded-lg text-center">
-            <h2 className="mb-2 font-semibold text-xl">
-              {t("order not found")}
-            </h2>
-            <p className="mb-4 text-muted-foreground">
-              {t("order not found description")}
-            </p>
-            <Button
-              onClick={() => router.push("/agent/orders")}
-              variant="outline"
-            >
+            <h2 className="mb-2 font-semibold text-xl">{t("order not found")}</h2>
+            <p className="mb-4 text-muted-foreground">{t("order not found description")}</p>
+            <Button onClick={() => router.push("/agent/orders")} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t("back to orders")}
             </Button>

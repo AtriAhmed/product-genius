@@ -345,11 +345,20 @@ export type OrderItem = {
   title?: string;
   unitPriceCents?: number;
   quantity?: number;
-  productVariantId?: number;
+  variantId?: number;
+  // Independent product data
+  productTitle?: string;
+  productDescription?: string;
+  productSku?: string;
+  // Option values (stored as JSON for flexibility)
+  variantOptions?: any; // JSON type for variant options like {"Color": "Red", "Size": "M"}
+  // Images and media
+  imageUrl?: string;
+  imageAlt?: string;
   // Relations
   order?: Order;
   product?: Product;
-  ProductVariant?: ProductVariant;
+  variant?: ProductVariant;
 };
 
 export type AgentProfile = {

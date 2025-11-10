@@ -236,11 +236,11 @@ model Product {
   isActive        Boolean              @default(true) @map("is_active")
   views           Int                  @default(0)
   likes           Int                  @default(0)
-  orderItems      OrderItem[]
   options         ProductOption[]
   variants        ProductVariant[]
   productMappings ProductMapping[]
   variantMappings VariantMapping[]
+  orderItems      OrderItem[]
 
   @@map("product")
 }
@@ -300,8 +300,8 @@ model ProductVariant {
   // Relations
   product         Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
   variantMappings VariantMapping[]
-  orderItems      OrderItem[]
   options         ProductVariantOptionValue[]
+  orderItems      OrderItem[]
 
   @@index([productId])
   @@index([sku])
@@ -413,6 +413,8 @@ model Order {
   id             Int     @id @default(autoincrement())
   orderNumber    String  @map("order_number")
   shopifyOrderId String? @unique @map("shopify_order_id")
+  trackingNumber String? @map("tracking_number")
+  trackingUrl    String? @map("tracking_url")
 
   shopifyStoreId Int?          @map("shopify_store_id")
   shopifyStore   ShopifyStore? @relation(fields: [shopifyStoreId], references: [id])
@@ -456,14 +458,26 @@ model OrderItem {
   unitPriceCents Int    @map("unit_price_cents")
   quantity       Int
 
+  productId Int?     @map("product_id")
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variantId Int?            @map("variant_id")
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  // Independent product data
+  productTitle       String  @map("product_title")
+  productDescription String? @map("product_description") @db.Text
+  productSku         String? @map("product_sku")
+
+  // Option values (stored as JSON for flexibility)
+  variantOptions Json? @map("variant_options") // e.g., {"Color": "Red", "Size": "M"}
+
+  // Images and media
+  imageUrl String? @map("image_url")
+  imageAlt String? @map("image_alt")
+
   orderId Int   @map("order_id")
   order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  productId Int     @map("product_id")
-  product   Product @relation(fields: [productId], references: [id])
-
-  productVariantId Int?            @map("product_variant_id")
-  ProductVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
 
   @@map("order_item")
 }
