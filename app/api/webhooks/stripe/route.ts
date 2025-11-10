@@ -329,7 +329,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     const bodyJson = JSON.parse(body);
-    const signature = request.headers.get("stripe-signature");
+    const signature = request.headers.get("Stripe-Signature");
 
     if (!signature) {
       console.error("No Stripe signature found");
