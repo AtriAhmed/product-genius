@@ -125,5 +125,18 @@
   "order number z-a": "Order Number Z-A",
   "highest amount": "Highest Amount",
   "lowest amount": "Lowest Amount",
-  "try adjusting your search or filters": "Try adjusting your search or filters"
+  "try adjusting your search or filters": "Try adjusting your search or filters",
+  "tracking number": "Tracking Number",
+  "tracking url": "Tracking URL",
+  "enter tracking number": "Enter tracking number",
+  "enter tracking url": "Enter tracking URL",
+  "tracking information": "Tracking Information",
+  "edit tracking": "Edit Tracking",
+  "save tracking information": "Save Tracking Information",
+  "tracking information updated": "Tracking information updated successfully",
+  "failed to update tracking information": "Failed to update tracking information",
+  "cancel": "Cancel",
+  "save": "Save",
+  "tracking": "Tracking",
+  "shopify id": "Shopify ID"
 }

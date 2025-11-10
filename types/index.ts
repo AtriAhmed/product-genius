@@ -314,6 +314,8 @@ export type Order = {
   id: number;
   orderNumber?: string;
   shopifyOrderId?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
   userId?: number;
   agentId?: number;
   totalCents?: number;

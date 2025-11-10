@@ -5,27 +5,8 @@ import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { isAuthorized } from "@/lib/authUtils";
 
 const updateOrderSchema = z.object({
-  status: z
-    .enum([
-      "DRAFT",
-      "UNPAID",
-      "PAID",
-      "PROCESSING",
-      "COMPLETED",
-      "CANCELED",
-      "REFUNDED",
-    ])
-    .optional(),
-  shipmentStatus: z
-    .enum([
-      "UNPAID",
-      "PICKED",
-      "IN_TRANSIT",
-      "DELIVERED",
-      "RETURNED",
-      "CANCELLED",
-    ])
-    .optional(),
+  status: z.enum(["DRAFT", "UNPAID", "PAID", "PROCESSING", "COMPLETED", "CANCELED", "REFUNDED"]).optional(),
+  shipmentStatus: z.enum(["UNPAID", "PICKED", "IN_TRANSIT", "DELIVERED", "RETURNED", "CANCELLED"]).optional(),
   agentId: z.number().int().positive().optional(),
   deliveryName: z.string().optional(),
   deliveryPhone: z.string().optional(),
@@ -38,10 +19,7 @@ const updateOrderSchema = z.object({
   deliveryCountry: z.string().optional(),
 });
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await isAuthenticatedServerSide([], true);
     if (!user) {
@@ -66,6 +44,12 @@ export async function GET(
     const order = await prisma.order.findFirst({
       where,
       include: {
+        shopifyStore: {
+          select: {
+            id: true,
+            shop: true,
+          },
+        },
         user: {
           select: { id: true, name: true, email: true },
         },
@@ -100,17 +84,11 @@ export async function GET(
     return NextResponse.json(order);
   } catch (error) {
     console.error("Error fetching order:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await isAuthenticatedServerSide([], true);
     if (!user) {
@@ -140,14 +118,8 @@ export async function PATCH(
     }
 
     // Validate agent assignment (only admins/owners can assign agents)
-    if (
-      validatedData.agentId &&
-      !isAuthorized(user, ["ADMIN", "OWNER", "AGENT"])
-    ) {
-      return NextResponse.json(
-        { error: "Only admins can assign agents to orders" },
-        { status: 403 }
-      );
+    if (validatedData.agentId && !isAuthorized(user, ["ADMIN", "OWNER", "AGENT"])) {
+      return NextResponse.json({ error: "Only admins can assign agents to orders" }, { status: 403 });
     }
 
     // If assigning an agent, verify the agent exists and has the correct role
@@ -157,10 +129,7 @@ export async function PATCH(
       });
 
       if (!agent || agent.role !== "AGENT") {
-        return NextResponse.json(
-          { error: "Invalid agent ID" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Invalid agent ID" }, { status: 400 });
       }
     }
 
@@ -200,23 +169,14 @@ export async function PATCH(
     console.error("Error updating order:", error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid request data", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request data", details: error.issues }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await isAuthenticatedServerSide(["ADMIN", "OWNER"], true);
     if (!user) {
@@ -239,14 +199,8 @@ export async function DELETE(
     }
 
     // Only allow deletion of draft or canceled orders
-    if (
-      existingOrder.status !== "DRAFT" &&
-      existingOrder.status !== "CANCELED"
-    ) {
-      return NextResponse.json(
-        { error: "Can only delete draft or canceled orders" },
-        { status: 400 }
-      );
+    if (existingOrder.status !== "DRAFT" && existingOrder.status !== "CANCELED") {
+      return NextResponse.json({ error: "Can only delete draft or canceled orders" }, { status: 400 });
     }
 
     await prisma.order.delete({
@@ -256,9 +210,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Order deleted successfully" });
   } catch (error) {
     console.error("Error deleting order:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

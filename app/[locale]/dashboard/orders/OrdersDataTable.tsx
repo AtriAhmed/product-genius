@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Order, OrderStatus } from "@/types";
-import { Eye, NotepadText, Package } from "lucide-react";
+import { ExternalLink, Eye, NotepadText, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface OrdersDataTableProps {
@@ -65,6 +65,9 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
         <Skeleton className="w-16 h-6" />
       </TableCell>
       <TableCell>
+        <Skeleton className="w-24 h-4" />
+      </TableCell>
+      <TableCell>
         <Skeleton className="w-20 h-4" />
       </TableCell>
       <TableCell>
@@ -78,7 +81,7 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
 
   const emptyStateRow = (
     <TableRow>
-      <TableCell colSpan={6}>
+      <TableCell colSpan={7}>
         <div className="p-8 text-center">
           <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
             <NotepadText className="w-8 h-8 text-muted-foreground" />
@@ -96,8 +99,9 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
         <TableHeader>
           <TableRow className="border-border hover:bg-muted/50">
             <TableHead className="font-medium">{t("order number")}</TableHead>
-            <TableHead className="font-medium">{t("customer")}</TableHead>
+            <TableHead className="font-medium">{t("shopify id")}</TableHead>
             <TableHead className="font-medium">{t("shipment status")}</TableHead>
+            <TableHead className="font-medium">{t("tracking")}</TableHead>
             <TableHead className="font-medium">{t("order total")}</TableHead>
             <TableHead className="font-medium">{t("date")}</TableHead>
             <TableHead className="font-medium text-right">{t("actions")}</TableHead>
@@ -116,15 +120,45 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
-                      <div className="font-medium">{order.user?.name || "N/A"}</div>
-                      <div className="text-muted-foreground text-sm">{order.user?.email}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-semibold text-xs">{order.shopifyOrderId || t("n/a")}</span>
+                      {order.shopifyStore?.shop && order?.trackingUrl && (
+                        <a
+                          href={`https://${order.shopifyStore.shop}/admin/orders/${order.shopifyOrderId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(order.status!)}>
                       {t(order.status?.toLowerCase() || "unavailable")}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {order.trackingNumber ? (
+                        <>
+                          <span className="max-w-[100px] truncate">{order.trackingNumber}</span>
+                          {order.trackingUrl && (
+                            <a
+                              href={order.trackingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">N/A</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
                   <TableCell>{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>

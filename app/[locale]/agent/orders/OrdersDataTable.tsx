@@ -1,29 +1,15 @@
 import { useTranslations } from "next-intl";
-import { Eye, Package, Truck } from "lucide-react";
+import { Eye, Package, Edit, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Order, OrderStatus } from "@/types";
 
 interface OrdersDataTableProps {
   orders: Order[];
   onView: (order: Order) => void;
-  onUpdateShipmentStatus: (orderId: number, status: string) => void;
+  onEditTracking: (order: Order) => void;
   isLoading: boolean;
 }
 
@@ -65,12 +51,7 @@ const formatDate = (date: Date) => {
   }).format(new Date(date));
 };
 
-export default function OrdersDataTable({
-  orders,
-  onView,
-  onUpdateShipmentStatus,
-  isLoading,
-}: OrdersDataTableProps) {
+export default function OrdersDataTable({ orders, onView, onEditTracking, isLoading }: OrdersDataTableProps) {
   const t = useTranslations("orders");
 
   if (isLoading) {
@@ -81,7 +62,8 @@ export default function OrdersDataTable({
             <TableRow>
               <TableHead>{t("order number")}</TableHead>
               <TableHead>{t("customer")}</TableHead>
-              <TableHead>{t("shipment status")}</TableHead>
+              <TableHead>{t("order status")}</TableHead>
+              <TableHead>{t("tracking number")}</TableHead>
               <TableHead>{t("order total")}</TableHead>
               <TableHead>{t("date")}</TableHead>
               <TableHead className="text-right">{t("actions")}</TableHead>
@@ -103,10 +85,16 @@ export default function OrdersDataTable({
                   <Skeleton className="w-20 h-4" />
                 </TableCell>
                 <TableCell>
+                  <Skeleton className="w-20 h-4" />
+                </TableCell>
+                <TableCell>
                   <Skeleton className="w-28 h-4" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Skeleton className="w-16 h-8 ml-auto" />
+                  <div className="flex justify-end items-center gap-2">
+                    <Skeleton className="w-20 h-8" />
+                    <Skeleton className="w-24 h-8" />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -117,7 +105,7 @@ export default function OrdersDataTable({
   }
 
   return (
-    <div className="border rounded-lg bg-card">
+    <div className="w-0 min-w-full border rounded-lg bg-card">
       <Table>
         <TableHeader>
           <TableRow>
@@ -125,6 +113,7 @@ export default function OrdersDataTable({
             <TableHead>{t("customer")}</TableHead>
             <TableHead>{t("shipment status")}</TableHead>
             <TableHead>{t("order total")}</TableHead>
+            <TableHead>{t("tracking number")}</TableHead>
             <TableHead>{t("date")}</TableHead>
             <TableHead className="text-right">{t("actions")}</TableHead>
           </TableRow>
@@ -135,66 +124,42 @@ export default function OrdersDataTable({
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-muted-foreground" />
-                  <span className="max-w-[120px] truncate">
-                    {order.orderNumber}
-                  </span>
+                  <span className="max-w-[120px] truncate">{order.orderNumber}</span>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="max-w-[150px]">
                 <div>
                   <div className="font-medium">{order.user?.name || "N/A"}</div>
-                  <div className="text-muted-foreground text-sm">
-                    {order.user?.email}
-                  </div>
+                  <div className="text-muted-foreground text-sm truncate">{order.user?.email}</div>
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  <Badge className={getShipmentStatusColor(order.status!)}>
-                    {t(order.status?.toLowerCase() || "pending")}
-                  </Badge>
-                  <Select
-                    value={order.status}
-                    onValueChange={(value) =>
-                      onUpdateShipmentStatus(order.id!, value)
-                    }
-                  >
-                    <SelectTrigger className="w-[140px] h-8">
-                      <Truck className="w-3 h-3 mr-1" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PENDING">{t("pending")}</SelectItem>
-                      <SelectItem value="PICKED">{t("picked")}</SelectItem>
-                      <SelectItem value="IN_TRANSIT">
-                        {t("in_transit")}
-                      </SelectItem>
-                      <SelectItem value="DELIVERED">
-                        {t("delivered")}
-                      </SelectItem>
-                      <SelectItem value="RETURNED">{t("returned")}</SelectItem>
-                      <SelectItem value="CANCELLED">
-                        {t("cancelled")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                <Badge className={getShipmentStatusColor(order.status!)}>
+                  {t(order.status?.toLowerCase() || "pending")}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-1 text-sm">
+                  {order.trackingNumber ? (
+                    <>
+                      <span className="font-mono text-xs">{order.trackingNumber}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">{t("n/a")}</span>
+                  )}
                 </div>
               </TableCell>
-              <TableCell>
-                {formatCurrency(order.totalCents || 0, order.currency)}
-              </TableCell>
-              <TableCell>
-                {order.createdAt ? formatDate(order.createdAt) : "N/A"}
-              </TableCell>
+              <TableCell>{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
+              <TableCell>{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
               <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onView(order)}
-                  className="gap-2"
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
+                <div className="flex justify-end items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => onEditTracking(order)} className="gap-2">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => onView(order)} className="gap-2">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

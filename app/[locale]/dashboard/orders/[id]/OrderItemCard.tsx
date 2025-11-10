@@ -45,7 +45,7 @@ export default function OrderItemCard({ item, currency = "USD" }: OrderItemCardP
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-foreground text-sm truncate">
+        <h4 className="font-semibold text-foreground text-sm line-clamp-2">
           {item.productTitle || item.title || t("unknown product")}
         </h4>
         {item.productDescription && (

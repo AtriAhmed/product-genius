@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Order } from "@/types";
+import { Order, OrderStatus } from "@/types";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Pagination from "@/components/Pagination";
 import useSWR from "swr";
 import axios from "axios";
 import { toast } from "sonner";
 import OrdersFilters from "@/app/[locale]/agent/orders/OrdersFilters";
 import OrdersDataTable from "@/app/[locale]/agent/orders/OrdersDataTable";
+import TrackingDialog from "@/app/[locale]/agent/orders/TrackingDialog";
 
 type OrdersResponse = {
   data: Order[];
@@ -21,14 +20,7 @@ type OrdersResponse = {
   pages: number;
 };
 
-async function fetcher(
-  page: number,
-  limit: number,
-  search: string,
-  status: string,
-  sortBy: string,
-  sortOrder: string
-) {
+async function fetcher(page: number, limit: number, search: string, status: string, sortBy: string, sortOrder: string) {
   const params: any = { page, limit };
 
   if (search) params.search = search;
@@ -49,6 +41,11 @@ export default function AgentOrdersPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
   const limit = 20;
+
+  // Tracking dialog state
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isUpdatingTracking, setIsUpdatingTracking] = useState(false);
 
   // SWR hook for data fetching
   const { data, error, isLoading, mutate } = useSWR<OrdersResponse>(
@@ -78,18 +75,28 @@ export default function AgentOrdersPage() {
     router.push(`/agent/orders/${order.id}`);
   };
 
-  const handleUpdateShipmentStatus = async (
-    orderId: number,
-    newStatus: string
-  ) => {
+  const handleEditTracking = (order: Order) => {
+    setSelectedOrder(order);
+    setTrackingDialogOpen(true);
+  };
+
+  const handleSaveTracking = async (data: { trackingNumber: string; trackingUrl: string; status: OrderStatus }) => {
+    if (!selectedOrder) return;
+
+    setIsUpdatingTracking(true);
     try {
-      await axios.patch(`/api/orders/${orderId}/shipment`, {
-        status: newStatus,
+      await axios.patch(`/api/orders/${selectedOrder.id}/tracking`, {
+        trackingNumber: data.trackingNumber,
+        trackingUrl: data.trackingUrl,
+        status: data.status,
       });
-      toast.success("Shipment status updated successfully");
+      toast.success(t("tracking information updated"));
       mutate(); // Refresh the data
+      setTrackingDialogOpen(false);
     } catch (error) {
-      toast.error("Failed to update shipment status");
+      toast.error(t("failed to update tracking information"));
+    } finally {
+      setIsUpdatingTracking(false);
     }
   };
 
@@ -118,13 +125,11 @@ export default function AgentOrdersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto px-4 py-2 container">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="font-bold text-foreground text-3xl">
-              {t("orders")}
-            </h1>
+            <h1 className="font-bold text-foreground text-3xl">{t("orders")}</h1>
             <p className="mt-2 text-muted-foreground">{t("manage orders")}</p>
           </div>
         </div>
@@ -145,17 +150,13 @@ export default function AgentOrdersPage() {
         <OrdersDataTable
           orders={orders}
           onView={handleViewOrder}
-          onUpdateShipmentStatus={handleUpdateShipmentStatus}
+          onEditTracking={handleEditTracking}
           isLoading={isLoading}
         />
 
         {/* Pagination */}
         {!isLoading && orders.length > 0 && pagination.pages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.pages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
 
         {/* Results Count */}
@@ -175,13 +176,20 @@ export default function AgentOrdersPage() {
             <div className="text-muted-foreground">
               <p className="font-medium text-lg">{t("no orders found")}</p>
               <p className="mt-1 text-sm">
-                {search || status !== "all"
-                  ? "Try adjusting your filters"
-                  : "No orders have been placed yet"}
+                {search || status !== "all" ? "Try adjusting your filters" : "No orders have been placed yet"}
               </p>
             </div>
           </div>
         )}
+
+        {/* Tracking Dialog */}
+        <TrackingDialog
+          open={trackingDialogOpen}
+          onOpenChange={setTrackingDialogOpen}
+          order={selectedOrder}
+          onSave={handleSaveTracking}
+          isLoading={isUpdatingTracking}
+        />
       </div>
     </div>
   );
