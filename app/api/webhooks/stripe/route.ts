@@ -1,14 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe";
 import { Invoice, SubscriptionStatus } from "@/types";
+import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+
+export const config = {
+  api: {
+    bodyParser: false, // Disables automatic body parsing
+  },
+};
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-async function mapStripeStatusToDb(
-  stripeStatus: string
-): Promise<SubscriptionStatus> {
+async function mapStripeStatusToDb(stripeStatus: string): Promise<SubscriptionStatus> {
   const statusMap: { [key: string]: SubscriptionStatus } = {
     trialing: "TRIALING",
     active: "ACTIVE",
@@ -22,11 +26,7 @@ async function mapStripeStatusToDb(
   return statusMap[stripeStatus] || "INCOMPLETE";
 }
 
-async function safeUpdateSubscription(
-  stripeSubscriptionId: string,
-  data: any,
-  operation: string
-) {
+async function safeUpdateSubscription(stripeSubscriptionId: string, data: any, operation: string) {
   try {
     const result = await prisma.subscription.updateMany({
       where: { stripeSubscriptionId },
@@ -34,10 +34,7 @@ async function safeUpdateSubscription(
     });
 
     if (result.count === 0) {
-      console.warn(
-        `No subscription found for ${operation}:`,
-        stripeSubscriptionId
-      );
+      console.warn(`No subscription found for ${operation}:`, stripeSubscriptionId);
     }
 
     return result;
@@ -98,9 +95,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
         endsAt: subscription.items?.data?.[0]?.current_period_end
           ? new Date(subscription.items?.data?.[0]?.current_period_end * 1000)
           : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        trialEndsAt: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000)
-          : null,
+        trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
         cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
       },
     });
@@ -131,15 +126,9 @@ async function handleSubscriptionUpdated(subscription: any) {
     const dbStatus = await mapStripeStatusToDb(subscription.status);
     const updateData: any = {
       status: dbStatus,
-      startsAt: subscription.current_period_start
-        ? new Date(subscription.current_period_start * 1000)
-        : undefined,
-      endsAt: subscription.current_period_end
-        ? new Date(subscription.current_period_end * 1000)
-        : undefined,
-      trialEndsAt: subscription.trial_end
-        ? new Date(subscription.trial_end * 1000)
-        : null,
+      startsAt: subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : undefined,
+      endsAt: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+      trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
@@ -153,11 +142,7 @@ async function handleSubscriptionUpdated(subscription: any) {
       updateData.interval = subscription.metadata.interval;
     }
 
-    await safeUpdateSubscription(
-      subscription.id,
-      updateData,
-      "subscription.updated"
-    );
+    await safeUpdateSubscription(subscription.id, updateData, "subscription.updated");
 
     console.log("Subscription updated in database:", subscription.id);
   } catch (error) {
@@ -200,10 +185,7 @@ async function handleSubscriptionTrialWillEnd(subscription: any) {
       );
     }
   } catch (error) {
-    console.error(
-      "Error handling customer.subscription.trial_will_end:",
-      error
-    );
+    console.error("Error handling customer.subscription.trial_will_end:", error);
     throw error;
   }
 }
@@ -245,18 +227,14 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
       data: {
         stripeInvoiceId: invoice.id,
         userId: user.id,
-        stripeSubscriptionId: isSubscriptionInvoice
-          ? stripeSubscriptionId
-          : undefined,
+        stripeSubscriptionId: isSubscriptionInvoice ? stripeSubscriptionId : undefined,
         amountCents: invoice.amount_paid || 0,
         taxCents: 0,
         currency: invoice.currency || "usd",
         status: invoice.status || "draft",
         pdfUrl: invoice.invoice_pdf || null,
         hostedUrl: invoice.hosted_invoice_url || null,
-        paidAt: invoice.status_transitions?.paid_at
-          ? new Date(invoice.status_transitions.paid_at * 1000)
-          : null,
+        paidAt: invoice.status_transitions?.paid_at ? new Date(invoice.status_transitions.paid_at * 1000) : null,
         type: invoiceType,
         periodStart: new Date(invoice.period_start * 1000),
         periodEnd: new Date(invoice.period_end * 1000),
@@ -287,12 +265,7 @@ async function handleInvoiceCreated(invoice: Stripe.Invoice) {
       }
     }
 
-    console.log(
-      "Invoice created in database:",
-      invoice.id,
-      "Type:",
-      invoiceType
-    );
+    console.log("Invoice created in database:", invoice.id, "Type:", invoiceType);
   } catch (error) {
     console.error("Error handling invoice.created:", error);
     throw error;
@@ -309,9 +282,7 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
     const isSubscriptionInvoice = !!subscriptionId;
     const invoiceType = isSubscriptionInvoice ? "PLAN" : "ORDER";
 
-    console.log(
-      "-------------------- JSON.stringify(invoice, null, 2) --------------------"
-    );
+    console.log("-------------------- JSON.stringify(invoice, null, 2) --------------------");
     console.log(JSON.stringify(invoice, null, 2));
 
     // Update invoice in database
@@ -324,9 +295,7 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
       status: invoice.status || "draft",
       pdfUrl: invoice.invoice_pdf || undefined,
       hostedUrl: invoice.hosted_invoice_url || undefined,
-      paidAt: invoice.status_transitions?.paid_at
-        ? new Date(invoice.status_transitions.paid_at * 1000)
-        : undefined,
+      paidAt: invoice.status_transitions?.paid_at ? new Date(invoice.status_transitions.paid_at * 1000) : undefined,
       type: invoiceType,
       periodStart: new Date(invoice.period_start * 1000),
       periodEnd: new Date(invoice.period_end * 1000),
@@ -340,12 +309,7 @@ async function handleInvoiceUpdated(invoice: Stripe.Invoice) {
     if (result.count === 0) {
       console.warn("No invoice found for update:", invoice.id);
     } else {
-      console.log(
-        "Invoice updated in database:",
-        invoice.id,
-        "Type:",
-        invoiceType
-      );
+      console.log("Invoice updated in database:", invoice.id, "Type:", invoiceType);
 
       // Update order status if this is an order invoice and it's paid
       if (orderId && !isSubscriptionInvoice && invoice.status === "paid") {
@@ -374,10 +338,7 @@ export async function POST(request: NextRequest) {
 
     if (!signature) {
       console.error("No Stripe signature found");
-      return NextResponse.json(
-        { error: "No signature found" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No signature found" }, { status: 400 });
     }
 
     let event: Stripe.Event;
@@ -386,10 +347,7 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
-      return NextResponse.json(
-        { error: "Webhook signature verification failed" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
     }
 
     console.log("Received Stripe webhook:", event.type);
@@ -427,9 +385,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Error processing webhook:", error);
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
