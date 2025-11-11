@@ -4,13 +4,13 @@ import { createShopifyClient } from "@/lib/shopify-client";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
+const APP_URL = process.env.APP_URL || "";
+
 export async function GET(request: NextRequest) {
   const user = await isAuthenticatedServerSide(["USER"], true);
 
   if (!user) {
-    return NextResponse.redirect(
-      new URL("/dashboard/shopify?error=not_authenticated", request.url)
-    );
+    return NextResponse.redirect(new URL(APP_URL + "/dashboard/shopify?error=not_authenticated", request.url));
   }
 
   try {
@@ -19,9 +19,7 @@ export async function GET(request: NextRequest) {
     const shop = searchParams.get("shop");
 
     if (!code || !shop) {
-      return NextResponse.redirect(
-        new URL("/dashboard/shopify?error=missing_params", request.url)
-      );
+      return NextResponse.redirect(new URL(APP_URL + "/dashboard/shopify?error=missing_params", request.url));
     }
 
     // Exchange code for access token
@@ -48,9 +46,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (existingStore) {
-      return NextResponse.redirect(
-        new URL("/dashboard/shopify?error=store_already_connected", request.url)
-      );
+      return NextResponse.redirect(new URL(APP_URL + "/dashboard/shopify?error=store_already_connected", request.url));
     } else {
       const shopifyStore = await prisma.shopifyStore.create({
         data: {
@@ -64,13 +60,9 @@ export async function GET(request: NextRequest) {
 
     console.log("✅ Shopify store connected:", shop);
 
-    return NextResponse.redirect(
-      new URL("/dashboard/shopify?shopify_connected=true", request.url)
-    );
+    return NextResponse.redirect(new URL(APP_URL + "/dashboard/shopify?shopify_connected=true", request.url));
   } catch (error) {
     console.error("Shopify OAuth error:", error);
-    return NextResponse.redirect(
-      new URL("/dashboard/shopify?error=auth_failed", request.url)
-    );
+    return NextResponse.redirect(new URL(APP_URL + "/dashboard/shopify?error=auth_failed", request.url));
   }
 }

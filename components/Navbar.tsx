@@ -38,22 +38,13 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link
-              href="/#features"
-              className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm"
-            >
+            <Link href="/#features" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
               {t("features")}
             </Link>
-            <Link
-              href="/#niches"
-              className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm"
-            >
+            <Link href="/#niches" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
               {t("niches")}
             </Link>
-            <Link
-              href="/pricing"
-              className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm"
-            >
+            <Link href="/pricing" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
               {t("pricing")}
             </Link>
             <div className="flex items-center gap-2">
@@ -68,14 +59,7 @@ export default function Navbar() {
               ) : (
                 <>
                   <Link
-                    href={
-                      isMounted &&
-                      isAuthorized(user, ["OWNER", "ADMIN", "EDITOR"])
-                        ? "/admin"
-                        : isAuthorized(user, ["AGENT"])
-                        ? "/agent"
-                        : "/dashboard"
-                    }
+                    href={isMounted && isAuthorized(user, ["USER"]) ? "/dashboard" : "/admin"}
                     className="px-4 py-2 rounded-md bg-primary-500 hover:bg-primary-600 font-medium text-white text-xs lg:text-sm"
                   >
                     {t("dashboard")}

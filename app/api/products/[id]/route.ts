@@ -950,7 +950,7 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
       select: { role: true },
     });
 
-    if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
+    if (!user || !["ADMIN", "OWNER", "EDITOR"].includes(user.role)) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
