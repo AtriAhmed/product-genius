@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { customAlphabet } from "nanoid";
 import sanitizeHtml from "sanitize-html";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,4 +50,10 @@ export function htmlToText(html: string) {
     allowedTags: [], // remove ALL tags
     allowedAttributes: {}, // remove ALL inline attributes
   }).trim();
+}
+
+export function nanoidLower(size?: number) {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const generateId = customAlphabet(alphabet, size);
+  return generateId();
 }

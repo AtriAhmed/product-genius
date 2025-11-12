@@ -72,7 +72,7 @@ const createProductSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const user = isAuthenticatedServerSide(["ADMIN", "OWNER", "EDITOR"], false);
+    const user = await isAuthenticatedServerSide(["ADMIN", "OWNER", "EDITOR"], false);
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -82,12 +82,12 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
 
     // Extract JSON data from form
-    const productDataString = formData.get("productData") as string;
-    if (!productDataString) {
+    const rawProductData = formData.get("productData");
+    if (typeof rawProductData !== "string") {
       return NextResponse.json({ error: "Product data is required" }, { status: 400 });
     }
 
-    const productData = JSON.parse(productDataString);
+    const productData = JSON.parse(rawProductData);
 
     // Validate the product data (now includes variants)
     const validatedData = createProductSchema.parse(productData);
@@ -119,8 +119,21 @@ export async function POST(request: NextRequest) {
         const index = parseInt(key.split("_")[1]);
 
         if (!isNaN(index) && mediaMap.has(index)) {
-          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-          const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
+          const allowedImageExtensions = [
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp",
+            "svg",
+            "bmp",
+            "tiff",
+            "tif",
+            "ico",
+            "avif",
+          ];
+          const allowedVideoExtensions = ["mp4", "webm", "ogg"];
+
           const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
           const uploadResult = await uploadFile(file, {
@@ -139,7 +152,19 @@ export async function POST(request: NextRequest) {
         const index = parseInt(key.split("_")[1]);
 
         if (!isNaN(index) && mediaMap.has(index)) {
-          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+          const allowedImageExtensions = [
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp",
+            "svg",
+            "bmp",
+            "tiff",
+            "tif",
+            "ico",
+            "avif",
+          ];
 
           const posterUploadResult = await uploadFile(file, {
             directory: "uploads/products",

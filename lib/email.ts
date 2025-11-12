@@ -38,9 +38,7 @@ export async function sendEmail(config: EmailConfig): Promise<boolean> {
 
     // Send email
     const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || "WinWaterfall"}" <${
-        process.env.SMTP_FROM_EMAIL
-      }>`,
+      from: `"${process.env.SMTP_FROM_NAME || "WinWaterfall"}" <${process.env.SMTP_FROM_EMAIL}>`,
       to: config.to,
       subject: config.subject,
       text: config.text,
@@ -62,24 +60,14 @@ export async function sendEmail(config: EmailConfig): Promise<boolean> {
  * @param emailTemplate HTML template for the email
  * @returns Promise<boolean> indicating success/failure
  */
-export async function sendVerificationEmail(
-  email: string,
-  token: string
-): Promise<boolean> {
-  const templatePath = join(
-    process.cwd(),
-    "email-templates",
-    "verification.html"
-  );
+export async function sendVerificationEmail(email: string, token: string): Promise<boolean> {
+  const templatePath = join(process.cwd(), "email-templates", "verification.html");
   const emailTemplate = readFileSync(templatePath, "utf-8");
 
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/users/temp/verify/${token}`;
 
   // Replace placeholder in template with actual verification URL
-  const htmlContent = emailTemplate.replaceAll(
-    "{{VERIFICATION_URL}}",
-    verificationUrl
-  );
+  const htmlContent = emailTemplate.replaceAll("{{VERIFICATION_URL}}", verificationUrl);
 
   return sendEmail({
     to: email,
@@ -106,11 +94,7 @@ export async function sendOrderPaymentNotification(
     paymentUrl: string;
   }
 ): Promise<boolean> {
-  const templatePath = join(
-    process.cwd(),
-    "email-templates",
-    "order-payment-notification.html"
-  );
+  const templatePath = join(process.cwd(), "email-templates", "order-payment-notification.html");
   const emailTemplate = readFileSync(templatePath, "utf-8");
 
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/orders`;
