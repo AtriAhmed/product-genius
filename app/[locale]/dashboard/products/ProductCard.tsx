@@ -124,7 +124,7 @@ export default function ProductCard({ product }: { product: Product }) {
             )}
 
             <p className="text-muted-foreground text-sm line-clamp-3">
-              {htmlToText(translation?.description || "")?.replace(/^product description:/i, "")}
+              {htmlToText(translation?.description || "")?.replace(/^product description:?/i, "")}
             </p>
 
             <div

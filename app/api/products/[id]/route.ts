@@ -607,8 +607,20 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
 
           if (!isNaN(index) && mediaMap.has(index)) {
             // Upload the media file
-            const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-            const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
+            const allowedImageExtensions = [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webp",
+              "svg",
+              "bmp",
+              "tiff",
+              "tif",
+              "ico",
+              "avif",
+            ];
+            const allowedVideoExtensions = ["mp4", "webm", "ogg"];
             const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
             const uploadResult = await uploadFile(file, {
@@ -629,7 +641,19 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
 
           if (!isNaN(index) && mediaMap.has(index)) {
             // Upload the poster file
-            const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+            const allowedImageExtensions = [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webp",
+              "svg",
+              "bmp",
+              "tiff",
+              "tif",
+              "ico",
+              "avif",
+            ];
 
             const posterUploadResult = await uploadFile(file, {
               directory: "uploads/products",

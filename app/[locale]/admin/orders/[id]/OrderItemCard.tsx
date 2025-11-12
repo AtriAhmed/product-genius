@@ -50,7 +50,7 @@ export default function OrderItemCard({ item, currency = "USD" }: OrderItemCardP
         </h4>
         {item.productDescription && (
           <p className="text-muted-foreground text-xs line-clamp-2">
-            {htmlToText(item.productDescription)?.replace(/^product description:/i, "")}
+            {htmlToText(item.productDescription)?.replace(/^product description:?/i, "")}
           </p>
         )}
 

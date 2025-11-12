@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { getCurrentTranslation } from "@/lib/products";
-import { cn, formatPrice, getMediaUrl } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, htmlToText } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -27,7 +27,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
   return (
     <TableRow key={product.id} className="border-border hover:bg-muted/50 transition-colors">
       {/* Product Image */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
           {primaryMedia?.url ? (
             primaryMedia.type === "IMAGE" ? (
@@ -59,17 +59,19 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell>
 
       {/* Product Name */}
-      <TableCell className="font-medium">
+      <TableCell className="py-1 font-medium">
         <div className="flex flex-col">
-          <span className="font-semibold text-foreground">{translation?.title || `Product #${product.id}`}</span>
+          <span className="font-semibold text-[13px] text-foreground line-clamp-1">{translation?.title || `N/A`}</span>
           {translation?.description && (
-            <span className="max-w-xs text-muted-foreground text-xs truncate">{translation.description}</span>
+            <span className="text-[11px] text-muted-foreground line-clamp-1">
+              {htmlToText(translation.description)?.replace(/^product description:?/i, "")}
+            </span>
           )}
         </div>
       </TableCell>
 
       {/* SKU */}
-      {/* <TableCell>
+      {/* <TableCell className="py-1">
         {product.sku ? (
           <code className="px-2 py-1 rounded bg-muted text-xs">
             {product.sku}
@@ -82,14 +84,14 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell> */}
 
       {/* Category */}
-      <TableCell>
+      <TableCell className="py-1">
         <Badge variant="outline" className="text-xs">
           {categoryTranslation?.title || "N/A"}
         </Badge>
       </TableCell>
 
       {/* Price */}
-      <TableCell>
+      <TableCell className="py-1">
         {product.price ? (
           <span className="font-medium">{formatPrice(product.price, product.currency)}</span>
         ) : (
@@ -98,7 +100,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell>
 
       {/* Status */}
-      <TableCell>
+      <TableCell className="py-1">
         <Badge
           variant={product.isActive ? "default" : "secondary"}
           className={cn("text-xs", product.isActive ? "bg-green-400 hover:bg-green-500 text-green-900" : "")}
@@ -108,7 +110,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell>
 
       {/* Translations */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex flex-wrap gap-1">
           {product?.translations?.slice(0, 3).map((tr) => (
             <Badge key={tr.locale} variant="secondary" className="text-xs">
@@ -124,7 +126,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell>
 
       {/* Actions */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex justify-center gap-2">
           <Button variant="ghost" size="sm" className="w-8 h-8 p-0" onClick={() => onEdit(product)}>
             <Edit className="w-4 h-4" />

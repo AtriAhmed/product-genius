@@ -40,7 +40,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
-  const limit = 20;
+  const limit = 50;
 
   const isActive = filter === "all" ? undefined : filter === "active" ? true : false;
 
@@ -54,35 +54,10 @@ export default function ProductsPage() {
     }
   );
 
-  // Process and sort products from SWR data
-  const getProcessedProducts = (): Product[] => {
-    if (!data?.data) return [];
-
-    let sortedProducts = [...data.data];
-
-    // Client-side sorting for unsupported API sorts
-    if (sortBy === "title") {
-      sortedProducts = sortedProducts.sort((a, b) => {
-        const aTitle = getCurrentTranslation(a?.translations || [])?.title || "";
-        const bTitle = getCurrentTranslation(b?.translations || [])?.title || "";
-        const comparison = aTitle.localeCompare(bTitle);
-        return sortOrder === "asc" ? comparison : -comparison;
-      });
-    } else if (sortBy === "suggestedPrice") {
-      sortedProducts = sortedProducts.sort((a, b) => {
-        const aPrice = a.sellingPrice || 0;
-        const bPrice = b.sellingPrice || 0;
-        return sortOrder === "asc" ? aPrice - bPrice : bPrice - aPrice;
-      });
-    }
-
-    return sortedProducts;
-  };
-
-  const products = getProcessedProducts();
+  const products = data?.data || [];
   const pagination = {
     page: data?.page || 1,
-    limit: data?.limit || 20,
+    limit: data?.limit || 50,
     total: data?.total || 0,
     pages: data?.pages || 0,
   };
