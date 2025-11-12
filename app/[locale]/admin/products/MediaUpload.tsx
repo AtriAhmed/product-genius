@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, Upload, Image as ImageIcon, Video, Plus, Edit } from "lucide-react";
@@ -21,6 +22,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStr
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { generateVideoPoster } from "@/lib/media";
+import { toast } from "sonner";
 
 export interface MediaItem {
   id: string;
@@ -33,11 +35,13 @@ export interface MediaItem {
   alt?: string;
 }
 
+const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp", "tiff", "tif", "ico", "avif"];
+const allowedVideoExtensions = ["mp4", "webm", "ogg"];
+
 interface MediaUploadProps {
   value: MediaItem[];
   onChange: (media: MediaItem[]) => void;
   maxFiles?: number;
-  acceptedTypes?: string[];
   maxFileSize?: number; // in MB
   className?: string;
 }
@@ -142,15 +146,12 @@ export default function MediaUpload({
   value = [],
   onChange,
   maxFiles = 10,
-  acceptedTypes = ["image/*", "video/*"],
   maxFileSize = 50,
   className,
 }: MediaUploadProps) {
-  const [dragOver, setDragOver] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [selectedMediaItem, setSelectedMediaItem] = useState<MediaItem | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -168,7 +169,11 @@ export default function MediaUpload({
   }, []);
 
   const getFileType = (file: File): "IMAGE" | "VIDEO" => {
-    return file.type.startsWith("video/") ? "VIDEO" : "IMAGE";
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (allowedVideoExtensions.includes(extension || "")) {
+      return "VIDEO";
+    }
+    return "IMAGE";
   };
 
   const validateFile = (file: File): string | null => {
@@ -176,26 +181,27 @@ export default function MediaUpload({
       return `File size must be less than ${maxFileSize}MB`;
     }
 
-    const isValidType = acceptedTypes.some((type) => {
-      if (type === "image/*") return file.type.startsWith("image/");
-      if (type === "video/*") return file.type.startsWith("video/");
-      return file.type === type;
-    });
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    const isValidImage = allowedImageExtensions.includes(extension || "");
+    const isValidVideo = allowedVideoExtensions.includes(extension || "");
 
-    if (!isValidType) {
-      return `File type not supported. Accepted types: ${acceptedTypes.join(", ")}`;
+    if (!isValidImage && !isValidVideo) {
+      return `File type not supported. Allowed extensions: ${[
+        ...allowedImageExtensions,
+        ...allowedVideoExtensions,
+      ].join(", ")}`;
     }
 
     return null;
   };
 
   const handleFilesSelect = useCallback(
-    async (files: FileList) => {
+    async (acceptedFiles: File[]) => {
       const newMedia: MediaItem[] = [];
       const errors: string[] = [];
 
-      for (let index = 0; index < files.length; index++) {
-        const file = files[index];
+      for (let index = 0; index < acceptedFiles.length; index++) {
+        const file = acceptedFiles[index];
         const error = validateFile(file);
 
         if (error) {
@@ -233,46 +239,15 @@ export default function MediaUpload({
 
       if (errors.length > 0) {
         console.error("File upload errors:", errors);
-        alert(errors.join("\n"));
+        toast.error(errors.join("\n"));
       }
 
       if (newMedia.length > 0) {
         onChange([...value, ...newMedia]);
       }
     },
-    [value, onChange, maxFiles, validateFile, createPreviewUrl, generateVideoPoster]
+    [value, onChange, maxFiles, validateFile, createPreviewUrl]
   );
-
-  const handleFileInput = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      await handleFilesSelect(files);
-    }
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleDragOver = (event: React.DragEvent) => {
-    event.preventDefault();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (event: React.DragEvent) => {
-    event.preventDefault();
-    setDragOver(false);
-  };
-
-  const handleDrop = async (event: React.DragEvent) => {
-    event.preventDefault();
-    setDragOver(false);
-
-    const files = event.dataTransfer.files;
-    if (files) {
-      await handleFilesSelect(files);
-    }
-  };
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -330,6 +305,19 @@ export default function MediaUpload({
     onChange(newItems);
   };
 
+  const acceptedFileTypes = {
+    "image/*": allowedImageExtensions.map((ext) => `.${ext}`),
+    "video/*": allowedVideoExtensions.map((ext) => `.${ext}`),
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFilesSelect,
+    accept: acceptedFileTypes,
+    maxFiles: maxFiles - value.length,
+    maxSize: maxFileSize * 1024 * 1024,
+    disabled: value.length >= maxFiles,
+  });
+
   return (
     <Card className="bg-background">
       <CardHeader>
@@ -341,46 +329,35 @@ export default function MediaUpload({
       </CardHeader>
       <CardContent>
         <div className={cn("space-y-4", className)}>
-          {/* Upload Area - Reduced Height */}
+          {/* Upload Area with React Dropzone */}
           <div
+            {...getRootProps()}
             className={cn(
-              "p-4 border-2 border-dashed rounded-lg text-center transition-colors",
-              dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-muted-foreground/50",
+              "p-4 border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer",
+              isDragActive
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50",
               value.length >= maxFiles && "opacity-50 pointer-events-none"
             )}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
           >
+            <input {...getInputProps()} />
             <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
             <div className="space-y-1">
-              <p className="font-medium text-sm">Drop files here or click to upload</p>
+              <p className="font-medium text-sm">
+                {isDragActive ? "Drop files here..." : "Drop files here or click to upload"}
+              </p>
               <p className="text-muted-foreground text-xs">
-                Images and videos up to {maxFileSize}MB • {value.length}/{maxFiles} files
+                Images ({allowedImageExtensions.join(", ")}) and videos ({allowedVideoExtensions.join(", ")}) up to{" "}
+                {maxFileSize}MB • {value.length}/{maxFiles} files
               </p>
             </div>
 
             <div className="flex justify-center gap-2 mt-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={value.length >= maxFiles}
-              >
+              <Button type="button" variant="outline" size="sm" disabled={value.length >= maxFiles}>
                 <Plus className="w-3 h-3 mr-1" />
                 Choose Files
               </Button>
             </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept={acceptedTypes.join(",")}
-              onChange={handleFileInput}
-              className="hidden"
-            />
           </div>
 
           {/* Media Grid with DnD */}
@@ -392,7 +369,7 @@ export default function MediaUpload({
               onDragEnd={handleDragEnd}
             >
               <SortableContext items={value.map((item) => item.id)} strategy={rectSortingStrategy}>
-                <div className="gap-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                   {value.map((item, index) => (
                     <SortableMediaItem
                       key={item.id}
