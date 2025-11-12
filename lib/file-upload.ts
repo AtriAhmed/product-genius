@@ -55,8 +55,8 @@ async function compressImage(
   }
 
   const defaultOptions: CompressImageOptions = {
-    width: options?.width || 1920,
-    height: options?.height || 1080,
+    width: options?.width || 1280,
+    height: options?.height || 1280,
     quality: options?.quality || 80,
   };
 
