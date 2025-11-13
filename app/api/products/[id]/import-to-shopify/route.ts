@@ -125,8 +125,7 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
 
       return {
         optionValues,
-        price: (variant.price * 1.5)?.toString() || "0",
-        compareAtPrice: variant.compareAtPrice?.toString(),
+        price: (variant?.sellingPrice ?? variant.price * 1.5)?.toString() || "0",
         sku: variant.sku,
       };
     });

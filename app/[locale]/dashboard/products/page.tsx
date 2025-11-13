@@ -40,7 +40,7 @@ export default function UserProductsPage() {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
-  const limit = 12; // Show 12 products per page in card layout
+  const limit = 30; // Show 12 products per page in card layout
 
   const isActive = filter === "all" ? undefined : filter === "active" ? true : false;
 
@@ -86,7 +86,7 @@ export default function UserProductsPage() {
   const products = getProcessedProducts();
   const pagination = {
     page: data?.page || 1,
-    limit: data?.limit || 12,
+    limit: data?.limit || 30,
     total: data?.total || 0,
     pages: data?.pages || 0,
   };

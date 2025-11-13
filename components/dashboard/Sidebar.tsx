@@ -148,8 +148,6 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
       </SidebarHeader>
 
       <SidebarContent className="bg-background">
-        <SidebarCurrentPlan />
-
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>{t("user panel")}</SidebarGroupLabel>
@@ -192,6 +190,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
             ))}
           </SidebarMenu>
         </SidebarGroup>
+        <SidebarCurrentPlan />
       </SidebarContent>
 
       <SidebarFooter className="bg-background">

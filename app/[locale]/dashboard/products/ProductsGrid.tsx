@@ -1,21 +1,21 @@
 "use client";
 
+import LockedProductCard from "@/app/[locale]/dashboard/products/LockedProductCard";
 import ProductCard from "@/app/[locale]/dashboard/products/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product } from "@/types";
 import { Package, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Fragment, useRef } from "react";
 
 interface ProductsGridProps {
   products: Product[];
   isLoading?: boolean;
 }
 
-export default function ProductsGrid({
-  products,
-  isLoading = false,
-}: ProductsGridProps) {
+export default function ProductsGrid({ products, isLoading = false }: ProductsGridProps) {
   const t = useTranslations("products");
+  const randomIndexes = useRef<number[]>([Math.floor(Math.random() * 30), Math.floor(Math.random() * 30)]);
 
   // Skeleton loading cards
   const skeletonCards = Array.from({ length: 12 }).map((_, idx) => (
@@ -53,22 +53,21 @@ export default function ProductsGrid({
       <div className="flex justify-center items-center w-16 h-16 mx-auto mb-4 rounded-full bg-muted">
         <Package className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="font-bold text-slate-800 text-lg">
-        {t("no products found")}
-      </h3>
-      <p className="mb-4 text-muted-foreground text-sm">
-        {t("try adjusting your search or filters")}
-      </p>
+      <h3 className="font-bold text-slate-800 text-lg">{t("no products found")}</h3>
+      <p className="mb-4 text-muted-foreground text-sm">{t("try adjusting your search or filters")}</p>
     </div>
   );
 
   return (
-    <div className="gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {isLoading
         ? skeletonCards
         : products.length > 0
-        ? products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+        ? products.map((product, index) => (
+            <Fragment key={product.id}>
+              <ProductCard key={product.id} product={product} />
+              {randomIndexes?.current?.includes(index) && <LockedProductCard />}
+            </Fragment>
           ))
         : emptyState}
     </div>
