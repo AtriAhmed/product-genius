@@ -140,9 +140,7 @@ export default function ProductCard({ product }: { product: Product }) {
                       {formatPrice(product?.compareAtPrice, product?.currency)}
                     </span>
                   )}
-                  {product?.price && (
-                    <span className="drop-shadow-sm font-bold text-white text-sm">{formattedPrice || "N/A"}</span>
-                  )}
+                  <span className="drop-shadow-sm font-bold text-white text-sm">{formattedPrice || "N/A"}</span>
                 </div>
               </div>
             )}
