@@ -1,8 +1,7 @@
-import { writeFile, mkdir, unlink } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
-import { v4 as uuidv4 } from "uuid";
 import { nanoidLower } from "@/lib/utils";
+import { existsSync } from "fs";
+import { mkdir, rename, rmdir, unlink, writeFile } from "fs/promises";
+import path, { join } from "path";
 import sharp from "sharp";
 
 export interface UploadOptions {
@@ -254,4 +253,36 @@ export async function deleteFile(filePath: string): Promise<void> {
  */
 export async function deleteMultipleFiles(filePaths: string[]): Promise<void> {
   await Promise.all(filePaths.map(deleteFile));
+}
+
+/**
+ * Attempts to remove empty directories (useful for cleanup)
+ */
+export async function removeEmptyDirectories(directoryPaths: string[]): Promise<void> {
+  for (const dirPath of directoryPaths) {
+    try {
+      const fullPath = join(process.cwd(), dirPath.replace(/^\//, ""));
+      await rmdir(fullPath);
+      console.log(`Removed empty directory: ${fullPath}`);
+    } catch (error) {
+      // Directory might not exist, might not be empty, or permission issues
+      // This is expected behavior for cleanup, so we don't log errors
+    }
+  }
+}
+
+/**
+ * Moves a file or folder from one location to another.
+ * Automatically creates destination directories if needed.
+ * (Simplified: does not handle cross-device moves)
+ */
+export async function moveFileOrFolder(source: string, destination: string) {
+  const sourcePath = path.resolve(process.cwd(), source);
+  const destinationPath = path.resolve(process.cwd(), destination);
+
+  // Ensure destination directory exists
+  await mkdir(path.dirname(destinationPath), { recursive: true });
+
+  // Move (rename) the file or folder
+  await rename(sourcePath, destinationPath);
 }

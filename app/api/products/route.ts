@@ -1,12 +1,10 @@
+import { deleteMultipleFiles, getMediaType, uploadFile } from "@/lib/file-upload";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { uploadFile, getMediaType } from "@/lib/file-upload";
 // Removed variant-generator import as we now use proper table relationships
-import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { isAuthorized } from "@/lib/authUtils";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 
 // Validation schemas (unchanged media/translation/supplier/productOption)
 const mediaSchema = z.object({
@@ -70,8 +68,35 @@ const createProductSchema = z.object({
   variants: z.array(variantSchema).optional().default([]),
 });
 
-export async function POST(request: NextRequest) {
+// Cleanup function to remove uploaded files when product creation fails
+// Note: Database cleanup is handled automatically by Prisma transaction rollback
+async function performFileCleanup(uploadedFiles: string[] = []) {
+  if (uploadedFiles.length === 0) {
+    return; // Nothing to cleanup
+  }
+
+  console.log("Performing file cleanup for failed product creation...");
+
   try {
+    // Use the helper function to delete all uploaded files at once
+    await deleteMultipleFiles(uploadedFiles);
+    console.log(`Deleted ${uploadedFiles.length} uploaded files`);
+  } catch (cleanupError) {
+    console.error("Error during file cleanup:", cleanupError);
+    // Don't throw here to avoid masking the original error
+  }
+}
+
+export async function POST(request: NextRequest) {
+  let product: any = null;
+  let uploadedFiles: string[] = [];
+
+  try {
+    // Strategy:
+    // 1. Validate input first (fail fast)
+    // 2. Use Prisma transaction for ALL operations (DB + file uploads)
+    // 3. Upload files using real product ID (no temp directories needed)
+    // 4. If anything fails, transaction rollback handles DB, we only cleanup files
     const user = await isAuthenticatedServerSide(["ADMIN", "OWNER", "EDITOR"], false);
 
     if (!user) {
@@ -87,242 +112,260 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Product data is required" }, { status: 400 });
     }
 
-    const productData = JSON.parse(rawProductData);
+    let productData;
+    try {
+      productData = JSON.parse(rawProductData);
+    } catch (parseError) {
+      return NextResponse.json({ error: "Invalid JSON in product data" }, { status: 400 });
+    }
 
     // Validate the product data (now includes variants)
     const validatedData = createProductSchema.parse(productData);
 
-    // Create the product first
-    const product = await prisma.product.create({
-      data: {
-        price: validatedData.price,
-        compareAtPrice: validatedData.compareAtPrice,
-        sellingPrice: validatedData.sellingPrice,
-        currency: validatedData.currency,
-        categoryId: validatedData.categoryId,
-        isActive: validatedData.isActive,
-        plans:
-          validatedData.planIds.length > 0
-            ? {
-                connect: validatedData.planIds.map((id) => ({ id })),
-              }
-            : undefined,
-      },
-    });
-
-    // (file upload processing for media/posters unchanged)
+    // Prepare media map for processing (but don't upload files yet)
     const mediaMap = new Map(validatedData.media.map((media, index) => [index, { ...media }]));
 
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("media_") && value instanceof File) {
-        const file = value as File;
-        const index = parseInt(key.split("_")[1]);
-
-        if (!isNaN(index) && mediaMap.has(index)) {
-          const allowedImageExtensions = [
-            "jpg",
-            "jpeg",
-            "png",
-            "gif",
-            "webp",
-            "svg",
-            "bmp",
-            "tiff",
-            "tif",
-            "ico",
-            "avif",
-          ];
-          const allowedVideoExtensions = ["mp4", "webm", "ogg"];
-
-          const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
-
-          const uploadResult = await uploadFile(file, {
-            directory: "uploads/products",
-            subdirectory: product.id.toString(),
-            generateUniqueFilename: true,
-            allowedExtensions,
-          });
-
-          const mediaObject = mediaMap.get(index)!;
-          mediaObject.url = uploadResult.url;
-          mediaObject.type = getMediaType(file);
-        }
-      } else if (key.startsWith("poster_") && value instanceof File) {
-        const file = value as File;
-        const index = parseInt(key.split("_")[1]);
-
-        if (!isNaN(index) && mediaMap.has(index)) {
-          const allowedImageExtensions = [
-            "jpg",
-            "jpeg",
-            "png",
-            "gif",
-            "webp",
-            "svg",
-            "bmp",
-            "tiff",
-            "tif",
-            "ico",
-            "avif",
-          ];
-
-          const posterUploadResult = await uploadFile(file, {
-            directory: "uploads/products",
-            subdirectory: `${product.id}/posters`,
-            generateUniqueFilename: true,
-            allowedExtensions: allowedImageExtensions,
-          });
-
-          const mediaObject = mediaMap.get(index)!;
-          mediaObject.poster = posterUploadResult.url;
-        }
-      }
-    }
-
-    const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
-      productId: product.id,
-      url: media.url,
-      type: media.type,
-      sortOrder: media.sortOrder,
-      provider: media.url.startsWith("/uploads/") ? "local" : media.provider || "external",
-      poster: media.poster || null,
-    }));
-
-    if (allMediaRecords.length > 0) {
-      await prisma.media.createMany({
-        data: allMediaRecords,
+    // Use transaction for ALL operations (database + file uploads)
+    product = await prisma.$transaction(async (tx) => {
+      // Create the product first
+      const createdProduct = await tx.product.create({
+        data: {
+          price: validatedData.price,
+          compareAtPrice: validatedData.compareAtPrice,
+          sellingPrice: validatedData.sellingPrice,
+          currency: validatedData.currency,
+          categoryId: validatedData.categoryId,
+          isActive: validatedData.isActive,
+          plans:
+            validatedData.planIds.length > 0
+              ? {
+                  connect: validatedData.planIds.map((id) => ({ id })),
+                }
+              : undefined,
+        },
       });
-    }
 
-    // Create translations with auto-generated slugs (unchanged)
-    await prisma.productTranslation.createMany({
-      data: validatedData.translations.map((translation) => ({
-        productId: product.id,
-        locale: translation.locale,
-        title: translation.title,
-        description: translation.description,
-      })),
-    });
+      // Now handle file uploads using the real product ID
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith("media_") && value instanceof File) {
+          const file = value as File;
+          const index = parseInt(key.split("_")[1]);
 
-    // Create suppliers
-    if (validatedData.suppliers.length > 0) {
-      await prisma.supplier.createMany({
-        data: validatedData.suppliers.map((supplier) => ({
-          productId: product.id,
-          url: supplier.url,
-          marketplace: supplier.marketplace,
-          price: supplier.price,
-          currency: supplier.currency,
-          isInternal: supplier.isInternal,
-          notes: supplier.notes,
-        })),
-      });
-    }
+          if (!isNaN(index) && mediaMap.has(index)) {
+            const allowedImageExtensions = [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webp",
+              "svg",
+              "bmp",
+              "tiff",
+              "tif",
+              "ico",
+              "avif",
+            ];
+            const allowedVideoExtensions = ["mp4", "webm", "ogg"];
 
-    // === Create product options and variants using new table structure ===
-    if (validatedData.options.length > 0) {
-      // Create mapping from temp IDs to database IDs
-      const optionIdMap = new Map<string, number>();
-      const valueIdMap = new Map<string, number>();
+            const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
-      // Create product options with their values
-      for (let index = 0; index < validatedData.options.length; index++) {
-        const option = validatedData.options[index];
-
-        const createdOption = await prisma.productOption.create({
-          data: {
-            productId: product.id,
-            name: option.name,
-            position: index + 1,
-          },
-        });
-
-        optionIdMap.set(option.id, createdOption.id);
-
-        // Create option values
-        for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
-          const value = option.values[valueIndex];
-
-          const createdValue = await prisma.productOptionValue.create({
-            data: {
-              optionId: createdOption.id,
-              value: value.value,
-              position: valueIndex,
-            },
-          });
-
-          valueIdMap.set(value.id, createdValue.id);
-        }
-      }
-
-      // Create variants from client-provided data only
-      for (const variant of validatedData.variants) {
-        const createdVariant = await prisma.productVariant.create({
-          data: {
-            productId: product.id,
-            price: variant.price,
-            compareAtPrice: variant.compareAtPrice || null,
-            sellingPrice: variant.sellingPrice || null,
-            sku: variant.sku || null,
-            inventory: variant.inventory ?? 0,
-            trackInventory: variant.trackInventory ?? false,
-          },
-        });
-
-        // Link variant to option values using temp ID mappings
-        for (const tempValueId of variant.optionValueIds) {
-          const realValueId = valueIdMap.get(tempValueId);
-          if (realValueId) {
-            // Find the option ID for this value
-            const optionValue = await prisma.productOptionValue.findUnique({
-              where: { id: realValueId },
-              select: { optionId: true },
+            const uploadResult = await uploadFile(file, {
+              directory: "uploads/products",
+              subdirectory: createdProduct.id.toString(),
+              generateUniqueFilename: true,
+              allowedExtensions,
             });
 
-            if (optionValue) {
-              await prisma.productVariantOptionValue.create({
-                data: {
-                  productVariantId: createdVariant.id,
-                  optionId: optionValue.optionId,
-                  valueId: realValueId,
-                },
-              });
-            }
+            // Track uploaded files for cleanup
+            uploadedFiles.push(uploadResult.url);
+
+            const mediaObject = mediaMap.get(index)!;
+            mediaObject.url = uploadResult.url;
+            mediaObject.type = getMediaType(file);
+          }
+        } else if (key.startsWith("poster_") && value instanceof File) {
+          const file = value as File;
+          const index = parseInt(key.split("_")[1]);
+
+          if (!isNaN(index) && mediaMap.has(index)) {
+            const allowedImageExtensions = [
+              "jpg",
+              "jpeg",
+              "png",
+              "gif",
+              "webp",
+              "svg",
+              "bmp",
+              "tiff",
+              "tif",
+              "ico",
+              "avif",
+            ];
+
+            const posterUploadResult = await uploadFile(file, {
+              directory: "uploads/products",
+              subdirectory: `${createdProduct.id}/posters`,
+              generateUniqueFilename: true,
+              allowedExtensions: allowedImageExtensions,
+            });
+
+            // Track uploaded files for cleanup
+            uploadedFiles.push(posterUploadResult.url);
+
+            const mediaObject = mediaMap.get(index)!;
+            mediaObject.poster = posterUploadResult.url;
           }
         }
       }
-    } else {
-      // No product options - create variant(s) without options
-      const basePrice = validatedData.price || validatedData.sellingPrice || 0;
 
-      if (validatedData.variants.length > 0) {
-        // Use provided variant(s) even without options
-        for (const variant of validatedData.variants) {
-          await prisma.productVariant.create({
+      // Create media records
+      const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
+        productId: createdProduct.id,
+        url: media.url,
+        type: media.type,
+        sortOrder: media.sortOrder,
+        provider: media.url.startsWith("/uploads/") ? "local" : media.provider || "external",
+        poster: media.poster || null,
+      }));
+
+      if (allMediaRecords.length > 0) {
+        await tx.media.createMany({
+          data: allMediaRecords,
+        });
+      }
+
+      // Create translations
+      await tx.productTranslation.createMany({
+        data: validatedData.translations.map((translation) => ({
+          productId: createdProduct.id,
+          locale: translation.locale,
+          title: translation.title,
+          description: translation.description,
+        })),
+      });
+
+      // Create suppliers
+      if (validatedData.suppliers.length > 0) {
+        await tx.supplier.createMany({
+          data: validatedData.suppliers.map((supplier) => ({
+            productId: createdProduct.id,
+            url: supplier.url,
+            marketplace: supplier.marketplace,
+            price: supplier.price,
+            currency: supplier.currency,
+            isInternal: supplier.isInternal,
+            notes: supplier.notes,
+          })),
+        });
+      }
+
+      // === Create product options and variants using new table structure ===
+      if (validatedData.options.length > 0) {
+        // Create mapping from temp IDs to database IDs
+        const optionIdMap = new Map<string, number>();
+        const valueIdMap = new Map<string, number>();
+
+        // Create product options with their values
+        for (let index = 0; index < validatedData.options.length; index++) {
+          const option = validatedData.options[index];
+
+          const createdOption = await tx.productOption.create({
             data: {
-              productId: product.id,
+              productId: createdProduct.id,
+              name: option.name,
+              position: index + 1,
+            },
+          });
+
+          optionIdMap.set(option.id, createdOption.id);
+
+          // Create option values
+          for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
+            const value = option.values[valueIndex];
+
+            const createdValue = await tx.productOptionValue.create({
+              data: {
+                optionId: createdOption.id,
+                value: value.value,
+                position: valueIndex,
+              },
+            });
+
+            valueIdMap.set(value.id, createdValue.id);
+          }
+        }
+
+        // Create variants from client-provided data only
+        for (const variant of validatedData.variants) {
+          const createdVariant = await tx.productVariant.create({
+            data: {
+              productId: createdProduct.id,
               price: variant.price,
               compareAtPrice: variant.compareAtPrice || null,
               sellingPrice: variant.sellingPrice || null,
-              sku: variant.sku || `PROD${product.id}`,
+              sku: variant.sku || null,
               inventory: variant.inventory ?? 0,
               trackInventory: variant.trackInventory ?? false,
             },
           });
+
+          // Link variant to option values using temp ID mappings
+          for (const tempValueId of variant.optionValueIds) {
+            const realValueId = valueIdMap.get(tempValueId);
+            if (realValueId) {
+              // Find the option ID for this value
+              const optionValue = await tx.productOptionValue.findUnique({
+                where: { id: realValueId },
+                select: { optionId: true },
+              });
+
+              if (optionValue) {
+                await tx.productVariantOptionValue.create({
+                  data: {
+                    productVariantId: createdVariant.id,
+                    optionId: optionValue.optionId,
+                    valueId: realValueId,
+                  },
+                });
+              }
+            }
+          }
         }
       } else {
-        // Create single default variant
-        await prisma.productVariant.create({
-          data: {
-            productId: product.id,
-            price: basePrice,
-            sku: `PROD${product.id}`,
-            inventory: 0,
-            trackInventory: false,
-          },
-        });
+        // No product options - create variant(s) without options
+        const basePrice = validatedData.price || validatedData.sellingPrice || 0;
+
+        if (validatedData.variants.length > 0) {
+          // Use provided variant(s) even without options
+          for (const variant of validatedData.variants) {
+            await tx.productVariant.create({
+              data: {
+                productId: createdProduct.id,
+                price: variant.price,
+                compareAtPrice: variant.compareAtPrice || null,
+                sellingPrice: variant.sellingPrice || null,
+                sku: variant.sku || `PROD${createdProduct.id}`,
+                inventory: variant.inventory ?? 0,
+                trackInventory: variant.trackInventory ?? false,
+              },
+            });
+          }
+        } else {
+          // Create single default variant
+          await tx.productVariant.create({
+            data: {
+              productId: createdProduct.id,
+              price: basePrice,
+              sku: `PROD${createdProduct.id}`,
+              inventory: 0,
+              trackInventory: false,
+            },
+          });
+        }
       }
-    }
+
+      return createdProduct;
+    });
 
     // Fetch the complete product with all relations
     const completeProduct = await prisma.product.findUnique({
@@ -370,6 +413,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Product creation error:", error);
 
+    // Cleanup uploaded files on failure
+    // Note: Database records are automatically rolled back by Prisma transaction
+    await performFileCleanup(uploadedFiles);
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -380,7 +427,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Handle specific Prisma errors
     if (error instanceof Error) {
+      // Check for common database constraint errors
+      if (error.message.includes("Unique constraint") || error.message.includes("unique constraint")) {
+        return NextResponse.json(
+          {
+            error: "A product with similar data already exists",
+          },
+          { status: 409 }
+        );
+      }
+
+      if (error.message.includes("Foreign key constraint") || error.message.includes("foreign key constraint")) {
+        return NextResponse.json(
+          {
+            error: "Referenced data (category, plan, etc.) does not exist",
+          },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json(
         {
           error: error.message,
