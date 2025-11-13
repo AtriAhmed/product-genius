@@ -96,7 +96,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       {/* Price */}
       <TableCell className="py-1">
         {formattedPrice ? (
-          <span className="font-medium">{formattedPrice}</span>
+          <span className="font-medium text-nowrap">{formattedPrice}</span>
         ) : (
           <span className="text-muted-foreground text-xs italic">{t("no price")}</span>
         )}
