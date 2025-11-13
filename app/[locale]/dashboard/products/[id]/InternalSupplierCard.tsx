@@ -14,19 +14,17 @@ import { useState } from "react";
 interface InternalSupplierCardProps {
   hasStore?: boolean;
   productId?: number;
-  minPrice: number;
-  maxPrice?: number;
   compareAtPrice?: number;
   isImported?: boolean;
+  formattedPrice?: string;
 }
 
 export default function InternalSupplierCard({
   hasStore = false,
   productId,
-  minPrice,
-  maxPrice,
   compareAtPrice,
   isImported = false,
+  formattedPrice,
 }: InternalSupplierCardProps) {
   const router = useRouter();
   const t = useTranslations("shopify");
@@ -106,11 +104,7 @@ export default function InternalSupplierCard({
                   {formatPrice(compareAtPrice)}
                 </span>
               )}
-              <span className="drop-shadow-sm font-bold text-white text-xs">
-                {maxPrice && maxPrice !== minPrice
-                  ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`
-                  : formatPrice(minPrice)}
-              </span>
+              <span className="drop-shadow-sm font-bold text-white text-xs">{formattedPrice}</span>
             </div>
           </div>
         </div>

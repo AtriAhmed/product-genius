@@ -4,6 +4,7 @@ import ShopifyIcon from "@/assets/images/shopify.svg";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentTranslation } from "@/lib/products";
+import { getProductPrices } from "@/lib/productVariants";
 import { formatPrice, getMediaUrl, htmlToText } from "@/lib/utils";
 import { Product } from "@/types";
 import { Play } from "lucide-react";
@@ -38,6 +39,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const categoryTranslation = getCurrentTranslation(product?.category?.translations || []);
 
   const isImported = (product.productMappings || []).length > 0;
+
+  const { formattedPrice, minPrice, maxPrice } = getProductPrices(product?.variants || []);
 
   return (
     <Link href={`/dashboard/products/${product.id}`}>
@@ -127,22 +130,22 @@ export default function ProductCard({ product }: { product: Product }) {
               {htmlToText(translation?.description || "")?.replace(/^product description:?/i, "")}
             </p>
 
-            <div
-              className={`mt-auto rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40 ml-auto`}
-            >
-              <div className="flex items-end gap-1">
-                {product?.compareAtPrice && (
-                  <span className="me-1 opacity-70 font-medium text-white text-xs line-through">
-                    {formatPrice(product?.compareAtPrice, product?.currency)}
-                  </span>
-                )}
-                {product?.price && (
-                  <span className="drop-shadow-sm font-bold text-white text-sm">
-                    {formatPrice(product?.price, product?.currency)}
-                  </span>
-                )}
+            {formattedPrice && (
+              <div
+                className={`mt-auto rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-800/40 ml-auto`}
+              >
+                <div className="flex items-end gap-1">
+                  {product?.compareAtPrice && (
+                    <span className="me-1 opacity-70 font-medium text-white text-xs line-through">
+                      {formatPrice(product?.compareAtPrice, product?.currency)}
+                    </span>
+                  )}
+                  {product?.price && (
+                    <span className="drop-shadow-sm font-bold text-white text-sm">{formattedPrice || "N/A"}</span>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>

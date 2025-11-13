@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { getCurrentTranslation } from "@/lib/products";
+import { getProductPrices } from "@/lib/productVariants";
 import { cn, formatPrice, getMediaUrl, htmlToText } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
@@ -23,6 +24,8 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
   const translation = getCurrentTranslation(product?.translations || [], locale);
   const categoryTranslation = getCurrentTranslation(product.category?.translations || [], locale);
   const primaryMedia: Media | undefined = product.media?.[0];
+
+  const { formattedPrice, minPrice, maxPrice } = getProductPrices(product?.variants || []);
 
   return (
     <TableRow key={product.id} className="border-border hover:bg-muted/50 transition-colors">
@@ -92,8 +95,8 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
 
       {/* Price */}
       <TableCell className="py-1">
-        {product.price ? (
-          <span className="font-medium">{formatPrice(product.price, product.currency)}</span>
+        {formattedPrice ? (
+          <span className="font-medium">{formattedPrice}</span>
         ) : (
           <span className="text-muted-foreground text-xs italic">{t("no price")}</span>
         )}

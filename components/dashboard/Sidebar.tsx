@@ -22,7 +22,7 @@ import Link from "next/link";
 import React from "react";
 
 import ShopifyIcon from "@/assets/images/shopify-outline.svg";
-import SidebarCurrentPlan from "@/components/dashboard/SidebarCurrentPlan";
+import SidebarCurrentSubscription from "@/components/dashboard/SidebarCurrentSubscription";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -190,7 +190,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
             ))}
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarCurrentPlan />
+        <SidebarCurrentSubscription />
       </SidebarContent>
 
       <SidebarFooter className="bg-background">

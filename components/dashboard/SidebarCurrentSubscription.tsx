@@ -7,7 +7,7 @@ import { Star, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-export default function SidebarCurrentPlan() {
+export default function SidebarCurrentSubscription() {
   const { currentPlan } = useAppProvider();
   const t = useTranslations("sidebar");
 

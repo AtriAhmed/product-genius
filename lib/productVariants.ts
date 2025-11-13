@@ -1,4 +1,6 @@
+import { formatPrice } from "@/lib/utils";
 import { nanoid } from "nanoid";
+import { ProductVariant as FullProductVariant } from "@/types";
 
 export type ID = string | number;
 
@@ -180,4 +182,18 @@ export function generateVariants(options: ProductOption[], existingVariants: Pro
 
 function cartesian<T>(...arrays: T[][]): T[][] {
   return arrays.reduce((acc, curr) => acc.flatMap((a) => curr.map((b) => [...a, b])), [[]] as T[][]);
+}
+
+export function getProductPrices(variants: FullProductVariant[]) {
+  const variantPrices = variants?.map((v) => v.price!).filter((p) => p > 0);
+  const minPrice = variantPrices?.length ? Math.min(...variantPrices) : undefined;
+  const maxPrice = variantPrices?.length ? Math.max(...variantPrices) : undefined;
+  const formattedPrice =
+    minPrice === undefined || maxPrice === undefined
+      ? null
+      : minPrice === maxPrice
+      ? formatPrice(minPrice)
+      : `${formatPrice(minPrice)} -- ${formatPrice(maxPrice)}`;
+
+  return { formattedPrice, minPrice, maxPrice };
 }

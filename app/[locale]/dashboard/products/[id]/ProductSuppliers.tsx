@@ -7,6 +7,7 @@ import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceC
 import InternalSupplierCard from "@/app/[locale]/dashboard/products/[id]/InternalSupplierCard";
 import { Product, User } from "@/types";
 import { formatPrice, hueFromString } from "@/lib/utils";
+import { getProductPrices } from "@/lib/productVariants";
 
 interface ProvidersPreviewProps {
   product: Product;
@@ -25,10 +26,7 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
   // If no variants, no suppliers, and no internal pricing, don't render
   if (!suppliers?.length && variants.length === 0) return null;
 
-  // Calculate price range for variants
-  const variantPrices = variants.map((v) => v.price!).filter((p) => p > 0);
-  const minPrice = Math.min(...variantPrices);
-  const maxPrice = Math.max(...variantPrices);
+  const { formattedPrice } = getProductPrices(variants || []);
 
   // Helper function to get option value names for a variant
   const getVariantOptionNames = (variant: any) => {
@@ -46,21 +44,13 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
             {options.length === 0 ? (
               <div className="mb-8">
                 <span className="text-muted-foreground text-sm">Price:</span>
-                <div className="font-semibold text-2xl">
-                  {minPrice === maxPrice
-                    ? formatPrice(minPrice)
-                    : `${formatPrice(minPrice)} -- ${formatPrice(maxPrice)}`}
-                </div>
+                <div className="font-semibold text-2xl">{formattedPrice}</div>
               </div>
             ) : (
               // Multiple options case - show price range, options, and variants
               <div className="space-y-4">
                 {/* Price Range */}
-                <div className="font-semibold text-2xl">
-                  {minPrice === maxPrice
-                    ? formatPrice(minPrice)
-                    : `${formatPrice(minPrice)} -- ${formatPrice(maxPrice)}`}
-                </div>
+                <div className="font-semibold text-2xl">{formattedPrice}</div>
 
                 {/* Available Options */}
                 <div className="space-y-3">
@@ -155,12 +145,11 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
             <InternalSupplierCard
               hasStore={hasStore}
               productId={productId}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
               compareAtPrice={
                 variants.find((v) => v.compareAtPrice)?.compareAtPrice || variants[0]?.compareAtPrice || undefined
               }
               isImported={isImported}
+              formattedPrice={formattedPrice || "N/A"}
             />
           </div>
         </div>
