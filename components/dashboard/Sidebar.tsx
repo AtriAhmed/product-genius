@@ -13,7 +13,6 @@ import {
   Settings,
   ShoppingCart,
   Sparkles,
-  Truck,
   Upload,
   X,
   Zap,
@@ -22,6 +21,8 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import React from "react";
 
+import ShopifyIcon from "@/assets/images/shopify-outline.svg";
+import SidebarCurrentPlan from "@/components/dashboard/SidebarCurrentPlan";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -51,10 +52,9 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAppProvider } from "@/contexts/AppProvider";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
-import ShopifyIcon from "@/assets/images/shopify-outline.svg";
-import Image from "next/image";
 
 type NavigationItem = {
   title: string;
@@ -148,6 +148,8 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
       </SidebarHeader>
 
       <SidebarContent className="bg-background">
+        <SidebarCurrentPlan />
+
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>{t("user panel")}</SidebarGroupLabel>

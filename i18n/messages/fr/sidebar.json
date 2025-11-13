@@ -19,5 +19,14 @@
   "log out": "Se déconnecter",
   "admin": "Administrateur",
   "user panel": "Panneau utilisateur",
-  "profile": "Profil"
+  "profile": "Profil",
+  "info": "Info",
+  "invoices": "Factures",
+  "billing details": "Détails de facturation",
+  "cart": "Panier",
+  "agent panel": "Panneau Agent",
+  "shopify account": "Compte Shopify",
+  "imported products": "Produits importés",
+  "current plan": "Plan actuel",
+  "upgrade": "Mettre à niveau"
 }
