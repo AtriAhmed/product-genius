@@ -2,14 +2,13 @@
 
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import UserDropdown from "@/components/UserDropdown";
-import CartSheet from "@/components/CartSheet";
 import { useIsMounted } from "@/hooks/use-is-mounted";
+import { Link } from "@/i18n/navigation";
+import { isAuthorized } from "@/lib/authUtils";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { useState } from "react";
-import { isAuthorized } from "@/lib/authUtils";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
