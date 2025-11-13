@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Product } from "@/types";
 import { Package, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Fragment, useRef } from "react";
+import { Fragment, useMemo } from "react";
 
 interface ProductsGridProps {
   products: Product[];
@@ -15,7 +15,35 @@ interface ProductsGridProps {
 
 export default function ProductsGrid({ products, isLoading = false }: ProductsGridProps) {
   const t = useTranslations("products");
-  const randomIndexes = useRef<number[]>([Math.floor(Math.random() * 30), Math.floor(Math.random() * 30)]);
+
+  // Generate a mixed array of real and locked products while preserving sort order
+  const mixedProducts = useMemo(() => {
+    if (products.length === 0) return [];
+
+    const totalItems = products.length * 2; // Equal number of real and locked products
+    const items: Array<{ type: "real" | "locked"; product?: Product; id: string }> = [];
+
+    // Generate random positions for locked products
+    const lockedPositions = new Set<number>();
+    while (lockedPositions.size < products.length) {
+      lockedPositions.add(Math.floor(Math.random() * totalItems));
+    }
+
+    // Build the mixed array maintaining product order
+    let productIndex = 0;
+    let lockedIndex = 0;
+
+    for (let i = 0; i < totalItems; i++) {
+      if (lockedPositions.has(i)) {
+        items.push({ type: "locked", id: `locked-${lockedIndex++}` });
+      } else if (productIndex < products.length) {
+        items.push({ type: "real", product: products[productIndex], id: `real-${products[productIndex].id}` });
+        productIndex++;
+      }
+    }
+
+    return items;
+  }, [products]);
 
   // Skeleton loading cards
   const skeletonCards = Array.from({ length: 12 }).map((_, idx) => (
@@ -62,13 +90,14 @@ export default function ProductsGrid({ products, isLoading = false }: ProductsGr
     <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {isLoading
         ? skeletonCards
-        : products.length > 0
-        ? products.map((product, index) => (
-            <Fragment key={product.id}>
-              <ProductCard key={product.id} product={product} />
-              {randomIndexes?.current?.includes(index) && <LockedProductCard />}
-            </Fragment>
-          ))
+        : mixedProducts.length > 0
+        ? mixedProducts.map((item) =>
+            item.type === "real" ? (
+              <ProductCard key={item.id} product={item.product!} />
+            ) : (
+              <LockedProductCard key={item.id} />
+            )
+          )
         : emptyState}
     </div>
   );
