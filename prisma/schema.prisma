@@ -359,9 +359,9 @@ model ProductMapping {
   shop             String
   createdAt        DateTime @default(now()) @map("created_at")
 
-  product      Product      @relation(fields: [productId], references: [id])
-  shopifyStore ShopifyStore @relation(fields: [shopifyStoreId], references: [id])
-  user         User         @relation(fields: [userId], references: [id])
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shopifyStore ShopifyStore @relation(fields: [shopifyStoreId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([productId, shop])
   @@map("product_mapping")
