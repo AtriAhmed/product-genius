@@ -282,6 +282,7 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
             productId: product.id,
             shopifyVariantId: shopifyVariant.id.replace("gid://shopify/ProductVariant/", ""),
             shopifyProductId,
+            shopifyStoreId: shopifyStore.id,
             shop: shopifyStore.shop!,
             sku: matchingLocalVariant.sku || shopifyVariant.sku,
           });
