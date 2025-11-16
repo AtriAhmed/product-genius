@@ -1,0 +1,30 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import bcrypt from "bcrypt";
+import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
+import { UserUsage } from "@/types";
+
+export async function GET(request: NextRequest) {
+  try {
+    const currentUser = await isAuthenticatedServerSide([], false);
+    if (!currentUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const importedProductsCount = await prisma.productMapping.count({
+      where: { userId: parseInt(currentUser.id) },
+    });
+
+    const response: UserUsage = {
+      importedProductsCount,
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Current user fetch error:", error);
+    return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 });
+  }
+}

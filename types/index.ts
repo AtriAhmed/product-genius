@@ -389,6 +389,10 @@ export type ShopifyStore = {
   orders?: Order[];
 };
 
+export type UserUsage = {
+  importedProductsCount: number;
+};
+
 // Utility types for creating/updating records
 export type CreateTempAccount = Omit<TempAccount, "id" | "createdAt" | "updatedAt">;
 export type UpdateTempAccount = Partial<Omit<TempAccount, "id" | "createdAt" | "updatedAt">>;

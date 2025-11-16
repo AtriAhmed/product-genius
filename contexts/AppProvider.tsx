@@ -4,7 +4,7 @@ import useLocalStorage from "@/hooks/use-local-storage";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { createContext, ReactNode, useContext, useEffect } from "react";
-import { CartItem } from "@/types";
+import { CartItem, UserUsage } from "@/types";
 import axios from "axios";
 import useSWR from "swr";
 import { Plan } from "@/types";
@@ -12,6 +12,8 @@ import { Plan } from "@/types";
 interface AppContextProps {
   currentPlan: Plan | undefined;
   mutateCurrentPlan: () => Promise<Plan | undefined>;
+  userUsage: UserUsage | undefined;
+  mutateUserUsage: () => Promise<UserUsage | undefined>;
 }
 
 type AppProviderProps = {
@@ -26,6 +28,12 @@ async function fetcher(): Promise<Plan> {
   return response.data;
 }
 
+async function userUsageFetcher(): Promise<UserUsage> {
+  const response = await axios.get("/api/plans/current/usage");
+
+  return response.data;
+}
+
 export default function AppProvider({ children }: AppProviderProps) {
   const {
     data: currentPlan,
@@ -33,6 +41,16 @@ export default function AppProvider({ children }: AppProviderProps) {
     isLoading,
     mutate: mutateCurrentPlan,
   } = useSWR<Plan>("current-plan", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
+
+  const {
+    data: userUsage,
+    error: userUsageError,
+    isLoading: userUsageIsLoading,
+    mutate: mutateUserUsage,
+  } = useSWR<UserUsage>("user-usage", userUsageFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
@@ -52,6 +70,8 @@ export default function AppProvider({ children }: AppProviderProps) {
       value={{
         currentPlan,
         mutateCurrentPlan,
+        userUsage,
+        mutateUserUsage,
       }}
     >
       {children}

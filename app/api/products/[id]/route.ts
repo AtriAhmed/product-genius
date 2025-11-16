@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { deleteMultipleFiles, getMediaType, uploadFile } from "@/lib/file-upload";
 import { prisma } from "@/lib/prisma";
+import { syncProductToShopify } from "@/lib/syncShopifyProduct";
 // Removed variant-generator import as we now use proper table relationships
 import { MARKETPLACES } from "@/types";
 import { getServerSession } from "next-auth";
@@ -810,6 +811,14 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
     if (filesToDelete.length > 0) {
       deleteMultipleFiles(filesToDelete).catch((error) => {
         console.error("Error cleaning up old media files:", error);
+      });
+    }
+
+    // Sync product to Shopify if options or variants were updated
+    const shouldSync = validatedData.options !== undefined || validatedData.variants !== undefined;
+    if (shouldSync) {
+      syncProductToShopify(productId).catch((error) => {
+        console.error("Error syncing product to Shopify:", error);
       });
     }
 
