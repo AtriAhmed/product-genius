@@ -333,6 +333,7 @@ model VariantMapping {
   productId        Int    @map("product_id") // Your product ID (for easier queries)
   shopifyVariantId String @map("shopify_variant_id") // Shopify's variant ID
   shopifyProductId String @map("shopify_product_id") // Shopify's product ID
+  shopifyStoreId   Int    @default(1) @map("shopify_store_id")
   shop             String // e.g., "store.myshopify.com"
 
   sku String?
@@ -340,9 +341,10 @@ model VariantMapping {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user    User           @relation(fields: [userId], references: [id])
+  variant      ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  product      Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id])
+  shopifyStore ShopifyStore   @relation(fields: [shopifyStoreId], references: [id], onDelete: Cascade)
 
   @@unique([shopifyVariantId, shop])
   @@index([variantId])
@@ -508,9 +510,10 @@ model ShopifyStore {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user           User             @relation(fields: [userId], references: [id])
-  ProductMapping ProductMapping[]
-  Order          Order[]
+  user            User             @relation(fields: [userId], references: [id])
+  productMappings ProductMapping[]
+  Order           Order[]
+  variantMappings VariantMapping[]
 
   @@map("shopify_store")
 }
