@@ -38,11 +38,13 @@ export const supplierSchema = z.object({
 const productOptionValueSchema = z.object({
   id: z.union([z.string(), z.number()]), // temp ID (string) or real ID (number)
   value: z.string().min(1),
+  position: z.number().int().min(0).optional().default(0),
 });
 
 const productOptionSchema = z.object({
   id: z.union([z.string(), z.number()]), // temp ID (string) or real ID (number)
   name: z.string().min(1),
+  position: z.number().int().min(0).optional().default(0),
   values: z.array(productOptionValueSchema).min(1).max(50),
 });
 
@@ -165,342 +167,6 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/products
   } catch (error) {
     console.error("Product fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
-  }
-}
-
-export async function PUT(request: NextRequest, ctx: RouteContext<"/api/products/[id]">) {
-  const params = await ctx.params;
-
-  try {
-    const user = isAuthenticatedServerSide(["ADMIN", "OWNER", "EDITOR"], false);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const productId = parseInt(params.id);
-    if (isNaN(productId)) {
-      return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
-    }
-
-    // Check if product exists
-    const existingProduct = await prisma.product.findUnique({
-      where: { id: productId },
-    });
-
-    if (!existingProduct) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    const formData = await request.formData();
-    const productDataString = formData.get("productData") as string;
-
-    if (!productDataString) {
-      return NextResponse.json({ error: "Product data is required" }, { status: 400 });
-    }
-
-    const productData = JSON.parse(productDataString);
-
-    // Validate the product data
-    const validatedData = updateProductSchema.parse(productData);
-
-    // Create a map from the media array (sortOrder -> mediaObject)
-    const mediaMap = new Map(validatedData.media.map((media, index) => [index, { ...media }]));
-
-    // Process form data entries for file uploads
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("media_") && value instanceof File) {
-        const file = value as File;
-        const index = parseInt(key.split("_")[1]);
-
-        if (!isNaN(index) && mediaMap.has(index)) {
-          // Upload the media file
-          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-          const allowedVideoExtensions = ["mp4", "webm", "mov", "avi"];
-          const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
-
-          const uploadResult = await uploadFile(file, {
-            directory: "uploads/products",
-            subdirectory: productId.toString(),
-            generateUniqueFilename: true,
-            allowedExtensions,
-          });
-
-          // Update the URL in the media map
-          const mediaObject = mediaMap.get(index)!;
-          mediaObject.url = uploadResult.url;
-          mediaObject.type = getMediaType(file);
-        }
-      } else if (key.startsWith("poster_") && value instanceof File) {
-        const file = value as File;
-        const index = parseInt(key.split("_")[1]);
-
-        if (!isNaN(index) && mediaMap.has(index)) {
-          // Upload the poster file
-          const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-
-          const posterUploadResult = await uploadFile(file, {
-            directory: "uploads/products",
-            subdirectory: `${productId}/posters`,
-            generateUniqueFilename: true,
-            allowedExtensions: allowedImageExtensions,
-          });
-
-          // Update the poster in the media map
-          const mediaObject = mediaMap.get(index)!;
-          mediaObject.poster = posterUploadResult.url;
-        }
-      }
-    }
-
-    // Convert map back to array and sort by sortOrder
-    const allMediaRecords = Array.from(mediaMap.values()).sort((a, b) => a.sortOrder - b.sortOrder);
-
-    // Get current media files to identify which ones to delete
-    const currentMedia = await prisma.media.findMany({
-      where: { productId },
-      select: { url: true, poster: true },
-    });
-
-    // Identify files to delete (local files that are no longer in the new media list)
-    const newMediaUrls = new Set(allMediaRecords.map((m) => m.url));
-    const newPosterUrls = new Set(allMediaRecords.map((m) => m.poster).filter(Boolean));
-
-    const filesToDelete = [
-      // Delete media files that are no longer in the list
-      ...currentMedia.filter((m) => m.url.startsWith("/uploads/") && !newMediaUrls.has(m.url)).map((m) => m.url),
-      // Delete poster files that are no longer in the list
-      ...currentMedia
-        .filter((m) => m.poster && m.poster.startsWith("/uploads/") && !newPosterUrls.has(m.poster))
-        .map((m) => m.poster!),
-    ];
-
-    // === Update product options and variants using new table structure ===
-    // Remove existing options and variants (cascade will handle related data)
-    await prisma.productOption.deleteMany({
-      where: { productId },
-    });
-    await prisma.productVariant.deleteMany({
-      where: { productId },
-    });
-
-    if (validatedData.options.length > 0) {
-      // Create mapping from temp/real IDs to database IDs
-      const optionIdMap = new Map<string | number, number>();
-      const valueIdMap = new Map<string | number, number>();
-
-      // Create product options with their values
-      for (let index = 0; index < validatedData.options.length; index++) {
-        const option = validatedData.options[index];
-
-        const createdOption = await prisma.productOption.create({
-          data: {
-            productId: productId,
-            name: option.name,
-            position: index + 1,
-          },
-        });
-
-        optionIdMap.set(option.id, createdOption.id);
-
-        // Create option values
-        for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
-          const value = option.values[valueIndex];
-
-          const createdValue = await prisma.productOptionValue.create({
-            data: {
-              optionId: createdOption.id,
-              value: value.value,
-              position: valueIndex,
-            },
-          });
-
-          valueIdMap.set(value.id, createdValue.id);
-        }
-      }
-
-      // Create variants from client-provided data only
-      for (const variant of validatedData.variants) {
-        const createdVariant = await prisma.productVariant.create({
-          data: {
-            productId: productId,
-            price: variant.price,
-            compareAtPrice: variant.compareAtPrice || null,
-            sellingPrice: variant.sellingPrice || null,
-            sku: variant.sku || null,
-            inventory: variant.inventory ?? 0,
-            trackInventory: variant.trackInventory ?? false,
-          },
-        });
-
-        console.log("-------------------- variant --------------------");
-        console.log(variant);
-
-        // Link variant to option values using temp/real ID mappings
-        for (const valueId of variant.optionValueIds) {
-          const realValueId = valueIdMap.get(valueId);
-          if (realValueId) {
-            // Find the option ID for this value
-            const optionValue = await prisma.productOptionValue.findUnique({
-              where: { id: realValueId },
-              select: { optionId: true },
-            });
-
-            if (optionValue) {
-              await prisma.productVariantOptionValue.create({
-                data: {
-                  productVariantId: createdVariant.id,
-                  optionId: optionValue.optionId,
-                  valueId: realValueId,
-                },
-              });
-            }
-          }
-        }
-      }
-    } else {
-      // No product options - create variant(s) without options
-      const basePrice = validatedData.price || validatedData.sellingPrice || 0;
-
-      if (validatedData.variants.length > 0) {
-        // Use provided variant(s)
-        for (const variant of validatedData.variants) {
-          await prisma.productVariant.create({
-            data: {
-              productId: productId,
-              price: variant.price,
-              compareAtPrice: variant.compareAtPrice || null,
-              sellingPrice: variant.sellingPrice || null,
-              sku: variant.sku || `PROD${productId}`,
-              inventory: variant.inventory ?? 0,
-              trackInventory: variant.trackInventory ?? false,
-            },
-          });
-        }
-      } else {
-        // Create single default variant
-        await prisma.productVariant.create({
-          data: {
-            productId: productId,
-            price: basePrice,
-            sku: `PROD${productId}`,
-            inventory: 0,
-            trackInventory: false,
-          },
-        });
-      }
-    }
-
-    // Update product in database with transaction
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: {
-        price: validatedData.price || null,
-        compareAtPrice: validatedData.compareAtPrice || null,
-        sellingPrice: validatedData.sellingPrice || null,
-        currency: validatedData.currency || null,
-        categoryId: validatedData.categoryId || null,
-        isActive: validatedData.isActive,
-        plans: {
-          set: [], // First disconnect all existing plans
-          connect: validatedData.planIds.map((id) => ({ id })), // Then connect the new ones
-        },
-        translations: {
-          deleteMany: {}, // Remove existing translations
-          create: validatedData.translations.map((translation) => ({
-            locale: translation.locale,
-            title: translation.title,
-            description: translation.description,
-          })),
-        },
-        media: {
-          deleteMany: {}, // Remove existing media
-          create: allMediaRecords.map((item, index) => ({
-            url: item.url,
-            type: item.type,
-            sortOrder: index,
-            provider: item.url.startsWith("/uploads/") ? "local" : "external",
-            poster: item.poster || null,
-          })),
-        },
-        suppliers: {
-          deleteMany: {}, // Remove existing suppliers
-          create: validatedData.suppliers.map((supplier) => ({
-            url: supplier.url,
-            marketplace: supplier.marketplace,
-            price: supplier.price,
-            currency: supplier.currency,
-            isInternal: supplier.isInternal,
-            notes: supplier.notes,
-          })),
-        },
-      },
-      include: {
-        translations: {
-          orderBy: { locale: "asc" },
-        },
-        media: {
-          orderBy: { sortOrder: "asc" },
-        },
-        category: {
-          include: {
-            translations: {
-              orderBy: { locale: "asc" },
-            },
-          },
-        },
-        suppliers: true,
-        options: {
-          include: {
-            values: {
-              orderBy: { position: "asc" },
-            },
-          },
-          orderBy: { position: "asc" },
-        },
-        variants: {
-          include: {
-            options: {
-              include: {
-                option: true,
-                value: true,
-              },
-            },
-          },
-        },
-        plans: {
-          include: {
-            prices: true,
-          },
-        },
-      },
-    });
-
-    // Clean up deleted files (don't await to avoid slowing down the response)
-    if (filesToDelete.length > 0) {
-      deleteMultipleFiles(filesToDelete).catch((error) => {
-        console.error("Error cleaning up old media files:", error);
-      });
-    }
-
-    return NextResponse.json({
-      message: "Product updated successfully",
-      product: updatedProduct,
-    });
-  } catch (error) {
-    console.error("Product update error:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: "Validation failed",
-          details: error.issues,
-        },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
 }
 
@@ -714,111 +380,315 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       };
     }
 
-    // Handle options and variants
+    // Handle options and variants with proper CRUD operations
     if (validatedData.options !== undefined || validatedData.variants !== undefined) {
-      // Remove existing options and variants (cascade will handle related data)
-      await prisma.productOption.deleteMany({
-        where: { productId },
-      });
-      await prisma.productVariant.deleteMany({
-        where: { productId },
-      });
-
       const options = validatedData.options || [];
       const variants = validatedData.variants || [];
 
-      if (options.length > 0) {
-        // Create mapping from temp/real IDs to database IDs
-        const optionIdMap = new Map<string | number, number>();
-        const valueIdMap = new Map<string | number, number>();
+      // Create ID mapping for options and option values
+      const optionIdMap = new Map<string | number, number>();
+      const optionValueIdMap = new Map<string | number, number>();
 
-        // Create product options with their values
+      if (options.length > 0) {
+        // Get existing options for comparison
+        const existingOptionsMap = new Map(existingProduct.options.map((option) => [option.id, option]));
+        const existingOptionValuesMap = new Map(
+          existingProduct.options.flatMap((option) => option.values.map((value) => [value.id, value]))
+        );
+
+        // Track which options should remain
+        const optionsToKeep = new Set<number>();
+        const optionValuesToKeep = new Set<number>();
+
+        // Process each option
         for (let index = 0; index < options.length; index++) {
           const option = options[index];
+          const isExisting = typeof option.id === "number" && existingOptionsMap.has(option.id);
 
-          const createdOption = await prisma.productOption.create({
-            data: {
-              productId: productId,
-              name: option.name,
-              position: index + 1,
-            },
-          });
+          if (isExisting) {
+            // Update existing option
+            const existingOption = existingOptionsMap.get(option.id as number)!;
+            optionsToKeep.add(option.id as number);
 
-          optionIdMap.set(option.id, createdOption.id);
-
-          // Create option values
-          for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
-            const value = option.values[valueIndex];
-
-            const createdValue = await prisma.productOptionValue.create({
+            await prisma.productOption.update({
+              where: { id: option.id as number },
               data: {
-                optionId: createdOption.id,
-                value: value.value,
-                position: valueIndex,
+                name: option.name,
+                position: option.position !== undefined ? option.position : index + 1,
               },
             });
 
-            valueIdMap.set(value.id, createdValue.id);
+            optionIdMap.set(option.id, option.id as number);
+          } else {
+            // Create new option
+            const createdOption = await prisma.productOption.create({
+              data: {
+                productId,
+                name: option.name,
+                position: option.position !== undefined ? option.position : index + 1,
+              },
+            });
+
+            optionIdMap.set(option.id, createdOption.id);
+          }
+
+          // Handle option values
+          const currentOptionId = optionIdMap.get(option.id)!;
+          const existingValuesForOption = isExisting
+            ? existingProduct.options.find((o) => o.id === option.id)?.values || []
+            : [];
+          const existingValuesMap = new Map(existingValuesForOption.map((v) => [v.id, v]));
+
+          for (let valueIndex = 0; valueIndex < option.values.length; valueIndex++) {
+            const value = option.values[valueIndex];
+            const isExistingValue = typeof value.id === "number" && existingValuesMap.has(value.id);
+
+            if (isExistingValue) {
+              // Update existing value
+              optionValuesToKeep.add(value.id as number);
+
+              await prisma.productOptionValue.update({
+                where: { id: value.id as number },
+                data: {
+                  value: value.value,
+                  position: value.position !== undefined ? value.position : valueIndex,
+                },
+              });
+
+              optionValueIdMap.set(value.id, value.id as number);
+            } else {
+              // Create new value
+              const createdValue = await prisma.productOptionValue.create({
+                data: {
+                  optionId: currentOptionId,
+                  value: value.value,
+                  position: value.position !== undefined ? value.position : valueIndex,
+                },
+              });
+
+              optionValueIdMap.set(value.id, createdValue.id);
+            }
+          }
+
+          const optionValuesToDelete =
+            Array.from(existingOptionValuesMap?.keys())?.filter((id) => !optionValuesToKeep.has(id)) || [];
+
+          // Delete option values that are no longer needed for this option
+          if (isExisting) {
+            await prisma.productOptionValue.deleteMany({
+              where: {
+                optionId: currentOptionId,
+                id: {
+                  in: optionValuesToDelete,
+                },
+              },
+            });
           }
         }
 
-        // Create variants from client-provided data only
-        for (const variant of variants) {
-          const createdVariant = await prisma.productVariant.create({
-            data: {
-              productId: productId,
-              price: variant.price,
-              compareAtPrice: variant.compareAtPrice || null,
-              sellingPrice: variant.sellingPrice || null,
-              sku: variant.sku || null,
-              inventory: variant.inventory ?? 0,
-              trackInventory: variant.trackInventory ?? false,
-            },
-          });
+        const optionsToDelete = Array.from(existingOptionsMap.keys()).filter((id) => !optionsToKeep.has(id));
 
-          // Link variant to option values using temp/real ID mappings
-          for (const valueId of variant.optionValueIds) {
-            const realValueId = valueIdMap.get(valueId);
-            if (realValueId) {
-              // Find the option ID for this value
-              const optionValue = await prisma.productOptionValue.findUnique({
-                where: { id: realValueId },
-                select: { optionId: true },
+        // Delete options that are no longer needed
+        await prisma.productOption.deleteMany({
+          where: {
+            productId,
+            id: {
+              in: optionsToDelete,
+            },
+          },
+        });
+
+        // Handle variants
+        if (variants.length > 0) {
+          // Get existing variants for comparison
+          const existingVariantsMap = new Map(existingProduct.variants.map((variant) => [variant.id, variant]));
+
+          // Track which variants should remain
+          const variantsToKeep = new Set<number>();
+
+          for (const variant of variants) {
+            const isExistingVariant = typeof variant.id === "number" && existingVariantsMap.has(variant.id);
+
+            if (isExistingVariant) {
+              // Update existing variant
+              variantsToKeep.add(variant.id as number);
+
+              await prisma.productVariant.update({
+                where: { id: variant.id as number },
+                data: {
+                  price: variant.price,
+                  compareAtPrice: variant.compareAtPrice,
+                  sellingPrice: variant.sellingPrice,
+                  sku: variant.sku,
+                  inventory: variant.inventory || 0,
+                  trackInventory: variant.trackInventory || false,
+                },
               });
 
-              if (optionValue) {
-                await prisma.productVariantOptionValue.create({
-                  data: {
-                    productVariantId: createdVariant.id,
-                    optionId: optionValue.optionId,
+              // Update variant option values
+              await prisma.productVariantOptionValue.deleteMany({
+                where: { productVariantId: variant.id as number },
+              });
+
+              if (variant.optionValueIds && variant.optionValueIds.length > 0) {
+                const variantOptionValues = variant.optionValueIds.map((valueId) => {
+                  const realValueId = optionValueIdMap.get(valueId);
+                  if (!realValueId) {
+                    throw new Error(`Option value ID ${valueId} not found`);
+                  }
+
+                  // Find the option for this value
+                  const option = options.find((o) => o.values.some((v) => optionValueIdMap.get(v.id) === realValueId));
+                  if (!option) {
+                    throw new Error(`Option for value ID ${realValueId} not found`);
+                  }
+
+                  const realOptionId = optionIdMap.get(option.id);
+                  if (!realOptionId) {
+                    throw new Error(`Option ID ${option.id} not found`);
+                  }
+
+                  return {
+                    productVariantId: variant.id as number,
+                    optionId: realOptionId,
                     valueId: realValueId,
-                  },
+                  };
+                });
+
+                await prisma.productVariantOptionValue.createMany({
+                  data: variantOptionValues,
+                });
+              }
+            } else {
+              // Create new variant
+              const createdVariant = await prisma.productVariant.create({
+                data: {
+                  productId,
+                  price: variant.price,
+                  compareAtPrice: variant.compareAtPrice,
+                  sellingPrice: variant.sellingPrice,
+                  sku: variant.sku,
+                  inventory: variant.inventory || 0,
+                  trackInventory: variant.trackInventory || false,
+                },
+              });
+
+              // Create variant option values
+              if (variant.optionValueIds && variant.optionValueIds.length > 0) {
+                const variantOptionValues = variant.optionValueIds.map((valueId) => {
+                  const realValueId = optionValueIdMap.get(valueId);
+                  if (!realValueId) {
+                    throw new Error(`Option value ID ${valueId} not found`);
+                  }
+
+                  // Find the option for this value
+                  const option = options.find((o) => o.values.some((v) => optionValueIdMap.get(v.id) === realValueId));
+                  if (!option) {
+                    throw new Error(`Option for value ID ${realValueId} not found`);
+                  }
+
+                  const realOptionId = optionIdMap.get(option.id);
+                  if (!realOptionId) {
+                    throw new Error(`Option ID ${option.id} not found`);
+                  }
+
+                  return {
+                    productVariantId: createdVariant.id,
+                    optionId: realOptionId,
+                    valueId: realValueId,
+                  };
+                });
+
+                console.log("-------------------- variantOptionValues --------------------");
+                console.log(variantOptionValues);
+
+                await prisma.productVariantOptionValue.createMany({
+                  data: variantOptionValues,
                 });
               }
             }
           }
+
+          const variantsToDelete = Array.from(existingVariantsMap.keys()).filter((id) => !variantsToKeep.has(id));
+
+          // Delete variants that are no longer needed
+          await prisma.productVariant.deleteMany({
+            where: {
+              productId,
+              id: {
+                in: variantsToDelete,
+              },
+            },
+          });
+        } else {
+          // No variants provided, delete all existing variants
+          await prisma.productVariant.deleteMany({
+            where: { productId },
+          });
         }
       } else {
-        // No product options - create variant(s) without options
+        // No options provided, handle variants without options
         const basePrice = validatedData.price || validatedData.sellingPrice || existingProduct.price || 0;
 
         if (variants.length > 0) {
-          // Use provided variant(s)
+          // Get existing variants for comparison
+          const existingVariantsMap = new Map(existingProduct.variants.map((variant) => [variant.id, variant]));
+
+          // Track which variants should remain
+          const variantsToKeep = new Set<number>();
+
           for (const variant of variants) {
-            await prisma.productVariant.create({
-              data: {
-                productId: productId,
-                price: variant.price,
-                compareAtPrice: variant.compareAtPrice || null,
-                sellingPrice: variant.sellingPrice || null,
-                sku: variant.sku || `PROD${productId}`,
-                inventory: variant.inventory ?? 0,
-                trackInventory: variant.trackInventory ?? false,
-              },
-            });
+            const isExistingVariant = typeof variant.id === "number" && existingVariantsMap.has(variant.id);
+
+            if (isExistingVariant) {
+              // Update existing variant
+              variantsToKeep.add(variant.id as number);
+
+              await prisma.productVariant.update({
+                where: { id: variant.id as number },
+                data: {
+                  price: variant.price,
+                  compareAtPrice: variant.compareAtPrice,
+                  sellingPrice: variant.sellingPrice,
+                  sku: variant.sku || `PROD${productId}`,
+                  inventory: variant.inventory || 0,
+                  trackInventory: variant.trackInventory || false,
+                },
+              });
+            } else {
+              // Create new variant
+              await prisma.productVariant.create({
+                data: {
+                  productId,
+                  price: variant.price,
+                  compareAtPrice: variant.compareAtPrice,
+                  sellingPrice: variant.sellingPrice,
+                  sku: variant.sku || `PROD${productId}`,
+                  inventory: variant.inventory || 0,
+                  trackInventory: variant.trackInventory || false,
+                },
+              });
+            }
           }
+
+          const variantsToDelete = Array.from(existingVariantsMap.keys()).filter((id) => !variantsToKeep.has(id));
+
+          // Delete variants that are no longer needed
+          await prisma.productVariant.deleteMany({
+            where: {
+              productId,
+              id: {
+                in: variantsToDelete,
+              },
+            },
+          });
+
+          // Delete all options since no options are provided
+          await prisma.productOption.deleteMany({
+            where: { productId },
+          });
         } else {
-          // Create single default variant only if no variants exist
+          // No variants provided, create single default variant if none exists
           const existingVariantsCount = await prisma.productVariant.count({
             where: { productId },
           });
@@ -834,6 +704,11 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               },
             });
           }
+
+          // Delete all options since no options are provided
+          await prisma.productOption.deleteMany({
+            where: { productId },
+          });
         }
       }
     }

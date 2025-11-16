@@ -220,6 +220,7 @@ export default function ProductOptionItem({
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDragEnd={handleDragEnd}
+              id="product-option-values"
             >
               <SortableContext items={option.values.map((v) => v.id)} strategy={verticalListSortingStrategy}>
                 <div className="space-y-2">
