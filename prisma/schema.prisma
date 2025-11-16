@@ -333,7 +333,7 @@ model VariantMapping {
   productId        Int    @map("product_id") // Your product ID (for easier queries)
   shopifyVariantId String @map("shopify_variant_id") // Shopify's variant ID
   shopifyProductId String @map("shopify_product_id") // Shopify's product ID
-  shopifyStoreId   Int    @default(1) @map("shopify_store_id")
+  shopifyStoreId   Int    @map("shopify_store_id")
   shop             String // e.g., "store.myshopify.com"
 
   sku String?
