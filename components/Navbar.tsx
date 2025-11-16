@@ -2,6 +2,7 @@
 
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import UserDropdown from "@/components/UserDropdown";
+import NotificationsSheet from "@/app/[locale]/NotificationsSheet";
 import { useIsMounted } from "@/hooks/use-is-mounted";
 import { Link } from "@/i18n/navigation";
 import { isAuthorized } from "@/lib/authUtils";
@@ -63,6 +64,9 @@ export default function Navbar() {
                   >
                     {t("dashboard")}
                   </Link>
+
+                  {/* Notifications */}
+                  <NotificationsSheet />
 
                   {/* Avatar Dropdown */}
                   <UserDropdown />
