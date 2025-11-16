@@ -108,6 +108,7 @@ model User {
   updatedAt       DateTime         @updatedAt @map("updated_at")
   productMappings ProductMapping[]
   variantMappings VariantMapping[]
+  notifications   Notification[]
 
   @@map("user")
 }
@@ -512,4 +513,43 @@ model ShopifyStore {
   Order          Order[]
 
   @@map("shopify_store")
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum NotificationEvent {
+  PRICE_CHANGE
+  CARD_EXPIRED
+  SUBSCRIPTION_EXPIRED
+  SUBSCRIPTION_RENEWED
+  ORDER_CREATED
+  ORDER_ASSIGNED
+  ORDER_SHIPPED
+  ORDER_REFUNDED
+}
+
+model Notification {
+  id     Int  @id @default(autoincrement())
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title   String?
+  message String
+  link    String?
+
+  type  NotificationType  @default(INFO)
+  event NotificationEvent
+
+  read   Boolean   @default(false)
+  readAt DateTime? @map("read_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("notification")
 }
