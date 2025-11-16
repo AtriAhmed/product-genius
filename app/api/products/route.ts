@@ -33,11 +33,13 @@ const supplierSchema = z.object({
 const productOptionValueSchema = z.object({
   id: z.string(), // temp ID
   value: z.string().min(1),
+  position: z.number().int().min(0).optional().default(0),
 });
 
 const productOptionSchema = z.object({
   id: z.string(), // temp ID
   name: z.string().min(1),
+  position: z.number().int().min(0).optional().default(0),
   values: z.array(productOptionValueSchema).min(1).max(50),
 });
 
@@ -273,7 +275,7 @@ export async function POST(request: NextRequest) {
             data: {
               productId: createdProduct.id,
               name: option.name,
-              position: index + 1,
+              position: option.position !== undefined ? option.position : index + 1,
             },
           });
 
@@ -287,7 +289,7 @@ export async function POST(request: NextRequest) {
               data: {
                 optionId: createdOption.id,
                 value: value.value,
-                position: valueIndex,
+                position: value.position !== undefined ? value.position : valueIndex,
               },
             });
 

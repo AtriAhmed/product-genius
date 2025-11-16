@@ -265,75 +265,76 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       // Create a map from the media array (sortOrder -> mediaObject)
       const mediaMap = new Map(validatedData.media.map((media, index) => [index, { ...media }]));
 
-      // Process form data entries for file uploads
-      for (const [key, value] of formData.entries()) {
-        if (key.startsWith("media_") && value instanceof File) {
-          const file = value as File;
-          const index = parseInt(key.split("_")[1]);
+      await Promise.all(
+        formData.entries().map(async ([key, value]) => {
+          if (key.startsWith("media_") && value instanceof File) {
+            const file = value as File;
+            const index = parseInt(key.split("_")[1]);
 
-          if (!isNaN(index) && mediaMap.has(index)) {
-            // Upload the media file
-            const allowedImageExtensions = [
-              "jpg",
-              "jpeg",
-              "png",
-              "gif",
-              "webp",
-              "svg",
-              "bmp",
-              "tiff",
-              "tif",
-              "ico",
-              "avif",
-            ];
-            const allowedVideoExtensions = ["mp4", "webm", "ogg"];
-            const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
+            if (!isNaN(index) && mediaMap.has(index)) {
+              // Upload the media file
+              const allowedImageExtensions = [
+                "jpg",
+                "jpeg",
+                "png",
+                "gif",
+                "webp",
+                "svg",
+                "bmp",
+                "tiff",
+                "tif",
+                "ico",
+                "avif",
+              ];
+              const allowedVideoExtensions = ["mp4", "webm", "ogg"];
+              const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
-            const uploadResult = await uploadFile(file, {
-              directory: "uploads/products",
-              subdirectory: productId.toString(),
-              generateUniqueFilename: true,
-              allowedExtensions,
-            });
+              const uploadResult = await uploadFile(file, {
+                directory: "uploads/products",
+                subdirectory: productId.toString(),
+                generateUniqueFilename: true,
+                allowedExtensions,
+              });
 
-            // Update the URL in the media map
-            const mediaObject = mediaMap.get(index)!;
-            mediaObject.url = uploadResult.url;
-            mediaObject.type = getMediaType(file);
+              // Update the URL in the media map
+              const mediaObject = mediaMap.get(index)!;
+              mediaObject.url = uploadResult.url;
+              mediaObject.type = getMediaType(file);
+            }
+          } else if (key.startsWith("poster_") && value instanceof File) {
+            const file = value as File;
+            const index = parseInt(key.split("_")[1]);
+
+            if (!isNaN(index) && mediaMap.has(index)) {
+              // Upload the poster file
+              const allowedImageExtensions = [
+                "jpg",
+                "jpeg",
+                "png",
+                "gif",
+                "webp",
+                "svg",
+                "bmp",
+                "tiff",
+                "tif",
+                "ico",
+                "avif",
+              ];
+
+              const posterUploadResult = await uploadFile(file, {
+                directory: "uploads/products",
+                subdirectory: `${productId}/posters`,
+                generateUniqueFilename: true,
+                allowedExtensions: allowedImageExtensions,
+              });
+
+              // Update the poster in the media map
+              const mediaObject = mediaMap.get(index)!;
+              mediaObject.poster = posterUploadResult.url;
+            }
           }
-        } else if (key.startsWith("poster_") && value instanceof File) {
-          const file = value as File;
-          const index = parseInt(key.split("_")[1]);
-
-          if (!isNaN(index) && mediaMap.has(index)) {
-            // Upload the poster file
-            const allowedImageExtensions = [
-              "jpg",
-              "jpeg",
-              "png",
-              "gif",
-              "webp",
-              "svg",
-              "bmp",
-              "tiff",
-              "tif",
-              "ico",
-              "avif",
-            ];
-
-            const posterUploadResult = await uploadFile(file, {
-              directory: "uploads/products",
-              subdirectory: `${productId}/posters`,
-              generateUniqueFilename: true,
-              allowedExtensions: allowedImageExtensions,
-            });
-
-            // Update the poster in the media map
-            const mediaObject = mediaMap.get(index)!;
-            mediaObject.poster = posterUploadResult.url;
-          }
-        }
-      }
+        })
+      );
 
       // Convert map back to array and sort by sortOrder
       allMediaRecords = Array.from(mediaMap.values()).sort((a, b) => a.sortOrder - b.sortOrder);
