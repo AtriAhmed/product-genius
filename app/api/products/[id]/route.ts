@@ -270,7 +270,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       const mediaMap = new Map(validatedData.media.map((media, index) => [index, { ...media }]));
 
       await Promise.all(
-        formData.entries().map(async ([key, value]) => {
+        Array.from(formData.entries()).map(async ([key, value]) => {
           if (key.startsWith("media_") && value instanceof File) {
             const file = value as File;
             const index = parseInt(key.split("_")[1]);
