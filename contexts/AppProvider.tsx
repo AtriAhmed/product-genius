@@ -29,7 +29,7 @@ async function fetcher(): Promise<Plan> {
 }
 
 async function userUsageFetcher(): Promise<UserUsage> {
-  const response = await axios.get("/api/plans/current/usage");
+  const response = await axios.get("/api/users/current/usage");
 
   return response.data;
 }

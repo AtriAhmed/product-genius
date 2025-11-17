@@ -9,13 +9,18 @@ import { UserUsage } from "@/types";
 
 export async function GET(request: NextRequest) {
   try {
-    const currentUser = await isAuthenticatedServerSide([], false);
-    if (!currentUser) {
+    const user = await isAuthenticatedServerSide([], true);
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    const startsAt = user.currentSubscription?.startsAt || twoWeeksAgo;
+
     const importedProductsCount = await prisma.productMapping.count({
-      where: { userId: parseInt(currentUser.id) },
+      where: { userId: user.id, createdAt: { gte: startsAt } },
     });
 
     const response: UserUsage = {

@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAppProvider } from "@/contexts/AppProvider";
 
 interface InternalSupplierCardProps {
   hasStore?: boolean;
@@ -30,6 +31,7 @@ export default function InternalSupplierCard({
   const t = useTranslations("shopify");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const { mutateUserUsage } = useAppProvider();
 
   const handleImportToShopify = () => {
     if (!hasStore) {
@@ -63,6 +65,9 @@ export default function InternalSupplierCard({
     try {
       const response = await axios.post(`/api/products/${productId}/import-to-shopify`);
       toast.success("Product successfully imported to Shopify!");
+
+      mutateUserUsage();
+
       router.push("/dashboard/imported-products");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to import product to Shopify");

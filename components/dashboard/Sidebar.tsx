@@ -23,6 +23,7 @@ import React from "react";
 
 import ShopifyIcon from "@/assets/images/shopify-outline.svg";
 import SidebarCurrentSubscription from "@/components/dashboard/SidebarCurrentSubscription";
+import SidebarUsage from "@/components/dashboard/SidebarUsage";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -147,7 +148,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="bg-background">
+      <SidebarContent className="gap-0 bg-background">
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>{t("user panel")}</SidebarGroupLabel>
@@ -191,6 +192,14 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
           </SidebarMenu>
         </SidebarGroup>
         <SidebarCurrentSubscription />
+        <SidebarGroup className="!pt-0">
+          <SidebarGroupLabel>{t("usage")}</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem className="px-2">
+              <SidebarUsage />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="bg-background">

@@ -42,7 +42,7 @@ export default function DeleteMappingDialog({
         className="border border-border dark:border-white/10 bg-background shadow-lg dark:shadow-2xl"
       >
         <DialogHeader>
-          <DialogTitle className="text-foreground">{t("delete product mapping")}</DialogTitle>
+          <DialogTitle className="text-foreground">{t("delete imported product")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-muted-foreground text-sm">

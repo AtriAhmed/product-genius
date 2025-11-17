@@ -43,7 +43,7 @@ export default function ImportedProductsDataTable({
       onRefresh();
     } catch (error: any) {
       console.error("Error deleting product mapping:", error);
-      toast.error(error.response?.data?.error || t("failed to delete product mapping"));
+      toast.error(error.response?.data?.error || t("failed to delete imported product"));
     } finally {
       setIsDeleting(false);
       setDeleteMapping(undefined);
