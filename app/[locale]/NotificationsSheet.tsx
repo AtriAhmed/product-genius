@@ -11,6 +11,7 @@ import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 
 type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 
@@ -96,13 +97,13 @@ export default function NotificationsSheet() {
   const getTypeColor = (type: NotificationType) => {
     switch (type) {
       case "SUCCESS":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "!bg-green-100 text-green-800 dark:!bg-green-900 dark:text-green-200";
       case "WARNING":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "!bg-yellow-100 text-yellow-800 dark:!bg-yellow-900 dark:text-yellow-200";
       case "ERROR":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+        return "!bg-red-100 text-red-800 dark:!bg-red-900 dark:text-red-200";
       default:
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        return "!bg-blue-100 text-blue-800 dark:!bg-blue-900 dark:text-blue-200";
     }
   };
 
@@ -118,20 +119,20 @@ export default function NotificationsSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md">
+      <SheetContent className="w-full sm:max-w-[300px]">
         <SheetHeader>
           <SheetTitle className="flex justify-between items-center">
             <span>{t("title")}</span>
             {unreadCount > 0 && (
               <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
                 <CheckCheck className="w-4 h-4 mr-1" />
-                {t("markAllRead")}
+                {t("mark all as read")}
               </Button>
             )}
           </SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col gap-2 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+        <div className="flex flex-col gap-2 max-h-[calc(100vh-8rem)] overflow-y-auto px-1">
           {isLoading && (
             <>
               {[...Array(3)].map((_, i) => (
@@ -161,9 +162,14 @@ export default function NotificationsSheet() {
               key={notification.id}
               className={cn("relative p-3 border rounded-lg transition-colors", !notification.read && "bg-muted/50")}
             >
-              <div className="flex justify-between items-start gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1">
                 <Badge className={cn("text-xs", getTypeColor(notification.type))}>{notification.type}</Badge>
-                <div className="flex items-center gap-1">
+                <div className="text-muted-foreground text-xs">
+                  {formatDistanceToNow(new Date(notification.createdAt), {
+                    addSuffix: true,
+                  })}
+                </div>
+                <div className="flex items-center gap-1 ms-auto">
                   {!notification.read && (
                     <Button
                       variant="ghost"
@@ -180,25 +186,19 @@ export default function NotificationsSheet() {
                 </div>
               </div>
 
-              {notification.title && <h4 className="mb-1 font-semibold text-sm">{notification.title}</h4>}
+              {notification.title && <h4 className="mb-1 font-semibold text-[13px]">{notification.title}</h4>}
 
-              <p className="mb-2 text-muted-foreground text-sm">{notification.message}</p>
+              <p className={cn("mb-1 text-muted-foreground text-xs", "")}>{notification.message}</p>
 
               {notification.link && (
-                <a
+                <Link
                   href={notification.link}
                   className="text-primary text-xs hover:underline"
                   onClick={() => setOpen(false)}
                 >
                   {t("view details")}
-                </a>
+                </Link>
               )}
-
-              <div className="mt-2 text-muted-foreground text-xs">
-                {formatDistanceToNow(new Date(notification.createdAt), {
-                  addSuffix: true,
-                })}
-              </div>
             </div>
           ))}
         </div>

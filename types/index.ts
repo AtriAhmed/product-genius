@@ -393,6 +393,44 @@ export type UserUsage = {
   importedProductsCount: number;
 };
 
+enum NotificationType {
+  INFO,
+  SUCCESS,
+  WARNING,
+  ERROR,
+}
+
+enum NotificationEvent {
+  OPTIONS_CHANGED,
+  CARD_EXPIRED,
+  SUBSCRIPTION_EXPIRED,
+  SUBSCRIPTION_RENEWED,
+  ORDER_CREATED,
+  ORDER_ASSIGNED,
+  ORDER_SHIPPED,
+  ORDER_REFUNDED,
+}
+
+export type Notification = {
+  id: number;
+  userId?: number;
+
+  title?: string;
+  message?: string;
+  link?: string;
+
+  type?: NotificationType;
+  event?: NotificationEvent;
+
+  read?: Date;
+  readAt?: Date;
+
+  createdAt?: Date;
+
+  // Relations
+  user?: User;
+};
+
 // Utility types for creating/updating records
 export type CreateTempAccount = Omit<TempAccount, "id" | "createdAt" | "updatedAt">;
 export type UpdateTempAccount = Partial<Omit<TempAccount, "id" | "createdAt" | "updatedAt">>;

@@ -10,7 +10,7 @@ const createNotificationSchema = z.object({
   link: z.string().optional(),
   type: z.enum(["INFO", "SUCCESS", "WARNING", "ERROR"]).default("INFO"),
   event: z.enum([
-    "PRICE_CHANGE",
+    "OPTIONS_CHANGED",
     "CARD_EXPIRED",
     "SUBSCRIPTION_EXPIRED",
     "SUBSCRIPTION_RENEWED",
@@ -28,7 +28,7 @@ const querySchema = z.object({
   type: z.enum(["INFO", "SUCCESS", "WARNING", "ERROR"]).optional(),
   event: z
     .enum([
-      "PRICE_CHANGE",
+      "OPTIONS_CHANGED",
       "CARD_EXPIRED",
       "SUBSCRIPTION_EXPIRED",
       "SUBSCRIPTION_RENEWED",

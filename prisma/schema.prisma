@@ -526,7 +526,7 @@ enum NotificationType {
 }
 
 enum NotificationEvent {
-  PRICE_CHANGE
+  OPTIONS_CHANGED
   CARD_EXPIRED
   SUBSCRIPTION_EXPIRED
   SUBSCRIPTION_RENEWED

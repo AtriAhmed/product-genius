@@ -408,6 +408,18 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
                 day: "numeric",
               }),
             });
+
+            // Create notification in database
+            await prisma.notification.create({
+              data: {
+                userId: mapping.userId,
+                title: "Product Options Updated",
+                message: `The options and variants for "${productTitle}" have been synchronized to ${mapping.shop}. Please review the changes.`,
+                link: `/dashboard/products/${productId}`,
+                type: "WARNING",
+                event: "OPTIONS_CHANGED",
+              },
+            });
           }
         } catch (emailError) {
           console.error("Failed to send options changed notification:", emailError);
