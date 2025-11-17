@@ -54,25 +54,25 @@ export default function ImportedProductsDataTable({
 
   const skeletonRows = Array.from({ length: 5 }).map((_, index) => (
     <TableRow key={`skeleton-${index}`}>
-      <TableCell>
+      <TableCell className="py-1">
         <div className="w-10 h-10 rounded bg-muted animate-pulse" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <div className="space-y-2">
           <div className="w-32 h-4 rounded bg-muted animate-pulse" />
           <div className="w-16 h-3 rounded bg-muted animate-pulse" />
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <div className="w-24 h-4 rounded bg-muted animate-pulse" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <div className="w-28 h-4 rounded bg-muted animate-pulse" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <div className="w-20 h-6 rounded bg-muted animate-pulse" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <div className="w-16 h-4 rounded bg-muted animate-pulse" />
       </TableCell>
       <TableCell className="text-right">
@@ -115,7 +115,7 @@ export default function ImportedProductsDataTable({
             : productMappings.length > 0
             ? productMappings.map((mapping) => (
                 <TableRow key={mapping.id}>
-                  <TableCell>
+                  <TableCell className="py-1">
                     {mapping.product?.media?.[0]?.url ? (
                       <div className="w-10 h-10 overflow-hidden rounded">
                         <Image
@@ -137,7 +137,7 @@ export default function ImportedProductsDataTable({
                       </div>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div>
                       <Link
                         href={`/dashboard/products/${mapping.product?.id}`}
@@ -151,7 +151,7 @@ export default function ImportedProductsDataTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div className="flex items-center gap-2">
                       <code className="px-2 py-1 rounded bg-muted text-sm">{mapping.shopifyProductId}</code>
                       {mapping.shop && mapping.shopifyProductId && (
@@ -166,7 +166,7 @@ export default function ImportedProductsDataTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div>
                       <div className="font-medium">{mapping.shopifyStore?.name || "Unknown Store"}</div>
                       {mapping.shopifyStore?.id && (
@@ -174,10 +174,10 @@ export default function ImportedProductsDataTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <Badge variant="secondary">{mapping.shop?.replace(".myshopify.com", "")}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     {mapping.createdAt ? (
                       <div className="text-sm">
                         {format(new Date(mapping.createdAt), "MMM dd, yyyy")}
@@ -189,7 +189,7 @@ export default function ImportedProductsDataTable({
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="py-1 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
