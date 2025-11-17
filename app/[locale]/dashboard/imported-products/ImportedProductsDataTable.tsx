@@ -13,6 +13,8 @@ import { getMediaUrl } from "@/lib/utils";
 import DeleteMappingDialog from "./DeleteMappingDialog";
 import axios from "axios";
 import { toast } from "sonner";
+import { getCurrentTranslation } from "@/lib/products";
+import { Link } from "@/i18n/navigation";
 
 type ImportedProductsDataTableProps = {
   productMappings: ProductMapping[];
@@ -122,7 +124,7 @@ export default function ImportedProductsDataTable({
                               ? mapping.product.media[0].url
                               : mapping.product.media[0].poster
                           )}
-                          alt={mapping.product.translations?.[0]?.title || "Product image"}
+                          alt={getCurrentTranslation(mapping.product?.translations || [])?.title || "Product image"}
                           width={40}
                           height={40}
                           className="w-full h-full object-cover"
@@ -137,9 +139,12 @@ export default function ImportedProductsDataTable({
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">
-                        {mapping.product?.translations?.[0]?.title || "Untitled Product"}
-                      </div>
+                      <Link
+                        href={`/dashboard/products/${mapping.product?.id}`}
+                        className="border-muted-foreground/0 hover:border-muted-foreground border-b font-medium duration-150"
+                      >
+                        {getCurrentTranslation(mapping?.product?.translations || [])?.title || "Untitled Product"}
+                      </Link>
                       <div className="text-muted-foreground text-sm">ID: {mapping.product?.id}</div>
                       {mapping.product?.sku && (
                         <div className="text-muted-foreground text-xs">SKU: {mapping.product.sku}</div>
