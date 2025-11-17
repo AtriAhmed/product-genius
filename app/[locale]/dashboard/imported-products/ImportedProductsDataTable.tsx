@@ -149,18 +149,15 @@ export default function ImportedProductsDataTable({
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <code className="px-2 py-1 rounded bg-muted text-sm">{mapping.shopifyProductId}</code>
-                      {mapping.shop && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-6 h-6 p-0"
-                          onClick={() =>
-                            window.open(`https://${mapping.shop}/admin/products/${mapping.shopifyProductId}`, "_blank")
-                          }
-                          title="Open in Shopify"
+                      {mapping.shop && mapping.shopifyProductId && (
+                        <a
+                          href={`https://${mapping.shop}/admin/products/${mapping.shopifyProductId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800"
                         >
-                          <ExternalLink className="w-3 h-3" />
-                        </Button>
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                       )}
                     </div>
                   </TableCell>

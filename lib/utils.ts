@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Helper function to get media URL
-export function getMediaUrl(mediaPath?: string): string {
+export function getMediaUrl(mediaPath?: string, fullForm: boolean = false): string {
   if (!mediaPath) return "";
 
   // If it's an external URL, return as is
@@ -16,8 +16,10 @@ export function getMediaUrl(mediaPath?: string): string {
     return mediaPath;
   }
 
-  // For local files, use our media serving route with path parameter
-  // return `/api/media?path=${encodeURIComponent(mediaPath)}`;
+  if (fullForm) {
+    return `${process.env.NEXT_PUBLIC_APP_URL}/api/media?path=${mediaPath}`;
+  }
+
   return `/api/media?path=${mediaPath}`;
 }
 

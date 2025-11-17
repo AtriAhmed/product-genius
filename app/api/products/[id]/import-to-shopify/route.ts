@@ -152,11 +152,12 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
 
     // Prepare media files
     const filesInput = product.media
-      .filter((media) => media?.type === "IMAGE")
+      // .filter((media) => media?.type === "IMAGE")
       .map((media) => ({
-        originalSource: media.url?.startsWith("/") ? `${process.env.NEXTAUTH_URL}${getMediaUrl(media.url)}` : media.url,
+        originalSource:
+          media.type === "IMAGE" ? getMediaUrl(media?.url || "", true) : getMediaUrl(media?.poster || "", true),
         alt: media.alt || primaryTranslation.title,
-        contentType: media?.type,
+        contentType: "IMAGE",
       }));
 
     // Add media to productSet input if available
