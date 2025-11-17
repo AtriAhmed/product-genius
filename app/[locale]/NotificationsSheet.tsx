@@ -119,7 +119,7 @@ export default function NotificationsSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-[300px]">
+      <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="flex justify-between items-center">
             <span>{t("title")}</span>

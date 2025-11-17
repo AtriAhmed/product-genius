@@ -227,6 +227,9 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
     // Validate the product data
     const validatedData = patchProductSchema.parse(productData);
 
+    console.log("-------------------- validatedData --------------------");
+    console.log(JSON.stringify(validatedData, null, 2));
+
     // Prepare update data object - only include fields that are provided
     const updateData: any = {};
 

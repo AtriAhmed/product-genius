@@ -146,7 +146,7 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
 
               const optionData: any = {
                 name: option.name,
-                position: index + 1,
+                position: option.position,
                 values: option.values.map((value) => ({ name: value.value })),
               };
 
@@ -200,6 +200,9 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
             // price: (variant?.sellingPrice ?? variant.price * 1.5)?.toString() || "0",
             price: matchingShopifyVariant?.price || (variant?.sellingPrice ?? variant.price * 1.5)?.toString() || "0",
             // sku: variant.sku,
+            inventoryItem: {
+              tracked: false,
+            },
           };
 
           // If variant exists, include its ID to update instead of creating new
@@ -296,8 +299,8 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
 
         // Update variant mappings if necessary
         if (shopifyProduct?.variants?.nodes?.length > 0 && product.variants.length > 0) {
-          // Get existing variant mappings for this product and store
-          const existingVariantMappings = await prisma.variantMapping.findMany({
+          // Delete existing variant mappings for this product and store
+          await prisma.variantMapping.deleteMany({
             where: {
               productId: product.id,
               shopifyStoreId: mapping.shopifyStoreId,
@@ -305,7 +308,6 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
           });
 
           const variantMappingsToCreate = [];
-          const variantMappingsToUpdate = [];
 
           for (const shopifyVariant of shopifyProduct.variants.nodes) {
             const shopifyVariantId = shopifyVariant.id.replace("gid://shopify/ProductVariant/", "");
@@ -332,28 +334,16 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
             });
 
             if (matchingLocalVariant) {
-              const existingMapping = existingVariantMappings.find((vm) => vm.variantId === matchingLocalVariant.id);
-
-              if (existingMapping) {
-                // Update existing mapping
-                variantMappingsToUpdate.push({
-                  id: existingMapping.id,
-                  shopifyVariantId,
-                  sku: matchingLocalVariant.sku || shopifyVariant.sku,
-                });
-              } else {
-                // Create new mapping
-                variantMappingsToCreate.push({
-                  userId: mapping.userId,
-                  variantId: matchingLocalVariant.id,
-                  productId: product.id,
-                  shopifyVariantId,
-                  shopifyProductId: mapping.shopifyProductId,
-                  shopifyStoreId: mapping.shopifyStoreId,
-                  shop: mapping.shop,
-                  sku: matchingLocalVariant.sku || shopifyVariant.sku,
-                });
-              }
+              variantMappingsToCreate.push({
+                userId: mapping.userId,
+                variantId: matchingLocalVariant.id,
+                productId: product.id,
+                shopifyVariantId,
+                shopifyProductId: mapping.shopifyProductId,
+                shopifyStoreId: mapping.shopifyStoreId,
+                shop: mapping.shop,
+                sku: matchingLocalVariant.sku || shopifyVariant.sku,
+              });
             }
           }
 
@@ -361,20 +351,6 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
           if (variantMappingsToCreate.length > 0) {
             await prisma.variantMapping.createMany({
               data: variantMappingsToCreate,
-            });
-          }
-
-          console.log("-------------------- variantMappingsToUpdate --------------------");
-          console.log(variantMappingsToUpdate);
-
-          // Update existing variant mappings
-          for (const mapping of variantMappingsToUpdate) {
-            await prisma.variantMapping.update({
-              where: { id: mapping.id },
-              data: {
-                shopifyVariantId: mapping.shopifyVariantId,
-                sku: mapping.sku,
-              },
             });
           }
         }

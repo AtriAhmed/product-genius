@@ -107,14 +107,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(query.limit);
     const skip = (page - 1) * limit;
 
-    const where: any = {};
-
-    // If user is not admin/owner, only show their notifications
-    if (!["ADMIN", "OWNER"].includes(user?.role || "")) {
-      where.userId = user.id;
-    } else if (query.userId) {
-      where.userId = parseInt(query.userId);
-    }
+    const where: any = {
+      userId: user?.id,
+    };
 
     if (query.read !== undefined) {
       where.read = query.read === "true";

@@ -98,7 +98,7 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/product
     const productOptions = product.options?.length
       ? product.options.map((option, index) => ({
           name: option.name,
-          position: index + 1,
+          position: option.position,
           values: option.values.map((value) => ({ name: value.value })),
         }))
       : [
