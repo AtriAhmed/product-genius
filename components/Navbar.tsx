@@ -4,7 +4,7 @@ import ThemeSwitcher from "@/components/ThemeSwitcher";
 import UserDropdown from "@/components/UserDropdown";
 import NotificationsSheet from "@/app/[locale]/NotificationsSheet";
 import { useIsMounted } from "@/hooks/use-is-mounted";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { isAuthorized } from "@/lib/authUtils";
 import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
@@ -17,12 +17,15 @@ export default function Navbar() {
   const user = session?.user;
   const t = useTranslations("navbar");
   const isMounted = useIsMounted();
+  const pathname = usePathname();
 
   const isAuthenticated = status === "authenticated";
 
   async function handleLogout() {
     await signOut({ redirect: false });
   }
+
+  const isDashboard = pathname.startsWith(`/dashboard`) || pathname.startsWith(`/admin`);
 
   return (
     <nav className="top-0 right-0 left-0 z-50 fixed dark:border-b bg-background shadow-sm">
@@ -38,15 +41,19 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link href="/#features" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
-              {t("features")}
-            </Link>
-            <Link href="/#niches" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
-              {t("niches")}
-            </Link>
-            <Link href="/pricing" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
-              {t("pricing")}
-            </Link>
+            {!isDashboard && (
+              <>
+                <Link href="/#features" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
+                  {t("features")}
+                </Link>
+                <Link href="/#niches" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
+                  {t("niches")}
+                </Link>
+                <Link href="/pricing" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
+                  {t("pricing")}
+                </Link>
+              </>
+            )}
             <div className="flex items-center gap-2">
               {/* Auth */}
               {!isAuthenticated ? (

@@ -10,12 +10,13 @@ import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
 import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
 import { ProductFormData, productFormSchema } from "@/app/[locale]/admin/products/types";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import FloatingSaveBar from "@/components/FloatingSaveBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { Marketplace, Plan, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+import axios, { AxiosProgressEvent } from "axios";
 import { ArrowLeft, Globe, ImageIcon, Save, Trash2, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   const [categories, setCategories] = useState<any[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [saveProgress, setSaveProgress] = useState<number>(0);
 
   const isEditMode = mode === "edit";
   const isCreateMode = mode === "create";
@@ -90,6 +92,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
   console.log("-------------------- errors --------------------");
   console.log(errors);
+
+  function onUploadProgress(progressEvent: AxiosProgressEvent) {
+    const percentCompleted = progressEvent.total ? Math.round((progressEvent.loaded * 100) / progressEvent.total) : 0;
+    setSaveProgress(percentCompleted);
+  }
 
   // Initialize form data for edit mode
   useEffect(() => {
@@ -220,7 +227,13 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
       const url = isEditMode ? `/api/products/${product!.id}` : "/api/products";
 
-      const response = isEditMode ? await axios.patch(url, formData) : await axios.post(url, formData);
+      const response = isEditMode
+        ? await axios.patch(url, formData, {
+            onUploadProgress,
+          })
+        : await axios.post(url, formData, {
+            onUploadProgress,
+          });
 
       toast.success(t(isEditMode ? "product updated successfully" : "product created successfully"));
 
@@ -238,6 +251,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
       );
     } finally {
       setIsSubmitting(false);
+      setSaveProgress(0);
     }
   };
 
@@ -312,6 +326,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
               )}
               <Button
                 type="submit"
+                variant="primary"
                 form="product-form"
                 disabled={isSubmitting || !isDirty}
                 className="gap-2 text-xs"
@@ -408,6 +423,44 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           disabled={isDeleting}
         />
       )}
+
+      {/* Floating Save Bar */}
+      <FloatingSaveBar
+        isDirty={isDirty}
+        isSubmitting={isSubmitting}
+        onSave={handleSubmit(onSubmit, onError)}
+        onCancel={() => {
+          if (isEditMode && product) {
+            reset({
+              price: product.price,
+              compareAtPrice: product.compareAtPrice,
+              sellingPrice: product.sellingPrice,
+              currency: product.currency || "EUR",
+              categoryId: product.categoryId,
+              planIds: product.plans?.map((p: Plan) => p.id) || [],
+              isActive: product.isActive ?? true,
+              translations: product.translations,
+              media: product.media,
+              suppliers:
+                product?.suppliers?.map((s) => ({
+                  ...s,
+                  marketplace: s.marketplace as Marketplace,
+                })) || [],
+              options: product?.options || [],
+              variants: product?.variants?.map((v) => ({
+                ...v,
+                options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
+              })),
+            });
+          } else {
+            reset();
+          }
+        }}
+        saveText={t(isEditMode ? "update" : "create")}
+        cancelText={t("cancel")}
+        submittingText={t(isEditMode ? "updating" : "creating")}
+        progress={saveProgress}
+      />
     </div>
   );
 }
