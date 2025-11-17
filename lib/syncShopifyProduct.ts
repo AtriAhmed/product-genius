@@ -80,13 +80,81 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
 
         const shopifyClient = createShopifyClient(shopifyStore.shop, shopifyStore.accessToken);
 
-        // Prepare product options in the new format
+        // First, fetch the existing Shopify product to get current options and variants
+        const fetchQuery = `
+          query getProduct($id: ID!) {
+            product(id: $id) {
+              id
+              handle
+              title
+              options {
+                id
+                name
+                position
+                optionValues {
+                  id
+                  name
+                  hasVariants
+                }
+              }
+              variants(first: 250) {
+                nodes {
+                  id
+                  sku
+                  price
+                  compareAtPrice
+                  inventoryQuantity
+                  position
+                  selectedOptions {
+                    name
+                    value
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        const fetchResponse = await shopifyClient.post("/graphql.json", {
+          query: fetchQuery,
+          variables: {
+            id: `gid://shopify/Product/${mapping.shopifyProductId}`,
+          },
+        });
+
+        const existingShopifyProduct = fetchResponse.data.data?.product;
+
+        if (!existingShopifyProduct) {
+          results.push({
+            success: false,
+            shopifyStoreId: mapping.shopifyStoreId,
+            shopifyProductId: mapping.shopifyProductId,
+            shop: mapping.shop,
+            error: "Shopify product not found",
+          });
+          return;
+        }
+
+        // Prepare product options - matching existing ones when possible
         const productOptions = product.options?.length
-          ? product.options.map((option, index) => ({
-              name: option.name,
-              position: index + 1,
-              values: option.values.map((value) => ({ name: value.value })),
-            }))
+          ? product.options.map((option, index) => {
+              const existingOption = existingShopifyProduct.options.find(
+                (opt: any) => opt.name.toLowerCase() === option.name.toLowerCase()
+              );
+
+              const optionData: any = {
+                name: option.name,
+                position: index + 1,
+                values: option.values.map((value) => ({ name: value.value })),
+              };
+
+              // If option exists, include its ID to update instead of creating new
+              if (existingOption) {
+                optionData.id = existingOption.id;
+              }
+
+              return optionData;
+            })
           : [
               {
                 name: "Title",
@@ -95,8 +163,8 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
               },
             ];
 
-        // Prepare variants data for productSet
-        const variants = product.variants.map((variant) => {
+        // Prepare variants data - matching existing ones when possible
+        const variants = product.variants.map((variant, index) => {
           const optionValues = variant.options?.length
             ? variant.options.map((variantOption) => ({
                 optionName: variantOption.option.name,
@@ -109,11 +177,35 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
                 },
               ];
 
-          return {
+          // Try to find matching Shopify variant
+          const matchingShopifyVariant = existingShopifyProduct.variants.nodes.find((shopifyVariant: any) => {
+            const shopifyOptions = shopifyVariant.selectedOptions;
+
+            // Match by option values
+            if (optionValues.length !== shopifyOptions.length) return false;
+
+            return shopifyOptions.every((shopifyOption: any) =>
+              optionValues.some(
+                (localOption) =>
+                  localOption.optionName.toLowerCase() === shopifyOption.name.toLowerCase() &&
+                  localOption.name.toLowerCase() === shopifyOption.value.toLowerCase()
+              )
+            );
+          });
+
+          const variantData: any = {
             optionValues,
-            price: (variant?.sellingPrice ?? variant.price * 1.5)?.toString() || "0",
-            sku: variant.sku,
+            // price: (variant?.sellingPrice ?? variant.price * 1.5)?.toString() || "0",
+            price: matchingShopifyVariant?.price || (variant?.sellingPrice ?? variant.price * 1.5)?.toString() || "0",
+            // sku: variant.sku,
           };
+
+          // If variant exists, include its ID to update instead of creating new
+          if (matchingShopifyVariant) {
+            variantData.id = matchingShopifyVariant.id;
+          }
+
+          return variantData;
         });
 
         // Prepare product data for productSet - only updating options and variants

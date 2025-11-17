@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Order, OrderStatus } from "@/types";
 import { verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useTranslations } from "next-intl";
 
 type OrderOverviewProps = {
   order: Order;
-  t: (key: string) => string;
 };
 
 const getOrderStatusColor = (status: OrderStatus) => {
@@ -49,7 +49,9 @@ const formatDate = (date: string | Date) => {
   }).format(new Date(date));
 };
 
-export default function OrderOverview({ order, t }: OrderOverviewProps) {
+export default function OrderOverview({ order }: OrderOverviewProps) {
+  const t = useTranslations("orders");
+
   console.log("-------------------- order --------------------");
   console.log(order);
   return (
@@ -90,7 +92,7 @@ export default function OrderOverview({ order, t }: OrderOverviewProps) {
                 <span className="text-muted-foreground text-sm">Shopify Order ID</span>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-medium text-sm">{order.shopifyOrderId || t("n/a")}</span>
-                  {order.shopifyStore?.shop && order?.trackingUrl && (
+                  {order.shopifyStore?.shop && order?.shopifyOrderId && (
                     <a
                       href={`https://${order.shopifyStore.shop}/admin/orders/${order.shopifyOrderId}`}
                       target="_blank"

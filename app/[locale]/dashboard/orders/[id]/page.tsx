@@ -146,7 +146,7 @@ export default function DashboardOrderDetailsPage() {
           <div className="gap-4 grid lg:grid-cols-3">
             {/* Main Content */}
             <div className="space-y-4 lg:col-span-2">
-              <OrderOverview order={order} t={t} />
+              <OrderOverview order={order} />
               <OrderItems order={order} t={t} />
             </div>
 
