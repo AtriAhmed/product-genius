@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { isAuthorized } from "@/lib/authUtils";
+import { createShopifyClient } from "@/lib/shopify-client";
 
 // Validation schemas
 const updateProductMappingSchema = z.object({
@@ -14,10 +15,7 @@ const updateProductMappingSchema = z.object({
   shop: z.string().min(1).optional(),
 });
 
-export async function GET(
-  request: NextRequest,
-  ctx: RouteContext<"/api/product-mappings/[id]">
-) {
+export async function GET(request: NextRequest, ctx: RouteContext<"/api/product-mappings/[id]">) {
   const params = await ctx.params;
   try {
     // Check authentication
@@ -38,10 +36,7 @@ export async function GET(
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "Invalid product mapping ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product mapping ID" }, { status: 400 });
     }
 
     const where: any = { id };
@@ -69,10 +64,7 @@ export async function GET(
     });
 
     if (!productMapping) {
-      return NextResponse.json(
-        { error: "Product mapping not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Product mapping not found" }, { status: 404 });
     }
 
     return NextResponse.json(productMapping);
@@ -87,10 +79,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  ctx: RouteContext<"/api/product-mappings/[id]">
-) {
+export async function PUT(request: NextRequest, ctx: RouteContext<"/api/product-mappings/[id]">) {
   const params = await ctx.params;
   try {
     // Check authentication
@@ -106,19 +95,13 @@ export async function PUT(
     });
 
     if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "Invalid product mapping ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product mapping ID" }, { status: 400 });
     }
 
     // Check if product mapping exists and user has access
@@ -136,10 +119,7 @@ export async function PUT(
     });
 
     if (!existingMapping) {
-      return NextResponse.json(
-        { error: "Product mapping not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Product mapping not found" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -171,10 +151,7 @@ export async function PUT(
       });
 
       if (!product) {
-        return NextResponse.json(
-          { error: "Product not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Product not found" }, { status: 404 });
       }
     }
 
@@ -184,10 +161,7 @@ export async function PUT(
       });
 
       if (!shopifyStore) {
-        return NextResponse.json(
-          { error: "Shopify store not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Shopify store not found" }, { status: 404 });
       }
     }
 
@@ -231,10 +205,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  ctx: RouteContext<"/api/product-mappings/[id]">
-) {
+export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/product-mappings/[id]">) {
   const params = await ctx.params;
   try {
     const user = await isAuthenticatedServerSide([], false);
@@ -245,11 +216,12 @@ export async function DELETE(
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
-      return NextResponse.json(
-        { error: "Invalid product mapping ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid product mapping ID" }, { status: 400 });
     }
+
+    // Get deleteFromShopify parameter from query string
+    const { searchParams } = new URL(request.url);
+    const deleteFromShopify = searchParams.get("deleteFromShopify") === "true";
 
     // Check if product mapping exists and user has access
     const whereCondition: any = { id };
@@ -263,23 +235,76 @@ export async function DELETE(
 
     const existingMapping = await prisma.productMapping.findFirst({
       where: whereCondition,
+      include: {
+        shopifyStore: true,
+      },
     });
 
     if (!existingMapping) {
-      return NextResponse.json(
-        { error: "Product mapping not found" },
-        { status: 404 }
+      return NextResponse.json({ error: "Product mapping not found" }, { status: 404 });
+    }
+
+    // Delete from Shopify if requested
+    if (deleteFromShopify && existingMapping.shopifyStore) {
+      const shopifyClient = createShopifyClient(
+        existingMapping.shopifyStore.shop!,
+        existingMapping.shopifyStore.accessToken!
       );
+
+      const mutation = `
+        mutation productDelete($input: ProductDeleteInput!) {
+          productDelete(input: $input) {
+            deletedProductId
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+      `;
+
+      const variables = {
+        input: {
+          id: `gid://shopify/Product/${existingMapping.shopifyProductId}`,
+        },
+      };
+
+      try {
+        const response = await shopifyClient.post("/graphql.json", {
+          query: mutation,
+          variables,
+        });
+
+        const { data } = response.data;
+        const result = data?.productDelete;
+
+        if (result?.userErrors?.length > 0) {
+          console.error("Shopify deletion errors:", result.userErrors);
+          return NextResponse.json(
+            {
+              error: "Failed to delete product from Shopify",
+              details: result.userErrors,
+            },
+            { status: 400 }
+          );
+        }
+      } catch (shopifyError) {
+        console.error("Shopify API error:", shopifyError);
+        return NextResponse.json(
+          {
+            error: "Failed to delete product from Shopify",
+            details: shopifyError instanceof Error ? shopifyError.message : "Unknown error",
+          },
+          { status: 500 }
+        );
+      }
     }
 
     await prisma.productMapping.delete({
       where: { id },
     });
 
-    return NextResponse.json(
-      { message: "Product mapping deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Product mapping deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("Product mapping deletion error:", error);
     return NextResponse.json(

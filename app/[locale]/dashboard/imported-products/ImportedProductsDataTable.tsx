@@ -10,7 +10,7 @@ import { ProductMapping } from "@/types";
 import Image from "next/image";
 import { format } from "date-fns";
 import { getMediaUrl } from "@/lib/utils";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import DeleteMappingDialog from "./DeleteMappingDialog";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -33,12 +33,12 @@ export default function ImportedProductsDataTable({
     setDeleteMapping(mapping);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = async (deleteFromShopify: boolean) => {
     if (!deleteMapping) return;
 
     setIsDeleting(true);
     try {
-      await axios.delete(`/api/product-mappings/${deleteMapping.id}`);
+      await axios.delete(`/api/product-mappings/${deleteMapping.id}?deleteFromShopify=${deleteFromShopify}`);
       toast.success(t("product mapping deleted successfully"));
       onRefresh();
     } catch (error: any) {
@@ -204,17 +204,12 @@ export default function ImportedProductsDataTable({
       </Table>
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
+      <DeleteMappingDialog
         open={!!deleteMapping}
         onOpenChange={() => setDeleteMapping(undefined)}
-        title={t("delete product mapping")}
-        description={t("are you sure delete mapping")}
-        alertMessage={t("this action cannot be undone")}
-        confirmText={t("delete")}
-        cancelText={t("cancel")}
         onConfirm={confirmDelete}
-        variant="destructive"
         isLoading={isDeleting}
+        productTitle={deleteMapping?.product?.translations?.[0]?.title}
       />
     </div>
   );
