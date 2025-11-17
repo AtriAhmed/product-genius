@@ -1,14 +1,7 @@
 "use client";
 
 import { User } from "@/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,12 +16,7 @@ type UsersDataTableProps = {
   isLoading: boolean;
 };
 
-export default function UsersDataTable({
-  users,
-  onEdit,
-  onDelete,
-  isLoading,
-}: UsersDataTableProps) {
+export default function UsersDataTable({ users, onEdit, onDelete, isLoading }: UsersDataTableProps) {
   const t = useTranslations("users");
 
   const getRoleColor = (role?: string) => {
@@ -101,25 +89,25 @@ export default function UsersDataTable({
           <TableBody>
             {Array.from({ length: 5 }).map((_, index) => (
               <TableRow key={index}>
-                <TableCell>
+                <TableCell className="py-1">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
                     <div className="w-24 h-4 rounded bg-muted animate-pulse" />
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-1">
                   <div className="w-32 h-4 rounded bg-muted animate-pulse" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-1">
                   <div className="w-16 h-6 rounded-full bg-muted animate-pulse" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-1">
                   <div className="w-20 h-6 rounded-full bg-muted animate-pulse" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-1">
                   <div className="w-20 h-4 rounded bg-muted animate-pulse" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-1">
                   <div className="flex justify-end gap-2">
                     <div className="w-8 h-8 rounded bg-muted animate-pulse" />
                     <div className="w-8 h-8 rounded bg-muted animate-pulse" />
@@ -137,9 +125,7 @@ export default function UsersDataTable({
   if (users.length === 0) {
     return (
       <div className="p-8 border rounded-lg bg-card text-center">
-        <div className="text-muted-foreground text-lg">
-          {t("no users found")}
-        </div>
+        <div className="text-muted-foreground text-lg">{t("no users found")}</div>
       </div>
     );
   }
@@ -160,7 +146,7 @@ export default function UsersDataTable({
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>
+              <TableCell className="py-1">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="text-xs">
@@ -178,39 +164,30 @@ export default function UsersDataTable({
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="font-mono text-sm">{user.email}</TableCell>
-              <TableCell>
+              <TableCell className="py-1 font-mono text-sm">{user.email}</TableCell>
+              <TableCell className="py-1">
                 <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-1">
                 <div className="space-y-1">
-                  <Badge
-                    className={getSubscriptionColor(user.currentSubscription)}
-                  >
+                  <Badge className={getSubscriptionColor(user.currentSubscription)}>
                     {getSubscriptionStatus(user.currentSubscription)}
                   </Badge>
                   {user.currentSubscription?.plan?.name && (
-                    <div className="text-muted-foreground text-xs">
-                      {user.currentSubscription.plan.name}
-                    </div>
+                    <div className="text-muted-foreground text-xs">{user.currentSubscription.plan.name}</div>
                   )}
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground text-sm">
+              <TableCell className="py-1 text-muted-foreground text-sm">
                 {user.createdAt
                   ? formatDistanceToNow(new Date(user.createdAt), {
                       addSuffix: true,
                     })
                   : "Unknown"}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-1">
                 <div className="flex justify-end items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(user)}
-                    className="p-2"
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => onEdit(user)} className="p-2">
                     <Edit className="w-4 h-4" />
                   </Button>
                   <Button

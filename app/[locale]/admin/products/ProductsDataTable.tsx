@@ -27,14 +27,14 @@ export default function ProductsDataTable({
   const skeletonRows = Array.from({ length: 4 }).map((_, idx) => (
     <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
       {/* Image */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
           <Skeleton className="w-full h-full rounded-md" />
         </div>
       </TableCell>
 
       {/* Name + description */}
-      <TableCell className="font-medium">
+      <TableCell className="py-1 font-medium">
         <div className="flex flex-col gap-2">
           <Skeleton className="w-40 h-4 rounded" />
           <Skeleton className="w-60 max-w-xs h-3 rounded" />
@@ -42,27 +42,27 @@ export default function ProductsDataTable({
       </TableCell>
 
       {/* SKU */}
-      {/* <TableCell>
+      {/* <TableCell className="py-1">
         <Skeleton className="w-20 h-4 rounded" />
       </TableCell> */}
 
       {/* Category */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-20 h-6 rounded-md" />
       </TableCell>
 
       {/* Price */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-24 h-4 rounded" />
       </TableCell>
 
       {/* Status */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-16 h-6 rounded-full" />
       </TableCell>
 
       {/* Translations */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex flex-wrap gap-2">
           <Skeleton className="w-8 h-6 rounded-md" />
           <Skeleton className="w-8 h-6 rounded-md" />
@@ -71,7 +71,7 @@ export default function ProductsDataTable({
       </TableCell>
 
       {/* Actions */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex justify-center gap-2">
           <Skeleton className="w-8 h-8 rounded-full" />
           <Skeleton className="w-8 h-8 rounded-full" />

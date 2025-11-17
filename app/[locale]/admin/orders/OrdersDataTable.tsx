@@ -74,7 +74,7 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
       <TableCell>
         <Skeleton className="w-28 h-4" />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="py-1 text-right">
         <div className="flex justify-end items-center gap-2">
           <Skeleton className="w-20 h-8" />
           <Skeleton className="w-24 h-8" />
@@ -117,13 +117,13 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
             : orders.length > 0
             ? orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="py-1 font-medium">
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-muted-foreground" />
                       <span className="max-w-[120px] truncate">{order.orderNumber}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-[150px]">
+                  <TableCell className="max-w-[150px] py-1">
                     <div>
                       <div className="font-medium">{order.user?.name || "N/A"}</div>
                       <div className="text-muted-foreground text-sm truncate">{order.user?.email}</div>
@@ -151,7 +151,7 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
                   </TableCell>
                   <TableCell>{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
                   <TableCell>{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="py-1 text-right">
                     <div className="flex justify-end items-center gap-2">
                       <Button variant="ghost" size="sm" onClick={() => onEditTracking(order)} className="gap-2">
                         <Edit className="w-4 h-4" />

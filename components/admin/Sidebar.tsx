@@ -96,7 +96,8 @@ const navigationData: NavigationItem[] = [
     title: "subscriptions",
     url: "/admin/subscriptions",
     icon: CreditCard,
-    roles: ["OWNER", "ADMIN"],
+    // roles: ["OWNER", "ADMIN"],
+    roles: [],
   },
   {
     title: "plans",

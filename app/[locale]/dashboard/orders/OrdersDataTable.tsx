@@ -55,25 +55,25 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
 
   const skeletonRows = Array.from({ length: 5 }).map((_, idx) => (
     <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-24 h-4" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-32 h-4" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-16 h-6" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-24 h-4" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-20 h-4" />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-28 h-4" />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="py-1 text-right">
         <Skeleton className="w-16 h-8 ml-auto" />
       </TableCell>
     </TableRow>
@@ -113,13 +113,13 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
             : orders.length > 0
             ? orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="py-1 font-medium">
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-muted-foreground" />
                       <span className="max-w-[120px] truncate">{order.orderNumber}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-semibold text-xs">{order.shopifyOrderId || t("n/a")}</span>
                       {order.shopifyStore?.shop && order?.shopifyOrderId && (
@@ -134,12 +134,12 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <Badge className={getStatusColor(order.status!)}>
                       {t(order.status?.toLowerCase() || "unavailable")}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div className="flex items-center gap-2">
                       <span className="max-w-[100px] truncate">{order.trackingNumber || t("n/a")}</span>
                       {order.trackingUrl && (
@@ -154,9 +154,9 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
-                  <TableCell>{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="py-1">{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
+                  <TableCell className="py-1">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
+                  <TableCell className="py-1 text-right">
                     <Button variant="ghost" size="sm" onClick={() => onView(order)} className="gap-2">
                       <Eye className="w-4 h-4" />
                     </Button>

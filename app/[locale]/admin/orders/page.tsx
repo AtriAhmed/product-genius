@@ -161,18 +161,6 @@ export default function AgentOrdersPage() {
           </div>
         )}
 
-        {/* No orders found */}
-        {!isLoading && orders.length === 0 && (
-          <div className="flex flex-col justify-center items-center py-12 text-center">
-            <div className="text-muted-foreground">
-              <p className="font-medium text-lg">{t("no orders found")}</p>
-              <p className="mt-1 text-sm">
-                {search || status !== "all" ? "Try adjusting your filters" : "No orders have been placed yet"}
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Tracking Dialog */}
         <TrackingDialog
           open={trackingDialogOpen}
