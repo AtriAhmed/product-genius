@@ -122,7 +122,7 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-semibold text-xs">{order.shopifyOrderId || t("n/a")}</span>
-                      {order.shopifyStore?.shop && order?.trackingUrl && (
+                      {order.shopifyStore?.shop && order?.shopifyOrderId && (
                         <a
                           href={`https://${order.shopifyStore.shop}/admin/orders/${order.shopifyOrderId}`}
                           target="_blank"
