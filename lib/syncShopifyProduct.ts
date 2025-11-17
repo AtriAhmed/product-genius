@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createShopifyClient } from "@/lib/shopify-client";
+import { sendOptionsChangedNotification } from "@/lib/email";
 
 type SyncResult = {
   success: boolean;
@@ -51,6 +52,7 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
       productMappings: {
         include: {
           shopifyStore: true,
+          user: true,
         },
       },
     },
@@ -362,6 +364,9 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
             });
           }
 
+          console.log("-------------------- variantMappingsToUpdate --------------------");
+          console.log(variantMappingsToUpdate);
+
           // Update existing variant mappings
           for (const mapping of variantMappingsToUpdate) {
             await prisma.variantMapping.update({
@@ -380,6 +385,34 @@ export async function syncProductToShopify(productId: number): Promise<SyncProdu
           shopifyProductId: mapping.shopifyProductId,
           shop: mapping.shop,
         });
+
+        // Send email notification after successful sync
+        try {
+          if (mapping.user?.email) {
+            const productTranslation = await prisma.productTranslation.findFirst({
+              where: {
+                productId,
+                locale: "en",
+              },
+            });
+
+            const productTitle = productTranslation?.title || `Product #${productId}`;
+
+            await sendOptionsChangedNotification(mapping.user.email, {
+              customerName: mapping.user.name || "Valued Customer",
+              productTitle,
+              stores: [mapping.shop],
+              syncDate: new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+            });
+          }
+        } catch (emailError) {
+          console.error("Failed to send options changed notification:", emailError);
+          // Don't fail the sync if email fails
+        }
       } catch (error) {
         console.error(`Error syncing product ${productId} to shop ${mapping.shop}:`, error);
         results.push({

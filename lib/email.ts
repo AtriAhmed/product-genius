@@ -118,3 +118,44 @@ export async function sendOrderPaymentNotification(
     text: `Your order ${orderData.orderNumber} requires payment. Please visit ${orderData.paymentUrl} to complete your payment.`,
   });
 }
+
+/**
+ * Send product options changed notification email to user
+ * @param email User's email address
+ * @param productData Product information
+ * @returns Promise<boolean> indicating success/failure
+ */
+export async function sendOptionsChangedNotification(
+  email: string,
+  productData: {
+    customerName: string;
+    productTitle: string;
+    stores: string[];
+    syncDate: string;
+  }
+): Promise<boolean> {
+  const templatePath = join(process.cwd(), "email-templates", "options-changed-notification.html");
+  const emailTemplate = readFileSync(templatePath, "utf-8");
+
+  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/products`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+
+  // Generate store badges HTML
+  const storeBadges = productData.stores.map((store) => `<span class="store-badge">${store}</span>`).join("");
+
+  // Replace placeholders in template
+  let htmlContent = emailTemplate
+    .replaceAll("{{CUSTOMER_NAME}}", productData.customerName)
+    .replaceAll("{{PRODUCT_TITLE}}", productData.productTitle)
+    .replaceAll("{{STORE_BADGES}}", storeBadges)
+    .replaceAll("{{SYNC_DATE}}", productData.syncDate)
+    .replaceAll("{{DASHBOARD_URL}}", dashboardUrl)
+    .replaceAll("{{APP_URL}}", appUrl);
+
+  return sendEmail({
+    to: email,
+    subject: `Product Options Updated: ${productData.productTitle} - WinWaterfall`,
+    html: htmlContent,
+    text: `The options and variants for your product "${productData.productTitle}" have been updated in your Shopify store(s). Please review the changes in your dashboard: ${dashboardUrl}`,
+  });
+}

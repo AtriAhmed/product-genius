@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Your Email - WinWaterfall</title>
+    <title>Product Options Updated - WinWaterfall</title>
     <style>
       * {
         margin: 0;
@@ -61,7 +61,34 @@
         padding: 36px 28px;
       }
 
-      .welcome-text {
+      .alert-banner {
+        background: linear-gradient(135deg, #fff7ed, #ffedd5);
+        border: 2px solid #f97316;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 28px;
+        text-align: center;
+      }
+
+      .alert-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+
+      .alert-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #9a3412;
+        margin-bottom: 12px;
+      }
+
+      .alert-text {
+        font-size: 16px;
+        color: #9a3412;
+        line-height: 1.7;
+      }
+
+      .greeting {
         font-size: 20px;
         font-weight: 600;
         margin-bottom: 16px;
@@ -71,11 +98,56 @@
       .description {
         font-size: 16px;
         color: #4b5563;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
         line-height: 1.7;
       }
 
-      .verify-button {
+      .product-info {
+        background-color: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 24px 0;
+      }
+
+      .product-info h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 12px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .detail-label {
+        color: #6b7280;
+      }
+
+      .detail-value {
+        color: #111827;
+        font-weight: 500;
+      }
+
+      .store-badges {
+        margin-top: 8px;
+      }
+
+      .store-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #fed7aa, #fdba74);
+        color: #9a3412;
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 4px;
+      }
+
+      .review-button {
         display: inline-block;
         background: linear-gradient(135deg, #f97316, #ea580c);
         color: white;
@@ -89,7 +161,7 @@
         box-shadow: 0 4px 6px rgba(234, 88, 12, 0.25);
       }
 
-      .verify-button:hover {
+      .review-button:hover {
         background: linear-gradient(135deg, #ea580c, #c2410c);
         transform: translateY(-1px);
         box-shadow: 0 6px 10px rgba(234, 88, 12, 0.35);
@@ -98,26 +170,6 @@
       .button-container {
         text-align: center;
         margin: 32px 0;
-      }
-
-      .alternative-link {
-        margin-top: 24px;
-        padding: 18px;
-        background-color: #fff7ed;
-        border-radius: 8px;
-        border-left: 4px solid #f97316;
-      }
-
-      .alternative-link p {
-        font-size: 14px;
-        color: #6b7280;
-        margin-bottom: 8px;
-      }
-
-      .alternative-link a {
-        color: #ea580c;
-        word-break: break-all;
-        text-decoration: none;
       }
 
       .footer {
@@ -164,9 +216,22 @@
           font-size: 22px;
         }
 
-        .verify-button {
+        .alert-title {
+          font-size: 20px;
+        }
+
+        .alert-text {
+          font-size: 15px;
+        }
+
+        .review-button {
           padding: 14px 28px;
           font-size: 15px;
+        }
+
+        .detail-row {
+          flex-direction: column;
+          gap: 4px;
         }
       }
 
@@ -180,38 +245,61 @@
     <div class="container">
       <div class="header">
         <div class="logo">
-          <img src="{{NEXT_AUTH_APP_URL}}/logo.png" alt="WinWaterfall Logo" />
+          <img src="{{APP_URL}}/logo.png" alt="WinWaterfall Logo" />
         </div>
         <h1>WinWaterfall</h1>
-        <p>Welcome to the future of product discovery</p>
+        <p>Product options synchronized</p>
       </div>
 
       <div class="content">
-        <h2 class="welcome-text">Verify Your Email Address</h2>
+        <div class="alert-banner">
+          <div class="alert-icon">⚠️</div>
+          <h2 class="alert-title">Action Required: Review Your Product</h2>
+          <p class="alert-text">
+            Please review the updated options and variants in your Shopify store to ensure everything is configured
+            correctly. You may need to adjust pricing, inventory, or other settings based on your business requirements.
+          </p>
+        </div>
+
+        <h2 class="greeting">Hello {{CUSTOMER_NAME}},</h2>
 
         <p class="description">
-          Thanks for joining <strong>WinWaterfall</strong>! To complete your registration and start exploring, please
-          verify your email address by clicking the button below.
+          The options and variants for your product have been successfully synchronized to your Shopify store(s).
         </p>
 
-        <div class="button-container">
-          <a href="{{VERIFICATION_URL}}" class="verify-button">Verify Email Address</a>
+        <div class="product-info">
+          <h3>Product Details</h3>
+          <div class="detail-row">
+            <span class="detail-label">Product:</span>
+            <span class="detail-value">{{PRODUCT_TITLE}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Synced to:</span>
+          </div>
+          <div class="store-badges">{{STORE_BADGES}}</div>
+          <div class="detail-row" style="margin-top: 12px">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value">{{SYNC_DATE}}</span>
+          </div>
         </div>
 
-        <div class="alternative-link">
-          <p><strong>Having trouble?</strong></p>
-          <p>Copy and paste this link into your browser:</p>
-          <a href="{{VERIFICATION_URL}}">{{VERIFICATION_URL}}</a>
+        <div class="button-container">
+          <a href="{{DASHBOARD_URL}}" class="review-button">Review Product Now</a>
         </div>
 
         <p class="description">
-          This link will expire in 24 hours for security reasons. If you didn’t request this, please ignore this email.
+          If you notice any issues or need assistance, please don't hesitate to contact our support team.
+        </p>
+
+        <p class="description">
+          Best regards,<br />
+          The WinWaterfall Team
         </p>
       </div>
 
       <div class="footer">
         <p>&copy; 2025 WinWaterfall. All rights reserved.</p>
-        <p>This email was sent to verify your account registration.</p>
+        <p>This is an automated notification from WinWaterfall.</p>
 
         <div class="footer-links">
           <a href="#">Privacy Policy</a>
