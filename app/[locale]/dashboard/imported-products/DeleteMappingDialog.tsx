@@ -22,7 +22,7 @@ export default function DeleteMappingDialog({
   productTitle,
 }: DeleteMappingDialogProps) {
   const t = useTranslations("imported-products");
-  const [deleteFromShopify, setDeleteFromShopify] = useState(false);
+  const [deleteFromShopify, setDeleteFromShopify] = useState(true);
 
   const handleConfirm = () => {
     onConfirm(deleteFromShopify);
@@ -30,7 +30,7 @@ export default function DeleteMappingDialog({
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && !isLoading) {
-      setDeleteFromShopify(false);
+      setDeleteFromShopify(true);
     }
     onOpenChange(newOpen);
   };
@@ -70,7 +70,7 @@ export default function DeleteMappingDialog({
                 flex items-center justify-center w-5 h-5 border-2 rounded transition-colors
                 ${
                   deleteFromShopify
-                    ? "bg-primary border-primary"
+                    ? "bg-red-500 border-red-500"
                     : "bg-background border-muted-foreground/30 hover:border-muted-foreground/50"
                 }
                 ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
