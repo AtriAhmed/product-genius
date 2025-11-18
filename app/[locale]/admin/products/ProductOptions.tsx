@@ -48,7 +48,11 @@ export default function ProductOptions({ maxOptions = 3, maxValuesPerOption = 50
       shouldDirty: true,
     });
 
-    debouncedUpdateVariants(newOptions);
+    if (!options?.length) {
+      updateVariants(newOptions);
+    } else {
+      debouncedUpdateVariants(newOptions);
+    }
   };
 
   const handleAddOption = () => {
