@@ -694,21 +694,20 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
           });
         } else {
           // No variants provided, create single default variant if none exists
-          const existingVariantsCount = await prisma.productVariant.count({
+
+          await prisma.productVariant.deleteMany({
             where: { productId },
           });
 
-          if (existingVariantsCount === 0) {
-            await prisma.productVariant.create({
-              data: {
-                productId: productId,
-                price: basePrice,
-                sku: `PROD${productId}`,
-                inventory: 0,
-                trackInventory: false,
-              },
-            });
-          }
+          await prisma.productVariant.create({
+            data: {
+              productId: productId,
+              price: basePrice,
+              sku: `PROD${productId}`,
+              inventory: 0,
+              trackInventory: false,
+            },
+          });
 
           // Delete all options since no options are provided
           await prisma.productOption.deleteMany({
