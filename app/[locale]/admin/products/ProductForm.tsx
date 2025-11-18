@@ -370,9 +370,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   isActive={watch("isActive")}
                 />
 
-                {/* Pricing Section */}
-                <PricingSection setValue={setValue} errors={errors} currency={watch("currency")} register={register} />
-
                 {/* Plan Selection */}
                 <PlanSelector
                   selectedPlanIds={watch("planIds") || []}
@@ -395,6 +392,16 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                   maxFiles={100}
                   maxFileSize={500}
                 />
+
+                {/* Pricing Section */}
+                {!watch("options")?.length && (
+                  <PricingSection
+                    setValue={setValue}
+                    errors={errors}
+                    currency={watch("currency")}
+                    register={register}
+                  />
+                )}
 
                 {/* Product Options */}
                 <ProductOptions />

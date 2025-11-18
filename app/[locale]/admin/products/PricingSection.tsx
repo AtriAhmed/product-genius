@@ -4,13 +4,7 @@ import { ProductFormData } from "@/app/[locale]/admin/products/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CURRENCIES } from "@/types/constants";
 import { DollarSign } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -19,8 +13,7 @@ import { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
 // Helper function to get error message
 const getErrorMessage = (error: any): string | undefined => {
   if (typeof error === "string") return error;
-  if (error && typeof error === "object" && "message" in error)
-    return error.message;
+  if (error && typeof error === "object" && "message" in error) return error.message;
   return undefined;
 };
 
@@ -31,17 +24,10 @@ interface PricingSectionProps {
   currency?: string;
 }
 
-export default function PricingSection({
-  register,
-  setValue,
-  errors,
-  currency = "EUR",
-}: PricingSectionProps) {
+export default function PricingSection({ register, setValue, errors, currency = "EUR" }: PricingSectionProps) {
   const t = useTranslations("products");
 
-  const selectedCurrency = currency
-    ? CURRENCIES.find((c) => c.code === currency)
-    : null;
+  const selectedCurrency = currency ? CURRENCIES.find((c) => c.code === currency) : null;
 
   return (
     <Card className="bg-background">
@@ -53,7 +39,7 @@ export default function PricingSection({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Currency Selection */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label htmlFor="currency">{t("currency")}</Label>
           <Select
             value={currency}
@@ -79,7 +65,7 @@ export default function PricingSection({
               {getErrorMessage(errors.currency)}
             </p>
           )}
-        </div>
+        </div> */}
 
         <div className="gap-x-2 gap-y-2 grid grid-cols-1 md:grid-cols-3">
           {/* Regular Price */}
@@ -99,14 +85,8 @@ export default function PricingSection({
                 {CURRENCIES.find((c) => c.code === currency)?.symbol}
               </span>
             </div>
-            {errors.price && (
-              <p className="text-destructive text-sm">
-                {getErrorMessage(errors.price)}
-              </p>
-            )}
-            <p className="text-muted-foreground text-xs">
-              {t("regular selling price")}
-            </p>
+            {errors.price && <p className="text-destructive text-sm">{getErrorMessage(errors.price)}</p>}
+            <p className="text-muted-foreground text-xs">{t("regular selling price")}</p>
           </div>
 
           {/* Compare At Price */}
@@ -127,13 +107,9 @@ export default function PricingSection({
               </span>
             </div>
             {errors.compareAtPrice && (
-              <p className="text-destructive text-sm">
-                {getErrorMessage(errors.compareAtPrice)}
-              </p>
+              <p className="text-destructive text-sm">{getErrorMessage(errors.compareAtPrice)}</p>
             )}
-            <p className="text-muted-foreground text-xs">
-              {t("original price for discount display")}
-            </p>
+            <p className="text-muted-foreground text-xs">{t("original price for discount display")}</p>
           </div>
 
           {/* Selling Price */}
@@ -153,14 +129,8 @@ export default function PricingSection({
                 {CURRENCIES.find((c) => c.code === currency)?.symbol}
               </span>
             </div>
-            {errors.sellingPrice && (
-              <p className="text-destructive text-sm">
-                {getErrorMessage(errors.sellingPrice)}
-              </p>
-            )}
-            <p className="text-muted-foreground text-xs">
-              {t("suggested price for customers")}
-            </p>
+            {errors.sellingPrice && <p className="text-destructive text-sm">{getErrorMessage(errors.sellingPrice)}</p>}
+            <p className="text-muted-foreground text-xs">{t("suggested price for customers")}</p>
           </div>
         </div>
       </CardContent>

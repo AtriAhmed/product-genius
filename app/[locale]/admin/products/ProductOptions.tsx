@@ -119,7 +119,7 @@ export default function ProductOptions({ maxOptions = 3, maxValuesPerOption = 50
                 <Package className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-base">{t("product variants")}</h3>
+                <h3 className="font-semibold text-base">{t("product options")}</h3>
               </div>
             </div>
             {options.length < maxOptions && (
