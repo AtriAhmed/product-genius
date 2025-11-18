@@ -3,6 +3,7 @@
 import LockedProductCard from "@/app/[locale]/dashboard/products/LockedProductCard";
 import ProductCard from "@/app/[locale]/dashboard/products/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAppProvider } from "@/contexts/AppProvider";
 import { Product } from "@/types";
 import { Package, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -15,17 +16,20 @@ interface ProductsGridProps {
 
 export default function ProductsGrid({ products, isLoading = false }: ProductsGridProps) {
   const t = useTranslations("products");
+  const { currentPlan } = useAppProvider();
 
   // Generate a mixed array of real and locked products while preserving sort order
   const mixedProducts = useMemo(() => {
     if (products.length === 0) return [];
 
-    const totalItems = products.length * 2; // Equal number of real and locked products
+    const lockedProductCount = currentPlan?.isFree ? products.length : 0;
+
+    const totalItems = products.length + lockedProductCount;
     const items: Array<{ type: "real" | "locked"; product?: Product; id: string }> = [];
 
     // Generate random positions for locked products
     const lockedPositions = new Set<number>();
-    while (lockedPositions.size < products.length) {
+    while (lockedPositions.size < lockedProductCount) {
       lockedPositions.add(Math.floor(Math.random() * totalItems));
     }
 
