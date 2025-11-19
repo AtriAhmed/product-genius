@@ -4,7 +4,7 @@ import { PaymentMethod } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MoreHorizontal, CreditCard, Trash2, Star } from "lucide-react";
+import { MoreHorizontal, CreditCard, Trash2, Star, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,13 +19,10 @@ type PaymentCardProps = {
   paymentMethod: PaymentMethod;
   onSetDefault: (id: string) => void;
   onDelete: (paymentMethod: PaymentMethod) => void;
+  isSettingDefault?: boolean;
 };
 
-export default function PaymentCard({
-  paymentMethod,
-  onSetDefault,
-  onDelete,
-}: PaymentCardProps) {
+export default function PaymentCard({ paymentMethod, onSetDefault, onDelete, isSettingDefault }: PaymentCardProps) {
   const t = useTranslations("billing");
 
   return (
@@ -34,46 +31,39 @@ export default function PaymentCard({
         paymentMethod.card?.brand || "unknown"
       )} min-h-[140px] w-full sm:w-fit sm:min-w-[200px] grow sm:max-w-[250px] flex flex-col justify-between transition-all duration-200 hover:scale-[1.01]`}
     >
-      <CardContent className="p-2.5 flex flex-col h-full">
+      {isSettingDefault && (
+        <div className="z-10 absolute inset-0 flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
+          <Loader2 className="w-6 h-6 text-white animate-spin" />
+        </div>
+      )}
+      <CardContent className="flex flex-col h-full p-2.5">
         {/* Header */}
-        <div className="flex items-start justify-between mb-0.5 shrink-0">
-          <div className="text-[10px] font-medium opacity-90">
-            {paymentMethod.card?.brand?.toUpperCase() || "CARD"}
-          </div>
+        <div className="flex justify-between items-start mb-0.5 shrink-0">
+          <div className="opacity-90 font-medium text-[10px]">{paymentMethod.card?.brand?.toUpperCase() || "CARD"}</div>
           <div className="flex items-center gap-1">
             {paymentMethod.isDefault && (
-              <Badge
-                variant="secondary"
-                className="bg-white/25 text-white border-white/30 text-[8px]"
-              >
+              <Badge variant="secondary" className="border-white/30 bg-white/25 text-[8px] text-white">
                 {t("default")}
               </Badge>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 hover:bg-white/20"
-                >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="icon" className="w-6 h-6 hover:bg-white/20">
+                  <MoreHorizontal className="w-3.5 h-3.5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {/* {!paymentMethod.isDefault && (
-                  <DropdownMenuItem
-                    onClick={() => onSetDefault(paymentMethod.id)}
-                    className="text-xs font-medium"
-                  >
-                    <Star className="mr-1.5 size-3" />
+                {!paymentMethod.isDefault && (
+                  <DropdownMenuItem onClick={() => onSetDefault(paymentMethod.id)} className="font-medium text-xs">
+                    <Star className="size-3 mr-1.5" />
                     {t("set as default")}
                   </DropdownMenuItem>
-                )} */}
+                )}
                 <DropdownMenuItem
-                  className="!text-destructive text-xs font-medium"
+                  className="font-medium !text-destructive text-xs"
                   onClick={() => onDelete(paymentMethod)}
                 >
-                  <Trash2 className="mr-1.5 size-3 text-current" />
+                  <Trash2 className="size-3 mr-1.5 text-current" />
                   {t("delete card")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -87,19 +77,16 @@ export default function PaymentCard({
         </div>
 
         {/* Card number */}
-        <div className="flex-1 flex items-center">
-          <div className="text-[11px] font-mono tracking-wider">
-            •••• •••• •••• {paymentMethod.card?.last4}
-          </div>
+        <div className="flex flex-1 items-center">
+          <div className="font-mono text-[11px] tracking-wider">•••• •••• •••• {paymentMethod.card?.last4}</div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-end justify-between mt-1 shrink-0">
+        <div className="flex justify-between items-end mt-1 shrink-0">
           <div>
-            <div className="text-[9px] opacity-70 mb-0.5">{t("expires")}</div>
-            <div className="text-[11px] font-medium leading-tight">
-              {String(paymentMethod.card?.expMonth).padStart(2, "0")}/
-              {paymentMethod.card?.expYear.toString().slice(-2)}
+            <div className="mb-0.5 opacity-70 text-[9px]">{t("expires")}</div>
+            <div className="font-medium text-[11px] leading-tight">
+              {String(paymentMethod.card?.expMonth).padStart(2, "0")}/{paymentMethod.card?.expYear.toString().slice(-2)}
             </div>
           </div>
           <div className="opacity-90">
@@ -115,7 +102,7 @@ export default function PaymentCard({
       </CardContent>
 
       {/* Decorative background */}
-      <div className="absolute top-0 right-0 w-20 h-20 opacity-10 pointer-events-none">
+      <div className="top-0 right-0 absolute w-20 h-20 opacity-10 pointer-events-none">
         <svg viewBox="0 0 100 100" className="w-full h-full text-white">
           <circle cx="70" cy="30" r="30" fill="currentColor" />
           <circle cx="30" cy="70" r="20" fill="currentColor" />

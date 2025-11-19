@@ -27,15 +27,12 @@ export default function SavedCards() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [deleteCard, setDeleteCard] = useState<PaymentMethod | undefined>();
   const [isDeletingCard, setIsDeletingCard] = useState(false);
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
 
-  const { data, error, isLoading, mutate } = useSWR<SavedCardsResponse>(
-    "payment-methods",
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  );
+  const { data, error, isLoading, mutate } = useSWR<SavedCardsResponse>("payment-methods", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
 
   const paymentMethods = data?.paymentMethods || [];
 
@@ -44,16 +41,18 @@ export default function SavedCards() {
   }
 
   const handleSetDefault = async (paymentMethodId: string) => {
+    if (settingDefaultId) return; // Prevent multiple requests
+
+    setSettingDefaultId(paymentMethodId);
     try {
-      await axios.post("/api/stripe/cards", {
-        paymentMethodId,
-        setAsDefault: true,
-      });
+      await axios.post(`/api/stripe/cards/${paymentMethodId}/set-default`);
       toast.success(t("card set default"));
       mutate();
     } catch (error: any) {
       console.error("Error setting default card:", error);
       toast.error(error.response?.data?.error || "Failed to set default card");
+    } finally {
+      setSettingDefaultId(null);
     }
   };
 
@@ -100,10 +99,7 @@ export default function SavedCards() {
         <CardContent>
           <div className="gap-4 sm:gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-48 aspect-[1.6/1] rounded-lg bg-muted animate-pulse"
-              />
+              <div key={i} className="h-48 aspect-[1.6/1] rounded-lg bg-muted animate-pulse" />
             ))}
           </div>
         </CardContent>
@@ -121,11 +117,7 @@ export default function SavedCards() {
               {t("saved cards")}
             </CardTitle>
           </div>
-          <Button
-            className="ms-auto"
-            onClick={() => setShowAddDialog(true)}
-            variant="primary"
-          >
+          <Button className="ms-auto" onClick={() => setShowAddDialog(true)} variant="primary">
             <Plus className="w-4 h-4 mr-2" />
             {t("add new card")}
           </Button>
@@ -133,14 +125,12 @@ export default function SavedCards() {
       </CardHeader>
       <CardContent>
         {paymentMethods.length === 0 ? (
-          <div className="py-12 text-center">
-            <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="mb-2 font-medium text-lg">{t("no cards")}</h3>
-            <p className="mb-4 text-muted-foreground">{t("add first card")}</p>
-            <Button onClick={() => setShowAddDialog(true)} variant="primary">
-              <Plus className="w-4 h-4 mr-2" />
-              {t("add new card")}
-            </Button>
+          <div className="p-8 text-center">
+            <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
+              <CreditCard className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-bold text-slate-800 text-lg">{t("no cards")}</h3>
+            <p className="mb-4 text-muted-foreground text-sm">{t("add first card")}</p>
           </div>
         ) : (
           <div className="flex flex-wrap gap-4">
@@ -150,17 +140,14 @@ export default function SavedCards() {
                 paymentMethod={paymentMethod}
                 onSetDefault={handleSetDefault}
                 onDelete={handleDelete}
+                isSettingDefault={settingDefaultId === paymentMethod.id}
               />
             ))}
           </div>
         )}
       </CardContent>
 
-      <AddPaymentMethodDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onSuccess={handleAddSuccess}
-      />
+      <AddPaymentMethodDialog open={showAddDialog} onOpenChange={setShowAddDialog} onSuccess={handleAddSuccess} />
 
       <ConfirmationDialog
         open={!!deleteCard}
