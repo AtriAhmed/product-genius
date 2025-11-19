@@ -166,8 +166,8 @@ export default function NotificationsSheet() {
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="flex justify-between items-center">
-            <span>{t("title")}</span>
+          <SheetTitle className="flex justify-between items-center pr-3">
+            <span>{t("notifications")}</span>
 
             <div className="flex items-center gap-2">
               {/* show tiny updating indicator when SWR is validating in background */}
