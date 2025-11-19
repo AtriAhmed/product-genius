@@ -65,10 +65,14 @@ export default function NotificationsSheet() {
   const handleMarkAllAsRead = async () => {
     try {
       const unreadNotifications = data?.data.filter((n) => !n.read) || [];
+      const unreadIds = unreadNotifications.map((n) => n.id);
 
-      await Promise.all(
-        unreadNotifications.map((notification) => axios.patch(`/api/notifications/${notification.id}`, { read: true }))
-      );
+      if (unreadIds.length === 0) return;
+
+      await axios.patch("/api/notifications/bulk", {
+        ids: unreadIds,
+        read: true,
+      });
 
       mutate();
     } catch (error) {

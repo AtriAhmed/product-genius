@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
+import { isAuthorized } from "@/lib/authUtils";
 
 const updateNotificationSchema = z.object({
   title: z.string().optional(),
@@ -92,7 +93,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/notifi
     }
 
     // Users can only update their own notifications, admins can update all
-    const canUpdate = existingNotification.userId === user.id || ["ADMIN", "OWNER"].includes(user?.role || "");
+    const canUpdate = existingNotification.userId === user.id || isAuthorized(user, ["ADMIN", "OWNER"]);
 
     if (!canUpdate) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
