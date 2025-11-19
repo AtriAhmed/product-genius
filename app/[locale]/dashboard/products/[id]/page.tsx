@@ -114,7 +114,7 @@ export default function ProductPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto px-0 sm:px-4 container">
+        <div className="mx-auto">
           <div className="mb-6">
             <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
