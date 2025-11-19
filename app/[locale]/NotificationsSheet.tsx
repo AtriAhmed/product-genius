@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Check, CheckCheck, X } from "lucide-react";
+import { Bell, Check, CheckCheck, X, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import useSWR from "swr";
@@ -52,7 +52,7 @@ export default function NotificationsSheet() {
   const t = useTranslations("notifications");
   const [open, setOpen] = useState(false);
 
-  const { data, error, isLoading, mutate } = useSWR<NotificationsResponse>(
+  const { data, error, isLoading, mutate, isValidating } = useSWR<NotificationsResponse>(
     ["notifications"],
     () => fetcher(1, 20, "", "all", "createdAt", "desc"),
     {
@@ -60,7 +60,17 @@ export default function NotificationsSheet() {
     }
   );
 
+  // Loading states for updates
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [itemLoadingIds, setItemLoadingIds] = useState<number[]>([]);
+  const [deletingIds, setDeletingIds] = useState<number[]>([]);
+
   const unreadCount = data?.data.filter((n) => !n.read).length || 0;
+
+  const addItemLoading = (id: number) => setItemLoadingIds((s) => Array.from(new Set([...s, id])));
+  const removeItemLoading = (id: number) => setItemLoadingIds((s) => s.filter((x) => x !== id));
+  const addDeleting = (id: number) => setDeletingIds((s) => Array.from(new Set([...s, id])));
+  const removeDeleting = (id: number) => setDeletingIds((s) => s.filter((x) => x !== id));
 
   const handleMarkAllAsRead = async () => {
     try {
@@ -69,32 +79,47 @@ export default function NotificationsSheet() {
 
       if (unreadIds.length === 0) return;
 
+      setBulkLoading(true);
       await axios.patch("/api/notifications/bulk", {
         ids: unreadIds,
         read: true,
       });
 
-      mutate();
+      // Re-fetch
+      await mutate();
     } catch (error) {
       console.error("Failed to mark all as read:", error);
+    } finally {
+      setBulkLoading(false);
     }
   };
 
   const handleMarkAsRead = async (id: number) => {
     try {
+      addItemLoading(id);
+
       await axios.patch(`/api/notifications/${id}`, { read: true });
-      mutate();
+
+      // Re-fetch
+      await mutate();
     } catch (error) {
       console.error("Failed to mark as read:", error);
+    } finally {
+      removeItemLoading(id);
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
+      addDeleting(id);
+
       await axios.delete(`/api/notifications/${id}`);
-      mutate();
+
+      await mutate();
     } catch (error) {
       console.error("Failed to delete notification:", error);
+    } finally {
+      removeDeleting(id);
     }
   };
 
@@ -111,13 +136,29 @@ export default function NotificationsSheet() {
     }
   };
 
+  const getTypeBorder = (type: NotificationType) => {
+    switch (type) {
+      case "SUCCESS":
+        return "border-l-4 border-green-500 dark:border-green-400";
+      case "WARNING":
+        return "border-l-4 border-yellow-500 dark:border-yellow-400";
+      case "ERROR":
+        return "border-l-4 border-red-500 dark:border-red-400";
+      default:
+        return "border-l-4 border-blue-500 dark:border-blue-400";
+    }
+  };
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("open notifications") as string}>
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="top-0 right-0 absolute flex justify-center items-center w-4 h-4 rounded-full bg-red-500 text-[10px] text-white">
+            <span
+              className="top-0 right-0 absolute flex justify-center items-center w-4 h-4 rounded-full bg-red-500 text-[10px] text-white"
+              aria-live="polite"
+            >
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -127,12 +168,38 @@ export default function NotificationsSheet() {
         <SheetHeader>
           <SheetTitle className="flex justify-between items-center">
             <span>{t("title")}</span>
-            {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
-                <CheckCheck className="w-4 h-4 mr-1" />
-                {t("mark all as read")}
-              </Button>
-            )}
+
+            <div className="flex items-center gap-2">
+              {/* show tiny updating indicator when SWR is validating in background */}
+              {isValidating && (
+                <div className="flex items-center mr-1 text-muted-foreground text-xs">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="ml-1">{t("updating")}</span>
+                </div>
+              )}
+
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMarkAllAsRead}
+                  className="text-xs"
+                  disabled={bulkLoading}
+                >
+                  {bulkLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      {t("marking")}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCheck className="w-4 h-4 mr-1" />
+                      {t("mark all as read")}
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </SheetTitle>
         </SheetHeader>
 
@@ -161,50 +228,92 @@ export default function NotificationsSheet() {
             </div>
           )}
 
-          {data?.data.map((notification) => (
-            <div
-              key={notification.id}
-              className={cn("relative p-3 border rounded-lg transition-colors", !notification.read && "bg-muted/50")}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Badge className={cn("text-xs", getTypeColor(notification.type))}>{notification.type}</Badge>
-                <div className="text-muted-foreground text-xs">
-                  {formatDistanceToNow(new Date(notification.createdAt), {
-                    addSuffix: true,
-                  })}
-                </div>
-                <div className="flex items-center gap-1 ms-auto">
-                  {!notification.read && (
+          {data?.data.map((notification) => {
+            const isUnread = !notification.read;
+            const containerClass = cn(
+              "relative p-3 border rounded-lg transition-colors",
+              isUnread ? `bg-muted/60 ${getTypeBorder(notification.type)} font-medium` : "bg-transparent opacity-70"
+            );
+
+            return (
+              <div key={notification.id} className={containerClass}>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge className={cn("text-xs", getTypeColor(notification.type))}>{notification.type}</Badge>
+                  <div
+                    className={cn("text-muted-foreground text-xs", isUnread && "text-slate-700 dark:text-slate-200")}
+                  >
+                    {formatDistanceToNow(new Date(notification.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-1 ms-auto">
+                    {!notification.read && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6"
+                        onClick={() => handleMarkAsRead(notification.id)}
+                        disabled={itemLoadingIds.includes(notification.id)}
+                        aria-label={t("mark as read") as string}
+                      >
+                        {itemLoadingIds.includes(notification.id) ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Check className="w-3 h-3" />
+                        )}
+                      </Button>
+                    )}
+
                     <Button
                       variant="ghost"
                       size="icon"
                       className="w-6 h-6"
-                      onClick={() => handleMarkAsRead(notification.id)}
+                      onClick={() => handleDelete(notification.id)}
+                      disabled={deletingIds.includes(notification.id)}
+                      aria-label={t("delete notification") as string}
                     >
-                      <Check className="w-3 h-3" />
+                      {deletingIds.includes(notification.id) ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <X className="w-3 h-3" />
+                      )}
                     </Button>
-                  )}
-                  <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => handleDelete(notification.id)}>
-                    <X className="w-3 h-3" />
-                  </Button>
+                  </div>
                 </div>
-              </div>
 
-              {notification.title && <h4 className="mb-1 font-semibold text-[13px]">{notification.title}</h4>}
+                {notification.title && (
+                  <h4
+                    className={cn(
+                      "mb-1 text-[13px]",
+                      isUnread ? "font-semibold text-slate-900" : "font-normal text-slate-700"
+                    )}
+                  >
+                    {notification.title}
+                  </h4>
+                )}
 
-              <p className={cn("mb-1 text-muted-foreground text-xs", "")}>{notification.message}</p>
-
-              {notification.link && (
-                <Link
-                  href={notification.link}
-                  className="text-primary text-xs hover:underline"
-                  onClick={() => setOpen(false)}
+                <p
+                  className={cn(
+                    "mb-1 text-muted-foreground text-xs",
+                    isUnread ? "text-slate-800" : "text-muted-foreground"
+                  )}
                 >
-                  {t("view details")}
-                </Link>
-              )}
-            </div>
-          ))}
+                  {notification.message}
+                </p>
+
+                {notification.link && (
+                  <Link
+                    href={notification.link}
+                    className="text-primary text-xs hover:underline"
+                    onClick={() => setOpen(false)}
+                  >
+                    {t("view details")}
+                  </Link>
+                )}
+              </div>
+            );
+          })}
         </div>
       </SheetContent>
     </Sheet>
