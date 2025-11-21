@@ -1,5 +1,7 @@
-import { Role, User } from "@/types";
+import { Role } from "@/types";
 
-export function isAuthorized(user: Partial<User> & { role: Role }, roles: Role[]) {
+export function isAuthorized(user: Record<string, any> & { role?: Role }, roles: Role[]) {
+  if (!user?.role) return false;
+
   return roles.includes(user?.role);
 }

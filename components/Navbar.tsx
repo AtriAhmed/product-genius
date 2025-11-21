@@ -19,7 +19,7 @@ export default function Navbar() {
   const isMounted = useIsMounted();
   const pathname = usePathname();
 
-  const isAuthenticated = status === "authenticated";
+  const isAuthenticated = !!user;
 
   async function handleLogout() {
     await signOut({ redirect: false });
