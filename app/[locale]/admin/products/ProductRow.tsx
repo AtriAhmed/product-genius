@@ -3,9 +3,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Link, useRouter } from "@/i18n/navigation";
 import { getCurrentTranslation } from "@/lib/products";
 import { getProductPrices } from "@/lib/productVariants";
-import { cn, formatPrice, getMediaUrl, htmlToText } from "@/lib/utils";
+import { cn, formatPrice, getMediaUrl, htmlToText, stopPropagation } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -20,6 +21,7 @@ interface ProductRowProps {
 export default function ProductRow({ product, onEdit, onDelete }: ProductRowProps) {
   const locale = useLocale();
   const t = useTranslations("products");
+  const router = useRouter();
 
   const translation = getCurrentTranslation(product?.translations || [], locale);
   const categoryTranslation = getCurrentTranslation(product.category?.translations || [], locale);
@@ -27,8 +29,22 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
 
   const { formattedPrice, minPrice, maxPrice } = getProductPrices(product?.variants || []);
 
+  function handleView(event: React.MouseEvent, product: Product) {
+    if (event.ctrlKey) {
+      window.open(`/admin/products/${product.id}`, "_blank");
+    } else {
+      router.push(`/admin/products/${product.id}`);
+    }
+  }
+
   return (
-    <TableRow key={product.id} className="border-border hover:bg-muted/50 transition-colors">
+    <TableRow
+      key={product.id}
+      className="border-border hover:bg-muted/50 transition-colors cursor-pointer"
+      onClick={(e) => {
+        handleView(e, product);
+      }}
+    >
       {/* Product Image */}
       <TableCell className="py-1">
         <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-md bg-muted">
@@ -63,14 +79,18 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
 
       {/* Product Name */}
       <TableCell className="py-1 font-medium">
-        <div className="flex flex-col">
+        <Link
+          href={`/admin/products/${product.id}`}
+          className="flex flex-col hover:underline"
+          onClick={stopPropagation}
+        >
           <span className="font-semibold text-[13px] text-foreground line-clamp-1">{translation?.title || `N/A`}</span>
           {translation?.description && (
             <span className="text-[11px] text-muted-foreground line-clamp-1">
               {htmlToText(translation.description)?.replace(/^product description:?/i, "")}
             </span>
           )}
-        </div>
+        </Link>
       </TableCell>
 
       {/* SKU */}
@@ -131,15 +151,18 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       {/* Actions */}
       <TableCell className="py-1">
         <div className="flex justify-center gap-2">
-          <Button variant="ghost" size="sm" className="w-8 h-8 p-0" onClick={() => onEdit(product)}>
+          {/* <Button variant="ghost" size="sm" className="w-8 h-8 p-0" onClick={() => onEdit(product)}>
             <Edit className="w-4 h-4" />
             <span className="sr-only">{t("edit product")}</span>
-          </Button>
+          </Button> */}
           <Button
             variant="ghost"
             size="sm"
             className="w-8 h-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => onDelete(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(product);
+            }}
           >
             <Trash2 className="w-4 h-4" />
             <span className="sr-only">{t("delete product")}</span>

@@ -367,6 +367,7 @@ export default function MediaUpload({
               collisionDetection={closestCenter}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
+              id="media-upload-grid"
             >
               <SortableContext items={value.map((item) => item.id)} strategy={rectSortingStrategy}>
                 <div className="gap-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">

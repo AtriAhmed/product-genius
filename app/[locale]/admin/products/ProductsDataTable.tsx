@@ -3,6 +3,7 @@
 import ProductRow from "@/app/[locale]/admin/products/ProductRow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useRouter } from "@/i18n/navigation";
 import { Product } from "@/types";
 import { Eye, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -23,6 +24,7 @@ export default function ProductsDataTable({
   isLoading = false,
 }: ProductsDataTableProps) {
   const t = useTranslations("products");
+  const router = useRouter();
 
   const skeletonRows = Array.from({ length: 4 }).map((_, idx) => (
     <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">

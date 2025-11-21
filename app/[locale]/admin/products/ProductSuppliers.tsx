@@ -2,14 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   closestCenter,
   DndContext,
@@ -19,15 +12,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import {
-  restrictToParentElement,
-  restrictToVerticalAxis,
-} from "@dnd-kit/modifiers";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Package, Plus, Users } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useTranslations } from "next-intl";
@@ -42,10 +28,7 @@ type ProductSuppliersProps = {
   setValue: UseFormSetValue<ProductFormData>;
 };
 
-export default function ProductSuppliers({
-  watch,
-  setValue,
-}: ProductSuppliersProps) {
+export default function ProductSuppliers({ watch, setValue }: ProductSuppliersProps) {
   const t = useTranslations("products");
 
   // Watch the suppliers array from the main form
@@ -53,8 +36,7 @@ export default function ProductSuppliers({
 
   // State for dialog and editing
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingSupplier, setEditingSupplier] =
-    useState<AddSupplierFormData | null>(null);
+  const [editingSupplier, setEditingSupplier] = useState<AddSupplierFormData | null>(null);
 
   // Add suppliers with temp IDs for drag and drop
   const suppliersWithIds = suppliers.map((supplier, index) => ({
@@ -74,12 +56,8 @@ export default function ProductSuppliers({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = suppliersWithIds.findIndex(
-        (field) => field.id === active.id
-      );
-      const newIndex = suppliersWithIds.findIndex(
-        (field) => field.id === over.id
-      );
+      const oldIndex = suppliersWithIds.findIndex((field) => field.id === active.id);
+      const newIndex = suppliersWithIds.findIndex((field) => field.id === over.id);
 
       if (oldIndex !== -1 && newIndex !== -1) {
         // Reorder the suppliers array
@@ -126,9 +104,7 @@ export default function ProductSuppliers({
   };
 
   const removeSupplier = (id: string | number) => {
-    const newSuppliers = suppliersWithIds.filter(
-      (supplier) => supplier.id !== id
-    );
+    const newSuppliers = suppliersWithIds.filter((supplier) => supplier.id !== id);
     setValue("suppliers", newSuppliers, {
       shouldDirty: true,
     });
@@ -169,23 +145,18 @@ export default function ProductSuppliers({
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            id="product-suppliers-table"
           >
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-muted/50">
                   <TableHead className="w-12"></TableHead>
-                  <TableHead className="font-medium">
-                    {t("marketplace")}
-                  </TableHead>
+                  <TableHead className="font-medium">{t("marketplace")}</TableHead>
                   <TableHead className="font-medium">{t("url")}</TableHead>
                   <TableHead className="font-medium">{t("price")}</TableHead>
                   <TableHead className="font-medium">{t("type")}</TableHead>
-                  <TableHead className="min-w-[150px] font-medium">
-                    {t("notes")}
-                  </TableHead>
-                  <TableHead className="font-medium text-center">
-                    {t("actions")}
-                  </TableHead>
+                  <TableHead className="min-w-[150px] font-medium">{t("notes")}</TableHead>
+                  <TableHead className="font-medium text-center">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -208,12 +179,8 @@ export default function ProductSuppliers({
                     <TableCell colSpan={8} className="h-32">
                       <div className="flex flex-col justify-center items-center text-muted-foreground text-center">
                         <Package className="w-8 h-8 mb-2" />
-                        <p className="font-medium text-sm">
-                          {t("no suppliers available")}
-                        </p>
-                        <p className="text-xs">
-                          {t("add suppliers to your product")}
-                        </p>
+                        <p className="font-medium text-sm">{t("no suppliers available")}</p>
+                        <p className="text-xs">{t("add suppliers to your product")}</p>
                       </div>
                     </TableCell>
                   </TableRow>
