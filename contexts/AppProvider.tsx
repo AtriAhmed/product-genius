@@ -8,6 +8,7 @@ import { CartItem, UserSubscriptionInfo } from "@/types";
 import axios from "axios";
 import useSWR from "swr";
 import { Plan } from "@/types";
+import { useSession } from "next-auth/react";
 
 interface AppContextProps {
   currentPlan: Plan | undefined;
@@ -35,12 +36,15 @@ async function userSubscriptionInfoFetcher(): Promise<UserSubscriptionInfo> {
 }
 
 export default function AppProvider({ children }: AppProviderProps) {
+  const { data: session, status } = useSession();
+  const user = session?.user;
+
   const {
     data: currentPlan,
     error,
     isLoading,
     mutate: mutateCurrentPlan,
-  } = useSWR<Plan>("current-plan", fetcher, {
+  } = useSWR<Plan>(["current-plan", user?.id], fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
@@ -50,7 +54,7 @@ export default function AppProvider({ children }: AppProviderProps) {
     error: userSubscriptionInfoError,
     isLoading: userSubscriptionInfoIsLoading,
     mutate: mutateUserSubscriptionInfo,
-  } = useSWR<UserSubscriptionInfo>("user-subscription-info", userSubscriptionInfoFetcher, {
+  } = useSWR<UserSubscriptionInfo>(["user-subscription-info", user?.id], userSubscriptionInfoFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
