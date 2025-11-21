@@ -389,8 +389,13 @@ export type ShopifyStore = {
   orders?: Order[];
 };
 
-export type UserUsage = {
-  importedProductsCount: number;
+export type UserSubscriptionInfo = {
+  hasActiveSubscription: boolean;
+  isFreeTrial: boolean;
+  canViewProducts: boolean;
+  canImportProducts: boolean;
+  importedProductsLimit?: number;
+  importedProductsCount?: number;
 };
 
 enum NotificationType {

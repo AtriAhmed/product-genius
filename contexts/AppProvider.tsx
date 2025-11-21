@@ -4,7 +4,7 @@ import useLocalStorage from "@/hooks/use-local-storage";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { createContext, ReactNode, useContext, useEffect } from "react";
-import { CartItem, UserUsage } from "@/types";
+import { CartItem, UserSubscriptionInfo } from "@/types";
 import axios from "axios";
 import useSWR from "swr";
 import { Plan } from "@/types";
@@ -12,8 +12,8 @@ import { Plan } from "@/types";
 interface AppContextProps {
   currentPlan: Plan | undefined;
   mutateCurrentPlan: () => Promise<Plan | undefined>;
-  userUsage: UserUsage | undefined;
-  mutateUserUsage: () => Promise<UserUsage | undefined>;
+  userSubscriptionInfo: UserSubscriptionInfo | undefined;
+  mutateUserSubscriptionInfo: () => Promise<UserSubscriptionInfo | undefined>;
 }
 
 type AppProviderProps = {
@@ -28,8 +28,8 @@ async function fetcher(): Promise<Plan> {
   return response.data;
 }
 
-async function userUsageFetcher(): Promise<UserUsage> {
-  const response = await axios.get("/api/users/current/usage");
+async function userSubscriptionInfoFetcher(): Promise<UserSubscriptionInfo> {
+  const response = await axios.get("/api/users/current/subscription-info");
 
   return response.data;
 }
@@ -46,11 +46,11 @@ export default function AppProvider({ children }: AppProviderProps) {
   });
 
   const {
-    data: userUsage,
-    error: userUsageError,
-    isLoading: userUsageIsLoading,
-    mutate: mutateUserUsage,
-  } = useSWR<UserUsage>("user-usage", userUsageFetcher, {
+    data: userSubscriptionInfo,
+    error: userSubscriptionInfoError,
+    isLoading: userSubscriptionInfoIsLoading,
+    mutate: mutateUserSubscriptionInfo,
+  } = useSWR<UserSubscriptionInfo>("user-subscription-info", userSubscriptionInfoFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
@@ -70,8 +70,8 @@ export default function AppProvider({ children }: AppProviderProps) {
       value={{
         currentPlan,
         mutateCurrentPlan,
-        userUsage,
-        mutateUserUsage,
+        userSubscriptionInfo,
+        mutateUserSubscriptionInfo,
       }}
     >
       {children}

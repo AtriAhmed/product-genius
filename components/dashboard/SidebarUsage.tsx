@@ -7,19 +7,19 @@ import { Progress } from "@/components/ui/progress";
 import { Package } from "lucide-react";
 
 export default function SidebarUsage() {
-  const { currentPlan, userUsage } = useAppProvider();
+  const { currentPlan, userSubscriptionInfo } = useAppProvider();
   const t = useTranslations("sidebar");
 
-  console.log("-------------------- userUsage, currentPlan --------------------");
-  console.log(userUsage, currentPlan);
+  console.log("-------------------- userSubscriptionInfo, currentPlan --------------------");
+  console.log(userSubscriptionInfo, currentPlan);
 
-  if (!currentPlan || !userUsage) {
+  if (!currentPlan || !userSubscriptionInfo) {
     return <Skeleton className="w-full h-16" />;
   }
 
   const importedProductsFeature = currentPlan.features?.find((f) => f.key === "imported-products");
   const importedProductsLimit = importedProductsFeature?.value ? parseInt(importedProductsFeature.value, 10) : Infinity;
-  const importedProductsCount = userUsage.importedProductsCount || 0;
+  const importedProductsCount = userSubscriptionInfo.importedProductsCount || 0;
   const importedProductsPercentage =
     importedProductsLimit === Infinity ? 0 : (importedProductsCount / importedProductsLimit) * 100;
 
