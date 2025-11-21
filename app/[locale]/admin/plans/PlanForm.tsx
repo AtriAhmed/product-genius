@@ -94,7 +94,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
   }
 
   return (
-    <div className="mx-auto px-4 py-2 container">
+    <div className="">
       <div className="max-w-3xl">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-6">
@@ -118,7 +118,12 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
               </Button>
             )}
 
-            <Button onClick={handleSubmit(onSubmit, onError)} disabled={isSubmitting || !isDirty} size="sm">
+            <Button
+              onClick={handleSubmit(onSubmit, onError)}
+              disabled={isSubmitting || !isDirty}
+              size="sm"
+              variant="primary"
+            >
               <Save className="w-4 h-4 mr-2" />
               {isSubmitting
                 ? mode === "create"

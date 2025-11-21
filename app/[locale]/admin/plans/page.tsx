@@ -73,6 +73,13 @@ export default function PlansPage() {
   };
 
   const handleDeletePlan = (plan: Plan) => {
+    if (isDeleting) return;
+
+    if (plan._count?.subscriptions && plan._count.subscriptions > 0) {
+      toast.error(t("cannot delete plan with active subscriptions"));
+      return;
+    }
+
     setDeletePlan(plan);
   };
 
@@ -126,7 +133,7 @@ export default function PlansPage() {
             <h1 className="font-bold text-foreground text-3xl">{t("plans")}</h1>
             <p className="mt-2 text-muted-foreground">{t("manage your plans")}</p>
           </div>
-          <Button onClick={handleAddPlan} className="gap-2">
+          <Button onClick={handleAddPlan} className="gap-2" variant="primary">
             <Plus className="w-4 h-4" />
             {t("add plan")}
           </Button>

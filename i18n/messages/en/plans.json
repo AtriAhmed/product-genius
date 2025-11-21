@@ -102,5 +102,6 @@
   "actions": "Actions",
   "cancel": "Cancel",
   "no features available": "No features available",
-  "add features to your plan": "Add features to your plan"
+  "add features to your plan": "Add features to your plan",
+  "cannot delete plan with active subscriptions": "Cannot delete plan with active subscriptions"
 }

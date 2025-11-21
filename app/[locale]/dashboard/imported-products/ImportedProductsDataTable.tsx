@@ -14,7 +14,7 @@ import DeleteMappingDialog from "./DeleteMappingDialog";
 import axios from "axios";
 import { toast } from "sonner";
 import { getCurrentTranslation } from "@/lib/products";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 type ImportedProductsDataTableProps = {
   productMappings: ProductMapping[];
@@ -30,6 +30,7 @@ export default function ImportedProductsDataTable({
   const t = useTranslations("imported-products");
   const [deleteMapping, setDeleteMapping] = useState<ProductMapping | undefined>();
   const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const handleDeleteMapping = (mapping: ProductMapping) => {
     setDeleteMapping(mapping);
@@ -114,7 +115,13 @@ export default function ImportedProductsDataTable({
             ? skeletonRows
             : productMappings.length > 0
             ? productMappings.map((mapping) => (
-                <TableRow key={mapping.id}>
+                <TableRow
+                  key={mapping.id}
+                  onClick={() => {
+                    router.push(`/dashboard/products/${mapping.product?.id}`);
+                  }}
+                  className="cursor-pointer"
+                >
                   <TableCell className="py-1">
                     {mapping.product?.media?.[0]?.url ? (
                       <div className="w-10 h-10 overflow-hidden rounded">
@@ -138,18 +145,15 @@ export default function ImportedProductsDataTable({
                     )}
                   </TableCell>
                   <TableCell className="py-1">
-                    <div>
-                      <Link
-                        href={`/dashboard/products/${mapping.product?.id}`}
-                        className="border-muted-foreground/0 hover:border-muted-foreground border-b font-medium duration-150"
-                      >
+                    <Link href={`/dashboard/products/${mapping.product?.id}`} className="hover:underline">
+                      <span className="font-medium">
                         {getCurrentTranslation(mapping?.product?.translations || [])?.title || "Untitled Product"}
-                      </Link>
+                      </span>
                       <div className="text-muted-foreground text-sm">ID: {mapping.product?.id}</div>
                       {mapping.product?.sku && (
                         <div className="text-muted-foreground text-xs">SKU: {mapping.product.sku}</div>
                       )}
-                    </div>
+                    </Link>
                   </TableCell>
                   <TableCell className="py-1">
                     <div className="flex items-center gap-2">

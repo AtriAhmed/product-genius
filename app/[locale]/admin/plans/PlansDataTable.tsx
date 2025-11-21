@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Edit, Trash2, Eye, Star, Users } from "lucide-react";
 import { format } from "date-fns";
 import { Plan } from "@/types";
+import { Link, useRouter } from "@/i18n/navigation";
+import { stopPropagation } from "@/lib/utils";
 
 interface PlansDataTableProps {
   plans: Plan[];
@@ -19,6 +21,7 @@ interface PlansDataTableProps {
 
 export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = false }: PlansDataTableProps) {
   const t = useTranslations("plans");
+  const router = useRouter();
 
   const getIntervalLabel = (interval: string) => {
     switch (interval) {
@@ -53,6 +56,14 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
     return formatPrice(priceObj.price || 0, priceObj.interval || "MONTH");
   }
 
+  function handleView(event: React.MouseEvent, plan: Plan) {
+    if (event.ctrlKey) {
+      window.open(`/admin/plans/${plan.id}`, "_blank");
+    } else {
+      router.push(`/admin/plans/${plan.id}`);
+    }
+  }
+
   const skeletonRows = Array.from({ length: 4 }).map((_, idx) => (
     <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
       {/* Plan name */}
@@ -64,27 +75,27 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
       </TableCell>
 
       {/* Price */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-24 h-4 rounded" />
       </TableCell>
 
       {/* Status */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-16 h-6 rounded-full" />
       </TableCell>
 
       {/* Subscriptions */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-12 h-4 rounded" />
       </TableCell>
 
       {/* Created */}
-      <TableCell>
+      <TableCell className="py-1">
         <Skeleton className="w-20 h-4 rounded" />
       </TableCell>
 
       {/* Actions */}
-      <TableCell>
+      <TableCell className="py-1">
         <div className="flex justify-end gap-2">
           <Skeleton className="w-8 h-8 rounded-full" />
           <Skeleton className="w-8 h-8 rounded-full" />
@@ -125,9 +136,19 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
             ? skeletonRows
             : plans.length > 0
             ? plans.map((plan) => (
-                <TableRow key={plan.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div className="space-y-1">
+                <TableRow
+                  key={plan.id}
+                  className="hover:bg-muted/50 cursor-pointer"
+                  onClick={(e) => {
+                    handleView(e, plan);
+                  }}
+                >
+                  <TableCell className="py-1">
+                    <Link
+                      href={`/admin/plans/${plan.id}`}
+                      className="space-y-1 hover:underline"
+                      onClick={stopPropagation}
+                    >
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{plan.name}</span>
                         {plan.mostPopular && (
@@ -140,36 +161,39 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
                       {plan.description && (
                         <p className="text-muted-foreground text-sm line-clamp-1">{plan.description}</p>
                       )}
-                    </div>
+                    </Link>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div className="font-medium">{getPriceDisplay(plan)}</div>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant={plan.active ? "default" : "secondary"}>
+                  <TableCell className="py-1">
+                    <Badge variant={plan.active ? "success" : "secondary"}>
                       {plan.active ? t("active") : t("inactive")}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Users className="w-4 h-4" />
-                      <span>{(plan as any)._count?.subscriptions || 0}</span>
+                      <span>{plan._count?.subscriptions || 0}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="py-1 text-muted-foreground">
                     {plan?.createdAt ? format(new Date(plan.createdAt), "MMM d, yyyy") : "—"}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="py-1 text-right">
                     <div className="flex justify-end items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => onEdit(plan)} className="w-8 h-8 p-0">
+                      {/* <Button variant="ghost" size="sm" onClick={() => onEdit(plan)} className="w-8 h-8 p-0">
                         <Edit className="w-4 h-4" />
                         <span className="sr-only">{t("edit")}</span>
-                      </Button>
+                      </Button> */}
                       {!plan?.isFree && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onDelete(plan)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(plan);
+                          }}
                           className="w-8 h-8 p-0 text-destructive hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />

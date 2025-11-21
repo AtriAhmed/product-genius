@@ -59,3 +59,7 @@ export function nanoidLower(size?: number) {
   const generateId = customAlphabet(alphabet, size);
   return generateId();
 }
+
+export function stopPropagation(event: React.MouseEvent) {
+  event.stopPropagation();
+}

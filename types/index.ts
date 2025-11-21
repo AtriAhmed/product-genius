@@ -96,6 +96,10 @@ export type Plan = {
   /* Relations */
   prices?: PlanPrice[];
   subscriptions?: Subscription[];
+
+  _count?: {
+    subscriptions: number;
+  };
 };
 
 export type Subscription = {

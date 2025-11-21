@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ProductMapping } from "@/types";
-import { useTranslations } from "next-intl";
 import Pagination from "@/components/Pagination";
-import useSWR from "swr";
+import { ProductMapping } from "@/types";
 import axios from "axios";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import useSWR from "swr";
 import { useDebounce } from "use-debounce";
-import ImportedProductsFilters from "./ImportedProductsFilters";
 import ImportedProductsDataTable from "./ImportedProductsDataTable";
+import ImportedProductsFilters from "./ImportedProductsFilters";
 
 type ProductMappingsResponse = {
   data: ProductMapping[];
@@ -19,13 +19,7 @@ type ProductMappingsResponse = {
   pages: number;
 };
 
-async function fetcher(
-  page: number,
-  limit: number,
-  search: string,
-  sortBy: string,
-  sortOrder: string
-) {
+async function fetcher(page: number, limit: number, search: string, sortBy: string, sortOrder: string) {
   const params: any = { page, limit };
 
   if (search.trim()) params.search = search.trim();
@@ -97,15 +91,10 @@ export default function ImportedProductsPage() {
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>
-            <h1 className="font-bold text-foreground text-3xl">
-              {t("imported products")}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              {t("manage imported products")}
-            </p>
+            <h1 className="font-bold text-foreground text-3xl">{t("imported products")}</h1>
+            <p className="mt-2 text-muted-foreground">{t("manage imported products")}</p>
           </div>
         </div>
-
         {/* Filters */}
         <ImportedProductsFilters
           search={search}
@@ -117,23 +106,12 @@ export default function ImportedProductsPage() {
           onSortChange={handleSortChange}
           onClearFilters={clearFilters}
         />
-
         {/* Product Mappings Data Table */}
-        <ImportedProductsDataTable
-          productMappings={productMappings}
-          onRefresh={mutate}
-          isLoading={isLoading}
-        />
-
+        <ImportedProductsDataTable productMappings={productMappings} onRefresh={mutate} isLoading={isLoading} />
         {/* Pagination */}
         {!isLoading && productMappings.length > 0 && pagination.pages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalPages={pagination.pages}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} totalPages={pagination.pages} onPageChange={setPage} />
         )}
-
         {/* Results Count */}
         {!isLoading && productMappings.length > 0 && (
           <div className="mt-4 text-muted-foreground text-sm text-center">

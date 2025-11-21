@@ -136,6 +136,7 @@ export default function PlanFeatures({ watch, setValue }: PlanFeaturesProps) {
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            id="plan-features-table"
           >
             <Table>
               <TableHeader>
