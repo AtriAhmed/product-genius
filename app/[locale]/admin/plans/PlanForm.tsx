@@ -86,11 +86,20 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
   };
 
   function onError(anyErrors: any) {
-    console.log("-------------------- anyErrors --------------------");
-    console.log(anyErrors);
     toast.error(t("please fix the errors in the form before submitting"));
     console.log("-------------------- errors --------------------");
     console.log(errors);
+  }
+
+  function handleShowDeleteDialog() {
+    if (isDeleting) return;
+
+    if (plan?._count?.subscriptions && plan._count.subscriptions > 0) {
+      toast.error(t("cannot delete plan with active subscriptions"));
+      return;
+    }
+
+    setShowDeleteDialog(true);
   }
 
   return (
@@ -112,7 +121,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
 
           <div className="flex items-center gap-2 ms-auto">
             {mode === "edit" && !plan?.isFree && (
-              <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)} className="">
+              <Button variant="destructive" size="sm" onClick={handleShowDeleteDialog} className="">
                 <Trash2 className="w-4 h-4 mr-2" />
                 {t("delete")}
               </Button>
