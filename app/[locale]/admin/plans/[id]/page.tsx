@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { isAuthorized } from "@/lib/authUtils";
 
 type Props = {
   params: Promise<{ id: string; locale: string }>;
@@ -54,7 +55,7 @@ export default async function EditPlanPage({ params }: Props) {
     select: { role: true },
   });
 
-  if (!user || !["ADMIN", "OWNER"].includes(user.role)) {
+  if (!user || !isAuthorized(user, ["ADMIN", "OWNER"])) {
     redirect("/");
   }
 

@@ -15,25 +15,26 @@ export const planPriceSchema = z.object({
   compareAtPrice: z.number().optional().nullable(),
 });
 
-export const planFormSchema = z.object({
-  name: z.string().min(1, "Plan name is required"),
-  description: z.string().optional(),
-  active: z.boolean(),
-  features: z.array(planFeatureSchema).optional(),
-  mostPopular: z.boolean(),
-  sortOrder: z.number().min(0),
-  // manual prices check: at least one price should have a value
-  prices: z
-    .array(planPriceSchema)
-    .refine((prices) => prices.some((price) => price.price !== undefined && price.price !== null), {
-      message: "At least one price must have a value",
-    })
-    .refine(
-      (prices) => prices.every((price) => price.price === null || price.price === undefined || price.price >= 1),
-      {
-        message: "Prices must be at least 1",
-      }
-    ),
-});
+export const planFormSchema = (isFree: boolean) =>
+  z.object({
+    name: z.string().min(1, "Plan name is required"),
+    description: z.string().optional(),
+    active: z.boolean(),
+    features: z.array(planFeatureSchema).optional(),
+    mostPopular: z.boolean(),
+    sortOrder: z.number().min(0),
+    // manual prices check: at least one price should have a value
+    prices: z
+      .array(planPriceSchema)
+      .refine((prices) => isFree || prices.some((price) => price.price !== undefined && price.price !== null), {
+        message: "At least one price must have a value",
+      })
+      .refine(
+        (prices) => prices.every((price) => price.price === null || price.price === undefined || price.price >= 1),
+        {
+          message: "Prices must be at least 1",
+        }
+      ),
+  });
 
-export type PlanFormData = z.infer<typeof planFormSchema>;
+export type PlanFormData = z.infer<ReturnType<typeof planFormSchema>>;

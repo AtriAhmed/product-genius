@@ -38,7 +38,7 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     setValue,
     formState: { errors, isValid, isDirty },
   } = useForm<PlanFormData>({
-    resolver: zodResolver(planFormSchema),
+    resolver: zodResolver(planFormSchema(plan?.isFree || false)),
     defaultValues: {
       name: plan?.name || "",
       description: plan?.description || "",
@@ -85,8 +85,12 @@ export default function PlanForm({ plan, mode }: PlanFormProps) {
     }
   };
 
-  function onError() {
+  function onError(anyErrors: any) {
+    console.log("-------------------- anyErrors --------------------");
+    console.log(anyErrors);
     toast.error(t("please fix the errors in the form before submitting"));
+    console.log("-------------------- errors --------------------");
+    console.log(errors);
   }
 
   return (
