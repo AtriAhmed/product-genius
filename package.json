@@ -8,7 +8,8 @@
     "start": "next start",
     "seed:user": "tsx prisma/seed-user.ts",
     "seed:products": "tsx prisma/seed-products.ts",
-    "seed:free-plan": "tsx prisma/seed-free-plan.ts"
+    "seed:free-plan": "tsx prisma/seed-free-plan.ts",
+    "seed:fix-prices": "tsx prisma/seed-fix-prices.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
