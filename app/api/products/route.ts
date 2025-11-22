@@ -546,7 +546,11 @@ export async function GET(request: NextRequest) {
     if (query.sortBy === "updatedAt") {
       orderBy = { updatedAt: query.sortOrder };
     } else if (query.sortBy === "price") {
-      orderBy = { price: query.sortOrder };
+      if (query.sortOrder === "asc") {
+        orderBy = { minPrice: "asc" };
+      } else {
+        orderBy = { maxPrice: "desc" };
+      }
     } else if (query.sortBy === "compareAtPrice") {
       orderBy = { compareAtPrice: query.sortOrder };
     } else if (query.sortBy === "sellingPrice") {
