@@ -22,9 +22,16 @@ interface ProductsResponse {
   pages: number;
 }
 
-async function fetcher(page: number, limit: number, search: string, isActive: boolean | undefined) {
+async function fetcher(
+  page: number,
+  limit: number,
+  search: string,
+  isActive: boolean | undefined,
+  sortBy: string,
+  sortOrder: string
+) {
   const response = await axios.get("/api/products", {
-    params: { page, limit, search, isActive: isActive },
+    params: { page, limit, search, isActive: isActive, sortBy, sortOrder },
   });
   return response.data;
 }
@@ -46,8 +53,8 @@ export default function UserProductsPage() {
 
   // SWR hook for data fetching
   const { data, error, isLoading } = useSWR<ProductsResponse>(
-    ["products", page, limit, debouncedSearch, isActive],
-    () => fetcher(page, limit, debouncedSearch, isActive),
+    ["products", page, limit, debouncedSearch, isActive, sortBy, sortOrder],
+    () => fetcher(page, limit, debouncedSearch, isActive, sortBy, sortOrder),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -58,32 +65,7 @@ export default function UserProductsPage() {
     setPage(1);
   }, [debouncedSearch, filter, sortBy, sortOrder]);
 
-  // Process and sort products from SWR data
-  const getProcessedProducts = (): Product[] => {
-    if (!data?.data) return [];
-
-    let sortedProducts = [...data.data];
-
-    // Client-side sorting for unsupported API sorts
-    if (sortBy === "title") {
-      sortedProducts = sortedProducts.sort((a, b) => {
-        const aTitle = getCurrentTranslation(a?.translations || [])?.title || "";
-        const bTitle = getCurrentTranslation(b?.translations || [])?.title || "";
-        const comparison = aTitle.localeCompare(bTitle);
-        return sortOrder === "asc" ? comparison : -comparison;
-      });
-    } else if (sortBy === "suggestedPrice") {
-      sortedProducts = sortedProducts.sort((a, b) => {
-        const aPrice = a.sellingPrice || 0;
-        const bPrice = b.sellingPrice || 0;
-        return sortOrder === "asc" ? aPrice - bPrice : bPrice - aPrice;
-      });
-    }
-
-    return sortedProducts;
-  };
-
-  const products = getProcessedProducts();
+  const products = data?.data || [];
   const pagination = {
     page: data?.page || 1,
     limit: data?.limit || 30,

@@ -1,13 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Product } from "@/types";
 import { Search, SortAsc, SortDesc } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -37,10 +31,8 @@ export default function ProductFilters({
   const sortOptions = [
     { value: "createdAt-desc", label: t("newest first") },
     { value: "createdAt-asc", label: t("oldest first") },
-    { value: "title-asc", label: t("a-z") },
-    { value: "title-desc", label: t("z-a") },
-    { value: "suggestedPrice-desc", label: t("highest price") },
-    { value: "suggestedPrice-asc", label: t("lowest price") },
+    { value: "price-desc", label: t("highest price") },
+    { value: "price-asc", label: t("lowest price") },
   ];
 
   const currentSortValue = `${sortBy}-${sortOrder}`;
@@ -72,11 +64,7 @@ export default function ProductFilters({
         }}
       >
         <SelectTrigger className="w-full lg:w-48">
-          {sortOrder === "asc" ? (
-            <SortAsc className="w-4 h-4 mr-2" />
-          ) : (
-            <SortDesc className="w-4 h-4 mr-2" />
-          )}
+          {sortOrder === "asc" ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

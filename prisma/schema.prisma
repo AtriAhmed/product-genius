@@ -5,13 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../app/generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -220,6 +219,8 @@ model Product {
   price           Float?
   compareAtPrice  Float?  @map("compare_at_price")
   sellingPrice    Float?  @map("selling_price")
+  minPrice        Float?  @map("min_price")
+  maxPrice        Float?  @map("max_price")
   currency        String?
   popularityScore Int     @default(0) @map("popularity_score")
   shopifyId       String? @map("shopify_id")
