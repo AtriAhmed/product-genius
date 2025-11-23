@@ -243,8 +243,54 @@ model Product {
   productMappings ProductMapping[]
   variantMappings VariantMapping[]
   orderItems      OrderItem[]
+  shippingZones   ShippingZone[]
 
   @@map("product")
+}
+
+model ShippingZone {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  productId Int?     @map("product_id")
+  product   Product? @relation(fields: [productId], references: [id])
+
+  countries ShippingZoneCountry[]
+  rules     ShippingRule[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([productId])
+  @@map("shipping_zone")
+}
+
+model ShippingZoneCountry {
+  id          Int          @id @default(autoincrement())
+  zone        ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneId      Int          @map("shipping_zone_id")
+  countryCode String
+
+  @@unique([zoneId, countryCode])
+  @@index([zoneId])
+  @@index([countryCode])
+  @@map("shipping_zone_country")
+}
+
+model ShippingRule {
+  id          Int          @id @default(autoincrement())
+  zone        ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneId      Int          @map("shipping_zone_id")
+  name        String?
+  priceCents  Int          @map("price_cents")
+  minQuantity Int?         @map("min_quantity")
+  maxQuantity Int?         @map("max_quantity")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([zoneId])
+  @@index([zoneId, minQuantity])
+  @@map("shipping_rule")
 }
 
 model ProductOption {
