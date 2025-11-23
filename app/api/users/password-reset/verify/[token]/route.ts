@@ -7,15 +7,10 @@ const verifySchema = z.object({
   password: z.string().min(8),
 });
 
-type RouteParams = {
-  params: Promise<{
-    token: string;
-  }>;
-};
-
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export async function POST(request: NextRequest, ctx: RouteContext<"/api/users/password-reset/verify/[token]">) {
+  const params = await ctx.params;
   try {
-    const { token } = await params;
+    const { token } = params;
     const body = await request.json();
     const { password } = verifySchema.parse(body);
 

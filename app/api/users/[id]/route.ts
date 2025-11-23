@@ -5,10 +5,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcrypt";
 
-type RouteContext<T> = {
-  params: Promise<{ id: string }>;
-};
-
 // Validation schema for user updates
 const updateUserSchema = z.object({
   email: z.string().email().optional(),

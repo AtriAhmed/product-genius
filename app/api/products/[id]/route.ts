@@ -9,10 +9,6 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-type RouteContext<T> = {
-  params: Promise<{ id: string }>;
-};
-
 // Validation schemas for updates
 const translationSchema = z.object({
   locale: z.string().min(1),
@@ -64,6 +60,19 @@ const variantSchema = z.object({
   trackInventory: z.boolean().optional().default(false),
 });
 
+const shippingRuleSchema = z.object({
+  name: z.string().optional().nullable(),
+  priceCents: z.number().int().min(0),
+  minQuantity: z.number().int().min(0).optional().nullable(),
+  maxQuantity: z.number().int().min(0).optional().nullable(),
+});
+
+const shippingZoneSchema = z.object({
+  name: z.string().optional().nullable(),
+  countries: z.array(z.string()).min(1), // array of country codes
+  rules: z.array(shippingRuleSchema).min(1),
+});
+
 const updateProductSchema = z.object({
   price: z.number().gte(0).optional().nullable(),
   compareAtPrice: z.number().gte(0).optional().nullable(),
@@ -77,6 +86,7 @@ const updateProductSchema = z.object({
   suppliers: z.array(supplierSchema).optional().default([]),
   options: z.array(productOptionSchema).max(3).optional().default([]),
   variants: z.array(variantSchema).optional().default([]),
+  shippingZones: z.array(shippingZoneSchema).optional().default([]),
 });
 
 const patchProductSchema = z.object({
@@ -92,6 +102,7 @@ const patchProductSchema = z.object({
   suppliers: z.array(supplierSchema).optional(),
   options: z.array(productOptionSchema).max(3).optional(),
   variants: z.array(variantSchema).optional(),
+  shippingZones: z.array(shippingZoneSchema).optional(),
 });
 
 export async function GET(request: NextRequest, ctx: RouteContext<"/api/products/[id]">) {
@@ -155,6 +166,12 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/products
         plans: {
           include: {
             prices: true,
+          },
+        },
+        shippingZones: {
+          include: {
+            countries: true,
+            rules: true,
           },
         },
       },
@@ -717,6 +734,37 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       }
     }
 
+    // Handle shipping zones - delete old ones and create new ones
+    if (validatedData.shippingZones !== undefined) {
+      // Delete all existing shipping zones (cascade will delete countries and rules)
+      await prisma.shippingZone.deleteMany({
+        where: { productId },
+      });
+
+      // Create new shipping zones with nested countries and rules
+      for (const zone of validatedData.shippingZones) {
+        await prisma.shippingZone.create({
+          data: {
+            name: zone.name,
+            productId: productId,
+            countries: {
+              create: zone.countries.map((countryCode) => ({
+                countryCode,
+              })),
+            },
+            rules: {
+              create: zone.rules.map((rule) => ({
+                name: rule.name,
+                priceCents: rule.priceCents,
+                minQuantity: rule.minQuantity,
+                maxQuantity: rule.maxQuantity,
+              })),
+            },
+          },
+        });
+      }
+    }
+
     // Update product in database only if there's something to update
     let updatedProduct;
     if (Object.keys(updateData).length > 0) {
@@ -761,6 +809,12 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               prices: true,
             },
           },
+          shippingZones: {
+            include: {
+              countries: true,
+              rules: true,
+            },
+          },
         },
       });
     } else {
@@ -803,6 +857,12 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
           plans: {
             include: {
               prices: true,
+            },
+          },
+          shippingZones: {
+            include: {
+              countries: true,
+              rules: true,
             },
           },
         },

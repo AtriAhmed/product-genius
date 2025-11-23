@@ -56,6 +56,19 @@ const variantSchema = z.object({
   trackInventory: z.boolean().optional().default(false),
 });
 
+const shippingRuleSchema = z.object({
+  name: z.string().optional().nullable(),
+  priceCents: z.number().int().min(0),
+  minQuantity: z.number().int().min(0).optional().nullable(),
+  maxQuantity: z.number().int().min(0).optional().nullable(),
+});
+
+const shippingZoneSchema = z.object({
+  name: z.string().optional().nullable(),
+  countries: z.array(z.string()).min(1), // array of country codes
+  rules: z.array(shippingRuleSchema).min(1),
+});
+
 const createProductSchema = z.object({
   price: z.number().positive().optional().nullable(),
   compareAtPrice: z.number().positive().optional().nullable(),
@@ -69,6 +82,7 @@ const createProductSchema = z.object({
   suppliers: z.array(supplierSchema).optional().default([]),
   options: z.array(productOptionSchema).max(3).optional().default([]),
   variants: z.array(variantSchema).optional().default([]),
+  shippingZones: z.array(shippingZoneSchema).optional().default([]),
 });
 
 // Cleanup function to remove uploaded files when product creation fails
@@ -367,6 +381,31 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Create shipping zones
+      if (validatedData.shippingZones.length > 0) {
+        for (const zone of validatedData.shippingZones) {
+          await tx.shippingZone.create({
+            data: {
+              name: zone.name,
+              productId: createdProduct.id,
+              countries: {
+                create: zone.countries.map((countryCode) => ({
+                  countryCode,
+                })),
+              },
+              rules: {
+                create: zone.rules.map((rule) => ({
+                  name: rule.name,
+                  priceCents: rule.priceCents,
+                  minQuantity: rule.minQuantity,
+                  maxQuantity: rule.maxQuantity,
+                })),
+              },
+            },
+          });
+        }
+      }
+
       return createdProduct;
     });
 
@@ -401,6 +440,12 @@ export async function POST(request: NextRequest) {
         plans: {
           include: {
             prices: true,
+          },
+        },
+        shippingZones: {
+          include: {
+            countries: true,
+            rules: true,
           },
         },
       },
@@ -611,6 +656,12 @@ export async function GET(request: NextRequest) {
           plans: {
             include: {
               prices: true,
+            },
+          },
+          shippingZones: {
+            include: {
+              countries: true,
+              rules: true,
             },
           },
         },
