@@ -5,6 +5,7 @@ import { z } from "zod";
 // Removed variant-generator import as we now use proper table relationships
 import { isAuthorized } from "@/lib/authUtils";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
+import { getUserSubscriptionInfo } from "@/lib/subscriptionInfoUtils";
 
 // Validation schemas (unchanged media/translation/supplier/productOption)
 const mediaSchema = z.object({
@@ -528,6 +529,15 @@ export async function GET(request: NextRequest) {
     }
 
     if (!isAuthorized(user, ["ADMIN", "OWNER", "EDITOR"])) {
+      const userSubscriptionInfo = await getUserSubscriptionInfo(user?.id);
+
+      if (!userSubscriptionInfo?.canViewProducts) {
+        where.productMappings = {
+          some: {
+            userId: user.id,
+          },
+        };
+      }
       if (user?.currentSubscription?.planId) {
         where.plans = { some: { id: user.currentSubscription.planId } };
       } else {

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { User, UserSubscriptionInfo } from "@/types";
+import { Plan, User, UserSubscriptionInfo } from "@/types";
 
 export async function getUserSubscriptionInfo(userId: number) {
   const user: User | null = (await prisma.user.findUnique({
@@ -18,6 +18,8 @@ export async function getUserSubscriptionInfo(userId: number) {
     isFreeTrial: false,
     canViewProducts: false,
     canImportProducts: false,
+    importedProductsCount: 0,
+    importedProductsLimit: 0,
   };
 
   if (!user) {
@@ -25,7 +27,15 @@ export async function getUserSubscriptionInfo(userId: number) {
   }
 
   const subscription = user?.currentSubscription;
-  const plan = subscription?.plan;
+  let plan = subscription?.plan;
+
+  if (!plan) {
+    plan = (await prisma.plan.findFirst({
+      where: { isFree: true },
+    })) as Plan;
+  }
+
+  response.plan = plan;
 
   const twoWeeksAgo = new Date();
   twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
@@ -38,21 +48,20 @@ export async function getUserSubscriptionInfo(userId: number) {
   const canViewProducts = isFreeTrial || hasActiveSubscription;
   response.canViewProducts = canViewProducts;
 
-  if (subscription && plan) {
-    const importedProductsCount = await prisma.productMapping.count({
-      where: { userId: user.id, createdAt: { gte: subscription?.startsAt || user?.createdAt } },
-    });
-    response.importedProductsCount = importedProductsCount;
+  const importedProductsCount = await prisma.productMapping.count({
+    where: { userId: user.id, createdAt: { gte: subscription?.startsAt || user?.createdAt } },
+  });
+  response.importedProductsCount = importedProductsCount;
 
-    const importedProductsFeature = plan.features?.find((f) => f.key === "imported-products");
-    const importedProductsLimit = importedProductsFeature?.value ? parseInt(importedProductsFeature.value, 10) : 10;
-    response.importedProductsLimit = importedProductsLimit;
-    // const importedProductsPercentage =
-    //   importedProductsLimit === Infinity ? 0 : (importedProductsCount / importedProductsLimit) * 100;
+  const importedProductsFeature = plan.features?.find((f) => f.key === "imported-products");
+  const importedProductsLimit =
+    hasActiveSubscription || isFreeTrial ? parseInt(importedProductsFeature?.value ?? "0") : importedProductsCount;
+  response.importedProductsLimit = importedProductsLimit;
+  // const importedProductsPercentage =
+  //   importedProductsLimit === Infinity ? 0 : (importedProductsCount / importedProductsLimit) * 100;
 
-    const canImportProducts = isFreeTrial || importedProductsCount < importedProductsLimit;
-    response.canImportProducts = canImportProducts;
-  }
+  const canImportProducts = isFreeTrial || importedProductsCount < importedProductsLimit;
+  response.canImportProducts = canImportProducts;
 
   return response;
 }

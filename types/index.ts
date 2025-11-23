@@ -398,8 +398,9 @@ export type UserSubscriptionInfo = {
   isFreeTrial: boolean;
   canViewProducts: boolean;
   canImportProducts: boolean;
-  importedProductsLimit?: number;
-  importedProductsCount?: number;
+  importedProductsLimit: number;
+  importedProductsCount: number;
+  plan?: Plan;
 };
 
 enum NotificationType {

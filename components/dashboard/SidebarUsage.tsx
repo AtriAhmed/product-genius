@@ -17,11 +17,12 @@ export default function SidebarUsage() {
     return <Skeleton className="w-full h-16" />;
   }
 
-  const importedProductsFeature = currentPlan.features?.find((f) => f.key === "imported-products");
-  const importedProductsLimit = importedProductsFeature?.value ? parseInt(importedProductsFeature.value, 10) : Infinity;
-  const importedProductsCount = userSubscriptionInfo.importedProductsCount || 0;
   const importedProductsPercentage =
-    importedProductsLimit === Infinity ? 0 : (importedProductsCount / importedProductsLimit) * 100;
+    userSubscriptionInfo?.importedProductsLimit === Infinity
+      ? 0
+      : userSubscriptionInfo?.importedProductsLimit === 0
+      ? 100
+      : (userSubscriptionInfo?.importedProductsCount / userSubscriptionInfo?.importedProductsLimit) * 100;
 
   return (
     <div className="flex flex-col gap-1">
@@ -32,11 +33,26 @@ export default function SidebarUsage() {
       <div className="flex flex-col gap-1">
         <div className="flex justify-between text-muted-foreground text-xs">
           <span>
-            {importedProductsCount} / {importedProductsLimit === Infinity ? "∞" : importedProductsLimit}
+            {userSubscriptionInfo?.importedProductsCount} /{" "}
+            {userSubscriptionInfo?.importedProductsLimit === Infinity
+              ? "∞"
+              : userSubscriptionInfo?.importedProductsLimit}
           </span>
-          {importedProductsLimit !== Infinity && <span>{Math.round(importedProductsPercentage)}%</span>}
+          {userSubscriptionInfo?.importedProductsLimit !== Infinity && (
+            <span>{Math.round(importedProductsPercentage)}%</span>
+          )}
         </div>
-        <Progress value={importedProductsPercentage} className="h-2" />
+        <Progress
+          value={importedProductsPercentage}
+          className="h-2"
+          indicatorClassName={
+            importedProductsPercentage < 50
+              ? "bg-green-600"
+              : importedProductsPercentage < 80
+              ? "bg-yellow-500"
+              : "bg-red-500"
+          }
+        />
       </div>
     </div>
   );

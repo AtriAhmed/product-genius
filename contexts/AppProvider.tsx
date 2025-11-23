@@ -12,7 +12,6 @@ import { useSession } from "next-auth/react";
 
 interface AppContextProps {
   currentPlan: Plan | undefined;
-  mutateCurrentPlan: () => Promise<Plan | undefined>;
   userSubscriptionInfo: UserSubscriptionInfo | undefined;
   mutateUserSubscriptionInfo: () => Promise<UserSubscriptionInfo | undefined>;
 }
@@ -40,16 +39,6 @@ export default function AppProvider({ children }: AppProviderProps) {
   const user = session?.user;
 
   const {
-    data: currentPlan,
-    error,
-    isLoading,
-    mutate: mutateCurrentPlan,
-  } = useSWR<Plan>(["current-plan", user?.id], fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-  });
-
-  const {
     data: userSubscriptionInfo,
     error: userSubscriptionInfoError,
     isLoading: userSubscriptionInfoIsLoading,
@@ -58,6 +47,8 @@ export default function AppProvider({ children }: AppProviderProps) {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
   });
+
+  const currentPlan = userSubscriptionInfo?.plan;
 
   useEffect(() => {
     AOS.init({
@@ -73,7 +64,6 @@ export default function AppProvider({ children }: AppProviderProps) {
     <AppContext.Provider
       value={{
         currentPlan,
-        mutateCurrentPlan,
         userSubscriptionInfo,
         mutateUserSubscriptionInfo,
       }}
