@@ -79,8 +79,7 @@ export default function Private({
     session?.user?.role === "EDITOR" &&
     !pathname.includes("/products") &&
     !pathname.includes("/categories") &&
-    !pathname.includes("/login") &&
-    !pathname.includes("/register") &&
+    !pathname.includes("/auth") &&
     pathname !== "/admin"
   ) {
     return notFound();
@@ -88,15 +87,15 @@ export default function Private({
 
   // Authenticated with valid role
   if (session) {
-    if (
-      !allowedRoles ||
-      allowedRoles.length === 0 ||
-      allowedRoles.includes(session.user?.role)
-    ) {
+    if (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(session.user?.role)) {
       return children;
     }
   }
 
   // Otherwise → nothing (will redirect)
-  return null;
+  return (
+    <div className="flex justify-center items-center w-full h-full min-h-[calc(100vh-55px)]">
+      <MainLoader />
+    </div>
+  );
 }
