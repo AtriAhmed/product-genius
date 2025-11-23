@@ -159,3 +159,25 @@ export async function sendOptionsChangedNotification(
     text: `The options and variants for your product "${productData.productTitle}" have been updated in your Shopify store(s). Please review the changes in your dashboard: ${dashboardUrl}`,
   });
 }
+
+/**
+ * Send password reset email to user
+ * @param email User's email address
+ * @param token Password reset token
+ * @returns Promise<boolean> indicating success/failure
+ */
+export async function sendPasswordResetEmail(email: string, token: string): Promise<boolean> {
+  const templatePath = join(process.cwd(), "email-templates", "password-reset-request.html");
+  const emailTemplate = readFileSync(templatePath, "utf-8");
+
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/password-reset/${token}`;
+
+  const htmlContent = emailTemplate.replaceAll("{{RESET_URL}}", resetUrl);
+
+  return sendEmail({
+    to: email,
+    subject: "Password Reset Request - WinWaterfall",
+    html: htmlContent,
+    text: `You requested a password reset. Please click this link to reset your password: ${resetUrl}. This link will expire in 1 hour.`,
+  });
+}
