@@ -28,17 +28,12 @@ const UpdatePlanSchema = z.object({
   features: z.array(PlanFeatureSchema).optional(),
   mostPopular: z.boolean().optional(),
   sortOrder: z.number().optional(),
-  prices: z
-    .array(PlanPriceSchema)
-    .refine((prices) => prices.some((price) => price.price !== undefined), {
-      message: "At least one price must have a value",
-    }),
+  prices: z.array(PlanPriceSchema).refine((prices) => prices.some((price) => price.price !== undefined), {
+    message: "At least one price must have a value",
+  }),
 });
 
-export async function GET(
-  request: NextRequest,
-  ctx: RouteContext<"/api/plans/[id]">
-) {
+export async function GET(request: NextRequest, ctx: RouteContext<"/api/plans/[id]">) {
   try {
     const params = await ctx.params;
     const planId = parseInt(params.id);
@@ -83,17 +78,11 @@ export async function GET(
     return NextResponse.json(plan);
   } catch (error) {
     console.error("Error fetching plan:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch plan" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch plan" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  ctx: RouteContext<"/api/plans/[id]">
-) {
+export async function PUT(request: NextRequest, ctx: RouteContext<"/api/plans/[id]">) {
   try {
     const params = await ctx.params;
     const planId = parseInt(params.id);
@@ -118,11 +107,7 @@ export async function PUT(
     }
 
     // Update Stripe product if needed
-    if (
-      validatedData.name ||
-      validatedData.description ||
-      validatedData.active !== undefined
-    ) {
+    if (validatedData.name || validatedData.description || validatedData.active !== undefined) {
       if (existingPlan.stripeProductId) {
         try {
           await stripe.products.update(existingPlan.stripeProductId, {
@@ -176,7 +161,7 @@ export async function PUT(
             const stripePrice = await stripe.prices.create({
               product: existingPlan.stripeProductId!,
               unit_amount: Math.round(priceData.price * 100),
-              currency: "eur",
+              currency: "usd",
               recurring: {
                 interval: intervalMap[priceData.interval],
               },
@@ -243,30 +228,18 @@ export async function PUT(
     console.error("Error updating plan:", error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
     }
 
     if (error instanceof Stripe.errors.StripeError) {
-      return NextResponse.json(
-        { error: "Stripe error", details: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Stripe error", details: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Failed to update plan" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  ctx: RouteContext<"/api/plans/[id]">
-) {
+export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/plans/[id]">) {
   try {
     const params = await ctx.params;
     const planId = parseInt(params.id);
@@ -296,8 +269,7 @@ export async function DELETE(
     if (existingPlan._count.subscriptions > 0) {
       return NextResponse.json(
         {
-          error:
-            "Cannot delete plan with active subscriptions. Deactivate the plan instead.",
+          error: "Cannot delete plan with active subscriptions. Deactivate the plan instead.",
         },
         { status: 400 }
       );
@@ -338,15 +310,9 @@ export async function DELETE(
     console.error("Error deleting plan:", error);
 
     if (error instanceof Stripe.errors.StripeError) {
-      return NextResponse.json(
-        { error: "Stripe error", details: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Stripe error", details: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Failed to delete plan" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete plan" }, { status: 500 });
   }
 }

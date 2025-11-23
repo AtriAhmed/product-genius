@@ -8,7 +8,7 @@ import { Check, Crown, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import SubscriptionDialog from "./SubscriptionDialog";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 type Props = {
   plan: Plan;
@@ -78,12 +78,12 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
         <div className="flex justify-center items-baseline gap-2">
           {selectedPrice?.compareAtPrice && (
             <span className="font-medium text-muted-foreground text-sm sm:text-lg line-through">
-              {formatPrice(selectedPrice.compareAtPrice)}
+              {formatCurrency(selectedPrice.compareAtPrice)}
             </span>
           )}
           <div className="flex items-baseline">
             <span className="bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 via-primary-700 dark:via-primary-500 to-primary-800 dark:to-primary-600 font-black text-transparent text-2xl sm:text-3xl">
-              {formatPrice(selectedPrice?.price || 0)}
+              {formatCurrency(selectedPrice?.price || 0)}
             </span>
           </div>
         </div>

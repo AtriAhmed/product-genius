@@ -3,17 +3,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Supplier } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 interface SupplierCardProps {
   supplier: Supplier;
   compact?: boolean;
 }
 
-export default function MarketplaceCard({
-  supplier,
-  compact = true,
-}: SupplierCardProps) {
+export default function MarketplaceCard({ supplier, compact = true }: SupplierCardProps) {
   const domain = supplier.url?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   return (
@@ -27,32 +24,24 @@ export default function MarketplaceCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center">
-              <h4 className="font-semibold text-foreground text-sm truncate">
-                {supplier.marketplace}
-              </h4>
+              <h4 className="font-semibold text-foreground text-sm truncate">{supplier.marketplace}</h4>
               <Star className="flex-shrink-0 w-3.5 h-3.5 text-yellow-400" />
             </div>
           </div>
         </div>
 
-        <div className="min-w-0 font-semibold text-muted-foreground text-xs line-clamp-2">
-          {supplier?.notes}
-        </div>
+        <div className="min-w-0 font-semibold text-muted-foreground text-xs line-clamp-2">{supplier?.notes}</div>
 
         {/* Price & Domain Row */}
         <div className="flex justify-between items-center gap-2 mt-auto">
-          <div className="min-w-0 text-muted-foreground text-xs truncate">
-            {domain}
-          </div>
+          <div className="min-w-0 text-muted-foreground text-xs truncate">{domain}</div>
 
           {/* Enhanced Price Badge */}
           <div
             className={`rounded-lg px-2.5 py-1.5 flex-shrink-0 bg-gradient-to-r border from-slate-300 to-slate-400 dark:from-slate-800 dark:to-slate-900 shadow-md shadow-slate-300/30 dark:shadow-slate-800/30`}
           >
             <div className="flex items-center gap-1">
-              <span className="font-bold text-slate-600 text-xs">
-                {formatPrice(supplier.price!)}
-              </span>
+              <span className="font-bold text-slate-600 text-xs">{formatCurrency(supplier.price!)}</span>
             </div>
           </div>
         </div>

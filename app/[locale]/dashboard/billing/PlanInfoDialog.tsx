@@ -1,22 +1,12 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Sparkles, Crown, CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Plan, PlanFeature } from "@/types";
+import { formatCurrency } from "@/lib/utils";
 
 type PlanInfoDialogProps = {
   open: boolean;
@@ -25,28 +15,14 @@ type PlanInfoDialogProps = {
   subscriptionInterval?: string;
 };
 
-export default function PlanInfoDialog({
-  open,
-  onOpenChange,
-  plan,
-  subscriptionInterval,
-}: PlanInfoDialogProps) {
+export default function PlanInfoDialog({ open, onOpenChange, plan, subscriptionInterval }: PlanInfoDialogProps) {
   const t = useTranslations("pricing");
 
   // Get the price for the subscription interval, fallback to first available price
   const selectedPrice = subscriptionInterval
-    ? plan.prices?.find(
-        (price) =>
-          price.interval === subscriptionInterval && price.price != null
-      ) || plan.prices?.find((price) => price.price != null)
+    ? plan.prices?.find((price) => price.interval === subscriptionInterval && price.price != null) ||
+      plan.prices?.find((price) => price.price != null)
     : plan.prices?.find((price) => price.price != null);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,19 +53,17 @@ export default function PlanInfoDialog({
         )}
 
         <CardHeader className="z-10 relative space-y-2 text-center">
-          <CardTitle className="font-bold text-foreground text-xl">
-            {plan.name}
-          </CardTitle>
+          <CardTitle className="font-bold text-foreground text-xl">{plan.name}</CardTitle>
 
           <div className="flex justify-center items-baseline gap-2">
             {selectedPrice?.compareAtPrice && (
               <span className="font-medium text-muted-foreground text-sm sm:text-lg line-through">
-                {formatPrice(selectedPrice.compareAtPrice)}
+                {formatCurrency(selectedPrice.compareAtPrice)}
               </span>
             )}
             <div className="flex items-baseline">
               <span className="bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 via-primary-700 dark:via-primary-500 to-primary-800 dark:to-primary-600 font-black text-transparent text-2xl sm:text-3xl">
-                {formatPrice(selectedPrice?.price || 0)}
+                {formatCurrency(selectedPrice?.price || 0)}
               </span>
             </div>
           </div>
@@ -114,10 +88,7 @@ export default function PlanInfoDialog({
             <div className="py-4 rounded-xl bg-muted/20 dark:bg-muted/10">
               <ul className="space-y-2">
                 {plan.features.map((feature, index) => (
-                  <li
-                    key={index}
-                    className="group/feature flex items-start space-x-3"
-                  >
+                  <li key={index} className="group/feature flex items-start space-x-3">
                     <div
                       className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                         feature.included
@@ -127,27 +98,19 @@ export default function PlanInfoDialog({
                     >
                       <Check
                         className={`w-3 h-3 transition-all duration-300 ${
-                          feature.included
-                            ? "text-white"
-                            : "text-muted-foreground"
+                          feature.included ? "text-white" : "text-muted-foreground"
                         }`}
                       />
                     </div>
                     <div className="flex-1">
                       <span
                         className={`text-xs font-medium leading-relaxed transition-colors duration-300 ${
-                          feature.included
-                            ? "text-foreground"
-                            : "text-muted-foreground line-through"
+                          feature.included ? "text-foreground" : "text-muted-foreground line-through"
                         }`}
                       >
                         {feature.description}
                       </span>
-                      {feature.note && (
-                        <p className="mt-1 text-muted-foreground text-xs italic">
-                          {feature.note}
-                        </p>
-                      )}
+                      {feature.note && <p className="mt-1 text-muted-foreground text-xs italic">{feature.note}</p>}
                     </div>
                   </li>
                 ))}

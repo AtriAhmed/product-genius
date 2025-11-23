@@ -23,7 +23,7 @@ export function getMediaUrl(mediaPath?: string, fullForm: boolean = false): stri
   return `/api/media?path=${mediaPath}`;
 }
 
-export function formatPrice(price: number, currency: string = "USD") {
+export function formatCurrency(price: number, currency: string = "USD") {
   return new Intl.NumberFormat("en-UK", {
     style: "currency",
     currency: currency,
@@ -32,7 +32,7 @@ export function formatPrice(price: number, currency: string = "USD") {
   }).format(price);
 }
 
-export function formatPriceCents(cents: number, currency: string = "USD") {
+export function formatCurrencyCents(cents: number, currency: string = "USD") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency,

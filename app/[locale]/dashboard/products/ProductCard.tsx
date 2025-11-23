@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentTranslation } from "@/lib/products";
 import { getProductPrices } from "@/lib/productVariants";
-import { formatPrice, getMediaUrl, htmlToText } from "@/lib/utils";
+import { formatCurrency, getMediaUrl, htmlToText } from "@/lib/utils";
 import { Product } from "@/types";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -137,7 +137,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 <div className="flex items-end gap-1">
                   {product?.compareAtPrice && (
                     <span className="me-1 opacity-70 font-medium text-white text-xs line-through">
-                      {formatPrice(product?.compareAtPrice, product?.currency)}
+                      {formatCurrency(product?.compareAtPrice, product?.currency)}
                     </span>
                   )}
                   <span className="drop-shadow-sm font-bold text-white text-sm">{formattedPrice || "N/A"}</span>

@@ -24,7 +24,7 @@ interface PricingSectionProps {
   currency?: string;
 }
 
-export default function PricingSection({ register, setValue, errors, currency = "EUR" }: PricingSectionProps) {
+export default function PricingSection({ register, setValue, errors, currency = "USD" }: PricingSectionProps) {
   const t = useTranslations("products");
 
   const selectedCurrency = currency ? CURRENCIES.find((c) => c.code === currency) : null;

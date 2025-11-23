@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Check, CreditCard, Sparkles, Zap, Star } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 type Props = {
   plan: Plan;
@@ -16,16 +17,9 @@ export default function ReviewStep({ plan, onNext, selectedInterval }: Props) {
 
   // Get the price for the selected interval
   const selectedPrice = selectedInterval
-    ? plan.prices?.find(
-        (price) => price.interval === selectedInterval && price.price != null
-      ) || plan.prices?.find((price) => price.price != null)
+    ? plan.prices?.find((price) => price.interval === selectedInterval && price.price != null) ||
+      plan.prices?.find((price) => price.price != null)
     : plan.prices?.find((price) => price.price != null);
-
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
 
   return (
     <div className="flex flex-col space-y-4 h-full">
@@ -37,20 +31,14 @@ export default function ReviewStep({ plan, onNext, selectedInterval }: Props) {
             <div className="flex-1">
               <h3 className="flex items-center gap-2 font-bold text-primary-900 dark:text-primary-100 text-lg">
                 {plan.name}
-                {plan.mostPopular && (
-                  <Sparkles className="w-4 h-4 fill-yellow-400 text-yellow-500 animate-pulse" />
-                )}
+                {plan.mostPopular && <Sparkles className="w-4 h-4 fill-yellow-400 text-yellow-500 animate-pulse" />}
               </h3>
               {plan.description && (
-                <p className="mt-1 text-neutral-600 dark:text-neutral-400 text-xs">
-                  {plan.description}
-                </p>
+                <p className="mt-1 text-neutral-600 dark:text-neutral-400 text-xs">{plan.description}</p>
               )}
             </div>
             <div className="px-3 py-2 rounded-xl bg-gradient-to-br from-primary-600 dark:from-primary-500 to-primary-700 dark:to-primary-600 shadow-lg text-white text-right">
-              <div className="font-black text-xl">
-                {formatPrice(selectedPrice?.price || 0)}
-              </div>
+              <div className="font-black text-xl">{formatCurrency(selectedPrice?.price || 0)}</div>
               <div className="opacity-90 font-semibold text-xs">
                 / {t(selectedPrice?.interval?.toLowerCase() || "")}
               </div>
@@ -75,9 +63,7 @@ export default function ReviewStep({ plan, onNext, selectedInterval }: Props) {
                     <div className="flex flex-shrink-0 justify-center items-center w-5 h-5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 shadow-md">
                       <Check className="w-3 h-3 font-bold text-white" />
                     </div>
-                    <span className="text-neutral-700 dark:text-neutral-300">
-                      {feature.description}
-                    </span>
+                    <span className="text-neutral-700 dark:text-neutral-300">{feature.description}</span>
                   </div>
                 ))}
               </div>
@@ -98,14 +84,12 @@ export default function ReviewStep({ plan, onNext, selectedInterval }: Props) {
               <span>
                 {t("plan")}: {plan.name}
               </span>
-              <span>{formatPrice(selectedPrice?.price || 0)}</span>
+              <span>{formatCurrency(selectedPrice?.price || 0)}</span>
             </div>
             <Separator className="bg-gradient-to-r from-transparent via-primary-300 dark:via-primary-600 to-transparent" />
             <div className="flex justify-between bg-clip-text bg-gradient-to-r from-primary-600 dark:from-primary-400 to-primary-700 dark:to-primary-500 font-bold text-transparent text-sm">
               <span>{t("total due today")}</span>
-              <span className="text-base">
-                {formatPrice(selectedPrice?.price || 0)}
-              </span>
+              <span className="text-base">{formatCurrency(selectedPrice?.price || 0)}</span>
             </div>
           </div>
         </CardContent>

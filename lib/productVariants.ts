@@ -1,4 +1,4 @@
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { ProductVariant as FullProductVariant } from "@/types";
 
@@ -192,8 +192,8 @@ export function getProductPrices(variants: FullProductVariant[]) {
     minPrice === undefined || maxPrice === undefined
       ? null
       : minPrice === maxPrice
-      ? formatPrice(minPrice)
-      : `${formatPrice(minPrice)} -- ${formatPrice(maxPrice)}`;
+      ? formatCurrency(minPrice)
+      : `${formatCurrency(minPrice)} -- ${formatCurrency(maxPrice)}`;
 
   return { formattedPrice, minPrice, maxPrice };
 }

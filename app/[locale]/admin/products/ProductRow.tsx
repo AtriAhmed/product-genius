@@ -6,7 +6,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Link, useRouter } from "@/i18n/navigation";
 import { getCurrentTranslation } from "@/lib/products";
 import { getProductPrices } from "@/lib/productVariants";
-import { cn, formatPrice, getMediaUrl, htmlToText, stopPropagation } from "@/lib/utils";
+import { cn, formatCurrency, getMediaUrl, htmlToText, stopPropagation } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";

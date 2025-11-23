@@ -88,7 +88,7 @@ export default function CopyPlanDropdown({ setValue, currentPlanId }: CopyPlanDr
   const formatPrice = (price: number, interval: string) => {
     const formatted = new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "EUR",
+      currency: "USD",
     }).format(price);
     return `${formatted}/${getIntervalLabel(interval).toLowerCase()}`;
   };

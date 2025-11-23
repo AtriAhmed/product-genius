@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { User, Subscription, Plan } from "@/types";
 import PlanInfoDialog from "./PlanInfoDialog";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 async function fetcher(): Promise<User> {
   const response = await axios.get("/api/users/current");
@@ -158,7 +158,7 @@ export default function CurrentSubscription() {
                       <span className="font-semibold text-sm">
                         {(() => {
                           const currentPrice = plan.prices?.find((price) => price.interval === subscription.interval);
-                          return formatPrice(currentPrice?.price || 0);
+                          return formatCurrency(currentPrice?.price || 0);
                         })()}
                       </span>
                       <span className="text-xs">{getIntervalLabel(subscription.interval || "")}</span>

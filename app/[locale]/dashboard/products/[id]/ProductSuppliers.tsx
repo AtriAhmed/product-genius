@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceCard";
 import InternalSupplierCard from "@/app/[locale]/dashboard/products/[id]/InternalSupplierCard";
 import { Product, User } from "@/types";
-import { formatPrice, hueFromString } from "@/lib/utils";
+import { formatCurrency, hueFromString } from "@/lib/utils";
 import { getProductPrices } from "@/lib/productVariants";
 
 interface ProvidersPreviewProps {
@@ -125,10 +125,10 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
                               )}
                             </div>
                             <div className="text-right">
-                              <div className="font-semibold">{formatPrice(variant.price!)}</div>
+                              <div className="font-semibold">{formatCurrency(variant.price!)}</div>
                               {variant.compareAtPrice && (
                                 <div className="text-muted-foreground text-xs line-through">
-                                  {formatPrice(variant.compareAtPrice)}
+                                  {formatCurrency(variant.compareAtPrice)}
                                 </div>
                               )}
                             </div>

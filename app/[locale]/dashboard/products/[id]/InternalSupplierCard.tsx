@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import { formatPrice } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -106,7 +106,7 @@ export default function InternalSupplierCard({
             <div className="flex items-end gap-1">
               {compareAtPrice && (
                 <span className="me-1 opacity-70 font-medium text-[10px] text-white line-through">
-                  {formatPrice(compareAtPrice)}
+                  {formatCurrency(compareAtPrice)}
                 </span>
               )}
               <span className="drop-shadow-sm font-bold text-white text-xs">{formattedPrice}</span>

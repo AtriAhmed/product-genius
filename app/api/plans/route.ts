@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
         const stripePrice = await stripe.prices.create({
           product: stripeProduct.id,
           unit_amount: Math.round(priceData.price * 100), // Convert to cents
-          currency: "eur",
+          currency: "usd",
           recurring: {
             interval: intervalMap[priceData.interval],
           },

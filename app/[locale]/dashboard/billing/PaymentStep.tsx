@@ -3,17 +3,11 @@ import { Plan, PaymentMethod } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Check,
-  CreditCard,
-  Sparkles,
-  Loader2,
-  Shield,
-  Link as LinkIcon,
-} from "lucide-react";
+import { Check, CreditCard, Sparkles, Loader2, Shield, Link as LinkIcon } from "lucide-react";
 
 import Image from "next/image";
 import { getCardIconPath } from "@/lib/billingUtils";
+import { formatCurrency } from "@/lib/utils";
 
 type Props = {
   plan: Plan;
@@ -42,16 +36,9 @@ export default function PaymentStep({
 
   // Get the price for the selected interval
   const selectedPrice = selectedInterval
-    ? plan.prices?.find(
-        (price) => price.interval === selectedInterval && price.price != null
-      ) || plan.prices?.find((price) => price.price != null)
+    ? plan.prices?.find((price) => price.interval === selectedInterval && price.price != null) ||
+      plan.prices?.find((price) => price.price != null)
     : plan.prices?.find((price) => price.price != null);
-
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
 
   if (loadingCards) {
     return (
@@ -71,12 +58,8 @@ export default function PaymentStep({
           <CreditCard className="w-8 h-8 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-            {t("no payment methods found")}
-          </h3>
-          <p className="mt-1 text-slate-600 dark:text-slate-400 text-xs">
-            {t("add a payment method to continue")}
-          </p>
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">{t("no payment methods found")}</h3>
+          <p className="mt-1 text-slate-600 dark:text-slate-400 text-xs">{t("add a payment method to continue")}</p>
         </div>
         <Button
           onClick={onNavigateToBilling}
@@ -118,9 +101,7 @@ export default function PaymentStep({
                   />
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-slate-900 dark:text-slate-100 capitalize">
-                        {pm.card?.brand}
-                      </span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100 capitalize">{pm.card?.brand}</span>
                       <span className="font-mono font-semibold text-slate-600 dark:text-slate-400">
                         •••• {pm.card?.last4}
                       </span>
@@ -141,9 +122,7 @@ export default function PaymentStep({
                         : "border-slate-300 dark:border-slate-600"
                     }`}
                   >
-                    {selectedPaymentMethod === pm.id && (
-                      <Check className="w-4 h-4 font-bold text-white" />
-                    )}
+                    {selectedPaymentMethod === pm.id && <Check className="w-4 h-4 font-bold text-white" />}
                   </div>
                 </div>
               </CardContent>
@@ -165,7 +144,7 @@ export default function PaymentStep({
         ) : (
           <>
             <Sparkles className="w-4 h-4 mr-2" />
-            {t("subscribe for")} {formatPrice(selectedPrice?.price || 0)}
+            {t("subscribe for")} {formatCurrency(selectedPrice?.price || 0)}
           </>
         )}
       </Button>

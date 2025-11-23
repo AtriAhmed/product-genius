@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DropdownSelect, Option } from "@/components/Dropdown";
@@ -27,12 +21,7 @@ type AddSupplierDialogProps = {
   editingSupplier?: AddSupplierFormData | null;
 };
 
-export default function AddSupplierDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  editingSupplier,
-}: AddSupplierDialogProps) {
+export default function AddSupplierDialog({ open, onOpenChange, onSubmit, editingSupplier }: AddSupplierDialogProps) {
   const t = useTranslations("products");
 
   // Marketplace and currency options
@@ -60,7 +49,7 @@ export default function AddSupplierDialog({
       url: undefined,
       marketplace: undefined,
       price: undefined,
-      currency: "EUR",
+      currency: "USD",
       isInternal: false,
       notes: "",
     },
@@ -76,7 +65,7 @@ export default function AddSupplierDialog({
       setValue("url", editingSupplier.url);
       setValue("marketplace", editingSupplier.marketplace);
       setValue("price", editingSupplier.price || undefined);
-      setValue("currency", editingSupplier.currency || "EUR");
+      setValue("currency", editingSupplier.currency || "USD");
       setValue("isInternal", !!editingSupplier.isInternal);
       setValue("notes", editingSupplier.notes || "");
     } else {
@@ -84,7 +73,7 @@ export default function AddSupplierDialog({
         url: undefined,
         marketplace: undefined,
         price: undefined,
-        currency: "EUR",
+        currency: "USD",
         isInternal: false,
         notes: "",
       });
@@ -164,11 +153,7 @@ export default function AddSupplierDialog({
                   options={MARKETPLACE_OPTIONS}
                   placeholder="Select a marketplace"
                 />
-                {errors.marketplace && (
-                  <p className="mt-1 text-destructive text-sm">
-                    {errors.marketplace.message}
-                  </p>
-                )}
+                {errors.marketplace && <p className="mt-1 text-destructive text-sm">{errors.marketplace.message}</p>}
               </div>
             )}
 
@@ -176,16 +161,8 @@ export default function AddSupplierDialog({
             {!isInternalValue && (
               <div>
                 <Label htmlFor="url">{t("supplier url")}</Label>
-                <Input
-                  id="url"
-                  placeholder="https://example.com/product"
-                  {...register("url")}
-                />
-                {errors.url && (
-                  <p className="mt-1 text-destructive text-sm">
-                    {errors.url.message}
-                  </p>
-                )}
+                <Input id="url" placeholder="https://example.com/product" {...register("url")} />
+                {errors.url && <p className="mt-1 text-destructive text-sm">{errors.url.message}</p>}
               </div>
             )}
 
@@ -201,11 +178,7 @@ export default function AddSupplierDialog({
                   setValueAs: (v) => (v === "" ? null : Number(v)),
                 })}
               />
-              {errors.price && (
-                <p className="mt-1 text-destructive text-sm">
-                  {errors.price.message}
-                </p>
-              )}
+              {errors.price && <p className="mt-1 text-destructive text-sm">{errors.price.message}</p>}
             </div>
 
             {/* Currency */}
@@ -213,45 +186,26 @@ export default function AddSupplierDialog({
               <Label htmlFor="currency">{t("currency")}</Label>
               <DropdownSelect
                 id="currency"
-                value={currencyValue || "EUR"}
-                onValueChange={(value) =>
-                  setValue("currency", value, { shouldDirty: true })
-                }
+                value={currencyValue || "USD"}
+                onValueChange={(value) => setValue("currency", value, { shouldDirty: true })}
                 options={CURRENCY_OPTIONS}
                 placeholder="Select a currency"
               />
-              {errors.currency && (
-                <p className="mt-1 text-destructive text-sm">
-                  {errors.currency.message}
-                </p>
-              )}
+              {errors.currency && <p className="mt-1 text-destructive text-sm">{errors.currency.message}</p>}
             </div>
 
             {/* Notes */}
             <div>
               <Label htmlFor="notes">{t("notes")}</Label>
-              <Input
-                id="notes"
-                placeholder="Optional notes about this supplier"
-                {...register("notes")}
-              />
+              <Input id="notes" placeholder="Optional notes about this supplier" {...register("notes")} />
             </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
               {t("cancel")}
             </Button>
-            <Button
-              disabled={!!editingSupplier && !isDirty}
-              type="submit"
-              size="sm"
-            >
+            <Button disabled={!!editingSupplier && !isDirty} type="submit" size="sm">
               {editingSupplier ? (
                 <>
                   <Edit className="w-4 h-4 mr-2" />
