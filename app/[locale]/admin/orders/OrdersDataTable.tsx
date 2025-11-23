@@ -1,11 +1,12 @@
-import { useTranslations } from "next-intl";
-import { Eye, Package, Edit, ExternalLink, NotepadText } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link, useRouter } from "@/i18n/navigation";
+import { formatCurrencyCents, stopPropagation } from "@/lib/utils";
 import { Order, OrderStatus } from "@/types";
-import { Link } from "@/i18n/navigation";
+import { Edit, ExternalLink, NotepadText, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface OrdersDataTableProps {
   orders: Order[];
@@ -13,7 +14,7 @@ interface OrdersDataTableProps {
   isLoading: boolean;
 }
 
-const getShipmentStatusColor = (status: OrderStatus) => {
+const getStatusColor = (status: OrderStatus) => {
   switch (status) {
     case "DRAFT":
       return "!bg-gray-300 !text-gray-900";
@@ -34,13 +35,6 @@ const getShipmentStatusColor = (status: OrderStatus) => {
   }
 };
 
-const formatCurrency = (cents: number, currency: string = "USD") => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-  }).format(cents / 100);
-};
-
 const formatDate = (date: Date) => {
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -53,6 +47,7 @@ const formatDate = (date: Date) => {
 
 export default function OrdersDataTable({ orders, onEditTracking, isLoading }: OrdersDataTableProps) {
   const t = useTranslations("orders");
+  const router = useRouter();
 
   const skeletonRows = Array.from({ length: 5 }).map((_, idx) => (
     <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
@@ -97,6 +92,14 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
     </TableRow>
   );
 
+  function handleView(event: React.MouseEvent, order: Order) {
+    if (event.ctrlKey) {
+      window.open(`/admin/orders/${order.id}`, "_blank");
+    } else {
+      router.push(`/admin/orders/${order.id}`);
+    }
+  }
+
   return (
     <div className="w-0 min-w-full border rounded-md bg-background">
       <Table>
@@ -104,7 +107,7 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
           <TableRow className="border-border hover:bg-muted/50">
             <TableHead className="font-medium">{t("order number")}</TableHead>
             <TableHead className="font-medium">{t("customer")}</TableHead>
-            <TableHead className="font-medium">{t("shipment status")}</TableHead>
+            <TableHead className="font-medium">{t("status")}</TableHead>
             <TableHead className="font-medium">{t("tracking")}</TableHead>
             <TableHead className="font-medium">{t("order total")}</TableHead>
             <TableHead className="font-medium">{t("date")}</TableHead>
@@ -116,12 +119,22 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
             ? skeletonRows
             : orders.length > 0
             ? orders.map((order) => (
-                <TableRow key={order.id}>
+                <TableRow
+                  key={order.id}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    handleView(e, order);
+                  }}
+                >
                   <TableCell className="py-1 font-medium">
-                    <div className="flex items-center gap-2">
+                    <Link
+                      className="flex items-center gap-2 hover:underline"
+                      href={`/admin/orders/${order.id}`}
+                      onClick={stopPropagation}
+                    >
                       <Package className="w-4 h-4 text-muted-foreground" />
                       <span className="max-w-[120px] truncate">{order.orderNumber}</span>
-                    </div>
+                    </Link>
                   </TableCell>
                   <TableCell className="max-w-[150px] py-1">
                     <div>
@@ -129,12 +142,12 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
                       <div className="text-muted-foreground text-sm truncate">{order.user?.email}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge className={getShipmentStatusColor(order.status!)}>
+                  <TableCell className="py-1">
+                    <Badge className={getStatusColor(order.status!)}>
                       {t(order.status?.toLowerCase() || "pending")}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-1">
                     <div className="flex items-center gap-2">
                       <span className="max-w-[100px] truncate">{order.trackingNumber || t("n/a")}</span>
                       {order.trackingUrl && (
@@ -149,17 +162,20 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
-                  <TableCell>{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
+                  <TableCell className="py-1">{formatCurrencyCents(order.totalCents || 0, order.currency)}</TableCell>
+                  <TableCell className="py-1">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
                   <TableCell className="py-1 text-right">
                     <div className="flex justify-end items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => onEditTracking(order)} className="gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditTracking(order);
+                        }}
+                        className="gap-2"
+                      >
                         <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" asChild className="gap-2">
-                        <Link href={`/admin/orders/${order.id}`}>
-                          <Eye className="w-4 h-4" />
-                        </Link>
                       </Button>
                     </div>
                   </TableCell>
