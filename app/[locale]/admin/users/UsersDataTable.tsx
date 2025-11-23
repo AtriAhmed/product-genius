@@ -22,17 +22,17 @@ export default function UsersDataTable({ users, onEdit, onDelete, isLoading }: U
   const getRoleColor = (role?: string) => {
     switch (role) {
       case "OWNER":
-        return "bg-purple-100 text-purple-800";
+        return "!bg-purple-100 text-purple-800";
       case "ADMIN":
-        return "bg-red-100 text-red-800";
+        return "!bg-red-100 text-red-800";
       case "EDITOR":
-        return "bg-blue-100 text-blue-800";
+        return "!bg-blue-100 text-blue-800";
       case "AGENT":
-        return "bg-green-100 text-green-800";
+        return "!bg-green-100 text-green-800";
       case "USER":
-        return "bg-gray-100 text-gray-800";
+        return "!bg-gray-100 text-gray-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "!bg-gray-100 text-gray-800";
     }
   };
 
@@ -55,20 +55,20 @@ export default function UsersDataTable({ users, onEdit, onDelete, isLoading }: U
   };
 
   const getSubscriptionColor = (subscription: any) => {
-    if (!subscription) return "bg-gray-100 text-gray-800";
+    if (!subscription) return "!bg-gray-100 text-gray-800";
 
     const status = subscription.status?.toLowerCase();
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800";
+        return "!bg-green-100 text-green-800";
       case "trialing":
-        return "bg-blue-100 text-blue-800";
+        return "!bg-blue-100 text-blue-800";
       case "past_due":
-        return "bg-yellow-100 text-yellow-800";
+        return "!bg-yellow-100 text-yellow-800";
       case "canceled":
-        return "bg-red-100 text-red-800";
+        return "!bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "!bg-gray-100 text-gray-800";
     }
   };
 
