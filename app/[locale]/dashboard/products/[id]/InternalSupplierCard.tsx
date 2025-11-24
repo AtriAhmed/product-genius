@@ -31,7 +31,7 @@ export default function InternalSupplierCard({
   const t = useTranslations("shopify");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const { mutateUserUsage } = useAppProvider();
+  const { mutateUserSubscriptionInfo } = useAppProvider();
 
   const handleImportToShopify = () => {
     if (!hasStore) {
@@ -66,7 +66,7 @@ export default function InternalSupplierCard({
       const response = await axios.post(`/api/products/${productId}/import-to-shopify`);
       toast.success("Product successfully imported to Shopify!");
 
-      mutateUserUsage();
+      mutateUserSubscriptionInfo();
 
       router.push("/dashboard/imported-products");
     } catch (error: any) {
