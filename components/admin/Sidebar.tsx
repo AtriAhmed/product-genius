@@ -82,6 +82,12 @@ const navigationData: NavigationItem[] = [
     roles: ["OWNER", "ADMIN", "EDITOR"],
   },
   {
+    title: "shipping zones",
+    url: "/admin/shipping-zones",
+    icon: Truck,
+    roles: ["OWNER", "ADMIN", "EDITOR"],
+  },
+  {
     title: "orders",
     url: "/admin/orders",
     icon: NotepadText,
@@ -104,12 +110,6 @@ const navigationData: NavigationItem[] = [
     title: "plans",
     url: "/admin/plans",
     icon: Star,
-    roles: ["OWNER", "ADMIN"],
-  },
-  {
-    title: "shipping zones",
-    url: "/admin/shipping-zones",
-    icon: Truck,
     roles: ["OWNER", "ADMIN"],
   },
   {
