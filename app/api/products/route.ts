@@ -57,7 +57,7 @@ const variantSchema = z.object({
 });
 
 const shippingRuleSchema = z.object({
-  priceCents: z.number().int().min(0),
+  price: z.number().int().min(0),
   minQuantity: z.number().int().min(0).optional().nullable(),
   maxQuantity: z.number().int().min(0).optional().nullable(),
 });
@@ -388,7 +388,7 @@ export async function POST(request: NextRequest) {
               zoneId: zone.zoneId,
               productShippingRules: {
                 create: zone.rules.map((rule) => ({
-                  priceCents: rule.priceCents,
+                  price: rule.price,
                   minQuantity: rule.minQuantity,
                   maxQuantity: rule.maxQuantity,
                 })),

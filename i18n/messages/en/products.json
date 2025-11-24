@@ -223,5 +223,8 @@
   "unlimited": "Unlimited",
   "update zone": "Update Zone",
   "no shipping zones configured": "No shipping zones configured",
-  "shipping": "Shipping"
+  "shipping": "Shipping",
+  "select": "Select",
+  "shipping zone": "Shipping Zone",
+  "no shipping zones available": "No shipping zones available"
 }

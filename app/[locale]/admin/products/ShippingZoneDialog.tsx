@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ShippingZoneFormData, ShippingRuleFormData } from "./types";
-import MultiCountriesSelect from "@/app/[locale]/admin/products/MultiCountriesSelect";
+import ShippingZoneSelect from "./ShippingZoneSelect";
 import { COUNTRIES } from "@/types/countries";
 
 interface ShippingZoneDialogProps {
@@ -26,11 +26,21 @@ interface ShippingZoneDialogProps {
   zone: ShippingZoneFormData;
   onSave: (zone: ShippingZoneFormData) => void;
   isEditing: boolean;
+  excludeZoneIds?: number[];
 }
 
-export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, isEditing }: ShippingZoneDialogProps) {
+export default function ShippingZoneDialog({
+  open,
+  onOpenChange,
+  zone,
+  onSave,
+  isEditing,
+  excludeZoneIds = [],
+}: ShippingZoneDialogProps) {
   const t = useTranslations("products");
   const [currentZone, setCurrentZone] = useState<ShippingZoneFormData>(zone);
+  const [selectedZoneName, setSelectedZoneName] = useState<string>("");
+  const [selectedZoneCountries, setSelectedZoneCountries] = useState<string[]>([]);
 
   // Update internal state when zone prop changes
   useEffect(() => {
@@ -42,13 +52,13 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
     return country?.name || code?.toUpperCase?.();
   };
 
-  const handleRemoveCountry = (countryCode: string) => {
-    console.log("-------------------- currentZone, countryCode --------------------");
-    console.log(currentZone, countryCode);
+  const handleZoneSelect = (zoneId: number, zoneData: any) => {
     setCurrentZone({
       ...currentZone,
-      countries: currentZone.countries.filter((code) => code !== countryCode),
+      zoneId,
     });
+    setSelectedZoneName(zoneData.name || "");
+    setSelectedZoneCountries(zoneData.countries.map((c: any) => c.countryCode));
   };
 
   const handleAddRule = () => {
@@ -70,7 +80,7 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
       rules: [
         ...updatedRules,
         {
-          priceCents: 0,
+          price: 0,
           minQuantity: newMinQuantity,
           maxQuantity: null,
         },
@@ -126,7 +136,7 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
   };
 
   const handleSave = () => {
-    if (currentZone.countries.length === 0 || currentZone.rules.length === 0) {
+    if (!currentZone.zoneId || currentZone.rules.length === 0) {
       return;
     }
     onSave(currentZone);
@@ -137,35 +147,23 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{isEditing ? t("edit shipping zone") : t("add shipping zone")}</DialogTitle>
-          <DialogDescription>{t("define countries and shipping rules")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="zone-name">
-              {t("zone name")} ({t("optional")})
-            </Label>
-            <Input
-              id="zone-name"
-              placeholder={t("e;g;, North America, Europe")}
-              value={currentZone.name || ""}
-              onChange={(e) => setCurrentZone({ ...currentZone, name: e.target.value })}
+            <Label>{t("shipping zone")}</Label>
+            <ShippingZoneSelect
+              value={currentZone.zoneId}
+              onChange={handleZoneSelect}
+              excludeZoneIds={excludeZoneIds}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("countries")}</Label>
-            <MultiCountriesSelect
-              selectedCountries={currentZone.countries}
-              onSelectionChange={(countries) => setCurrentZone({ ...currentZone, countries })}
-            />
-            {currentZone.countries.length > 0 && (
+            {selectedZoneCountries.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
-                {currentZone.countries.map((code) => (
+                {selectedZoneCountries.map((code) => (
                   <Badge
                     key={code}
                     variant="outline"
-                    className="flex items-center py-1 pr-1 pl-2 border-blue-200 dark:border-blue-800 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40 transition-colors"
+                    className="flex items-center py-1 pr-2 pl-1.5 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30"
                   >
                     <img
                       src={`https://flagsapi.com/${code.toUpperCase()}/flat/24.png`}
@@ -173,12 +171,6 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
                       className="w-4.5 object-cover mr-1.5 rounded"
                     />
                     <span className="text-xs">{getCountryName(code)}</span>
-                    <button
-                      onClick={() => handleRemoveCountry(code)}
-                      className="ml-1.5 p-0.5 rounded-sm hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
                   </Badge>
                 ))}
               </div>
@@ -216,8 +208,8 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
                         <Label className="text-xs">{t("shipping price")} (¢)</Label>
                         <Input
                           type="number"
-                          value={rule.priceCents}
-                          onChange={(e) => handleUpdateRule(index, "priceCents", parseInt(e.target.value) || "")}
+                          value={rule.price}
+                          onChange={(e) => handleUpdateRule(index, "price", parseInt(e.target.value) || "")}
                         />
                       </div>
                     </div>

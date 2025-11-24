@@ -40,7 +40,7 @@ export default function ShippingZoneDialog({
 
   useEffect(() => {
     if (zone) {
-      setName(zone.name);
+      setName(zone.name || "");
       setCountries(zone.countries?.map((c) => c.countryCode)?.filter((code) => code !== undefined) || []);
     } else {
       setName("");

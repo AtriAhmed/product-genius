@@ -50,10 +50,14 @@ async function getProduct(id: number): Promise<Product | null> {
             options: true,
           },
         },
-        shippingZones: {
+        productShippingZones: {
           include: {
-            countries: true,
-            rules: true,
+            zone: {
+              include: {
+                countries: true,
+              },
+            },
+            productShippingRules: true,
           },
         },
       },

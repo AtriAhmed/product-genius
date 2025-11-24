@@ -78,9 +78,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
       })),
       shippingZones:
-        product?.shippingZones?.map((zone) => ({
-          ...zone,
-          countries: zone.countries?.map((country) => country?.countryCode),
+        product?.productShippingZones?.map((psz) => ({
+          id: psz.id,
+          zoneId: psz.zoneId,
+          rules: psz.productShippingRules || [],
         })) || [],
     },
   });
@@ -130,9 +131,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
         })),
         shippingZones:
-          product?.shippingZones?.map((zone) => ({
-            ...zone,
-            countries: zone.countries?.map((country) => country?.countryCode),
+          product?.productShippingZones?.map((psz) => ({
+            id: psz.id,
+            zoneId: psz.zoneId,
+            rules: psz.productShippingRules || [],
           })) || [],
       });
     } else if (isCreateMode) {
@@ -475,9 +477,10 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
               })),
               shippingZones:
-                product?.shippingZones?.map((zone) => ({
-                  ...zone,
-                  countries: zone.countries?.map((country) => country?.countryCode),
+                product?.productShippingZones?.map((psz: any) => ({
+                  id: psz.id,
+                  zoneId: psz.zoneId,
+                  rules: psz.productShippingRules || [],
                 })) || [],
             });
           } else {

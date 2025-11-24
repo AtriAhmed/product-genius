@@ -44,16 +44,14 @@ export const productVariantSchema = z.object({
 // ---- SHIPPING ZONES ----
 export const shippingRuleSchema = z.object({
   id: idSchema.optional(),
-  name: z.string().optional().nullable(),
-  priceCents: z.number().int().min(0, "Price must be >= 0"),
+  price: z.number().int().min(0, "Price must be >= 0"),
   minQuantity: z.number().int().min(0).optional().nullable(),
   maxQuantity: z.number().int().min(0).optional().nullable(),
 });
 
 export const shippingZoneSchema = z.object({
   id: idSchema.optional(),
-  name: z.string().optional().nullable(),
-  countries: z.array(z.string()).min(1, "At least one country is required"),
+  zoneId: z.number().int().positive("Shipping zone is required"),
   rules: z.array(shippingRuleSchema).min(1, "At least one shipping rule is required"),
 });
 

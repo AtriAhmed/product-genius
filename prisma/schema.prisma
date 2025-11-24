@@ -299,7 +299,7 @@ model ProductShippingRule {
   minQuantity Int? @map("min_quantity")
   maxQuantity Int? @map("max_quantity")
 
-  priceCents Int @map("price_cents")
+  price Int @map("price")
 
   @@index([productShippingZoneId])
   @@map("product_shipping_rule")
