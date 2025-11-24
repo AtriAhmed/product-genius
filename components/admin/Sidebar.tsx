@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Sparkles,
   Star,
+  Truck,
   Users,
   Zap,
 } from "lucide-react";
@@ -103,6 +104,12 @@ const navigationData: NavigationItem[] = [
     title: "plans",
     url: "/admin/plans",
     icon: Star,
+    roles: ["OWNER", "ADMIN"],
+  },
+  {
+    title: "shipping zones",
+    url: "/admin/shipping-zones",
+    icon: Truck,
     roles: ["OWNER", "ADMIN"],
   },
   {

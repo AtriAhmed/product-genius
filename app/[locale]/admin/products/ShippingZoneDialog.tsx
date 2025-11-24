@@ -141,7 +141,7 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* <div className="space-y-2">
+          <div className="space-y-2">
             <Label htmlFor="zone-name">
               {t("zone name")} ({t("optional")})
             </Label>
@@ -151,7 +151,7 @@ export default function ShippingZoneDialog({ open, onOpenChange, zone, onSave, i
               value={currentZone.name || ""}
               onChange={(e) => setCurrentZone({ ...currentZone, name: e.target.value })}
             />
-          </div> */}
+          </div>
 
           <div className="space-y-2">
             <Label>{t("countries")}</Label>

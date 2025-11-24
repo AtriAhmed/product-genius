@@ -190,45 +190,47 @@ export type Product = {
   productMappings?: ProductMapping[];
   variantMappings?: VariantMapping[];
   plans?: Plan[];
-  shippingZones?: ShippingZone[];
+  shippingZones?: ProductShippingZone[];
 };
 
 export type ShippingZone = {
   id: number;
   name?: string;
-  productId?: number;
-
   createdAt?: Date;
   updatedAt?: Date;
   // Relations
-  product?: Product;
   countries?: ShippingZoneCountry[];
-  rules?: ShippingRule[];
+  productShippingZones?: ProductShippingZone[];
 };
 
 export type ShippingZoneCountry = {
   id: number;
   zoneId?: number;
-
   countryCode?: string;
-
   // Relations
   zone?: ShippingZone;
 };
 
-export type ShippingRule = {
+export type ProductShippingZone = {
   id: number;
+  productId?: number;
   zoneId?: number;
-
-  name?: string;
-  priceCents?: number;
-  minQuantity?: number;
-  maxQuantity?: number;
-
   createdAt?: Date;
   updatedAt?: Date;
   // Relations
+  product?: Product;
   zone?: ShippingZone;
+  productShippingRules?: ProductShippingRule[];
+};
+
+export type ProductShippingRule = {
+  id: number;
+  productShippingZoneId?: number;
+  minQuantity?: number;
+  maxQuantity?: number;
+  priceCents?: number;
+  // Relations
+  productShippingZone?: ProductShippingZone;
 };
 
 export type ProductOption = {
