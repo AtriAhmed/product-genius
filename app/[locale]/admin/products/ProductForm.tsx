@@ -7,6 +7,7 @@ import PricingSection from "@/app/[locale]/admin/products/PricingSection";
 import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import ProductOptions from "@/app/[locale]/admin/products/ProductOptions";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
+import ShippingZones from "@/app/[locale]/admin/products/ShippingZones";
 import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
 import { ProductFormData, productFormSchema } from "@/app/[locale]/admin/products/types";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -76,6 +77,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         ...v,
         options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
       })),
+      shippingZones:
+        product?.shippingZones?.map((zone) => ({
+          ...zone,
+          countries: zone.countries?.map((country) => country?.countryCode),
+        })) || [],
     },
   });
 
@@ -123,6 +129,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           ...v,
           options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
         })),
+        shippingZones:
+          product?.shippingZones?.map((zone) => ({
+            ...zone,
+            countries: zone.countries?.map((country) => country?.countryCode),
+          })) || [],
       });
     } else if (isCreateMode) {
       // Initialize with default values for create mode
@@ -139,6 +150,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         suppliers: [],
         options: [],
         variants: [],
+        shippingZones: [],
       });
     }
   }, [product, isEditMode, isCreateMode, reset]);
@@ -173,6 +185,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         if (dirtyFields.isActive) productData.isActive = data.isActive;
         if (dirtyFields.translations) productData.translations = data.translations;
         if (dirtyFields.suppliers) productData.suppliers = data.suppliers;
+        if (dirtyFields.shippingZones) productData.shippingZones = data.shippingZones;
 
         // Handle media separately since it has files
         if (dirtyFields.media) {
@@ -408,6 +421,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
 
                 {/* Variants Preview */}
                 {options && options.length > 0 && <ProductVariants />}
+
+                {/* Shipping Zones */}
+                <ShippingZones />
               </div>
             </form>
           </FormProvider>
@@ -458,6 +474,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
                 ...v,
                 options: Object.fromEntries(v.options?.map((opt) => [opt.optionId, opt.valueId]) || []),
               })),
+              shippingZones:
+                product?.shippingZones?.map((zone) => ({
+                  ...zone,
+                  countries: zone.countries?.map((country) => country?.countryCode),
+                })) || [],
             });
           } else {
             reset();

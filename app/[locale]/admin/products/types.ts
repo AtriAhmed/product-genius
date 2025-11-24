@@ -41,6 +41,22 @@ export const productVariantSchema = z.object({
   options: z.record(idSchema, idSchema), // optionId -> valueId
 });
 
+// ---- SHIPPING ZONES ----
+export const shippingRuleSchema = z.object({
+  id: idSchema.optional(),
+  name: z.string().optional().nullable(),
+  priceCents: z.number().int().min(0, "Price must be >= 0"),
+  minQuantity: z.number().int().min(0).optional().nullable(),
+  maxQuantity: z.number().int().min(0).optional().nullable(),
+});
+
+export const shippingZoneSchema = z.object({
+  id: idSchema.optional(),
+  name: z.string().optional().nullable(),
+  countries: z.array(z.string()).min(1, "At least one country is required"),
+  rules: z.array(shippingRuleSchema).min(1, "At least one shipping rule is required"),
+});
+
 // ---- MAIN PRODUCT FORM ----
 export const productFormSchema = z.object({
   price: z.number().gte(0).optional().nullable(),
@@ -67,9 +83,12 @@ export const productFormSchema = z.object({
   // ---- NEW ----
   options: z.array(optionSchema).default([]),
   variants: z.array(productVariantSchema).default([]),
+  shippingZones: z.array(shippingZoneSchema).default([]),
 });
 
 export type ProductFormData = z.infer<typeof productFormSchema>;
 export type ProductOptionFormData = z.infer<typeof optionSchema>;
 export type ProductVariantFormData = z.infer<typeof productVariantSchema>;
 export type AddSupplierFormData = z.infer<typeof supplierSchema>;
+export type ShippingZoneFormData = z.infer<typeof shippingZoneSchema>;
+export type ShippingRuleFormData = z.infer<typeof shippingRuleSchema>;

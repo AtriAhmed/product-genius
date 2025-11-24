@@ -190,6 +190,45 @@ export type Product = {
   productMappings?: ProductMapping[];
   variantMappings?: VariantMapping[];
   plans?: Plan[];
+  shippingZones?: ShippingZone[];
+};
+
+export type ShippingZone = {
+  id: number;
+  name?: string;
+  productId?: number;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  product?: Product;
+  countries?: ShippingZoneCountry[];
+  rules?: ShippingRule[];
+};
+
+export type ShippingZoneCountry = {
+  id: number;
+  zoneId?: number;
+
+  countryCode?: string;
+
+  // Relations
+  zone?: ShippingZone;
+};
+
+export type ShippingRule = {
+  id: number;
+  zoneId?: number;
+
+  name?: string;
+  priceCents?: number;
+  minQuantity?: number;
+  maxQuantity?: number;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+  // Relations
+  zone?: ShippingZone;
 };
 
 export type ProductOption = {

@@ -229,38 +229,35 @@ model Product {
   category   Category? @relation(fields: [categoryId], references: [id])
   categoryId Int?      @map("category_id")
 
-  plans           Plan[]               @relation("plan_products")
-  translations    ProductTranslation[]
-  media           Media[]
-  suppliers       Supplier[]
-  createdAt       DateTime             @default(now()) @map("created_at")
-  updatedAt       DateTime             @updatedAt @map("updated_at")
-  isActive        Boolean              @default(true) @map("is_active")
-  views           Int                  @default(0)
-  likes           Int                  @default(0)
-  options         ProductOption[]
-  variants        ProductVariant[]
-  productMappings ProductMapping[]
-  variantMappings VariantMapping[]
-  orderItems      OrderItem[]
-  shippingZones   ShippingZone[]
+  plans                Plan[]                @relation("plan_products")
+  translations         ProductTranslation[]
+  media                Media[]
+  suppliers            Supplier[]
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  isActive             Boolean               @default(true) @map("is_active")
+  views                Int                   @default(0)
+  likes                Int                   @default(0)
+  options              ProductOption[]
+  variants             ProductVariant[]
+  productMappings      ProductMapping[]
+  variantMappings      VariantMapping[]
+  orderItems           OrderItem[]
+  productShippingZones ProductShippingZone[]
 
   @@map("product")
 }
 
 model ShippingZone {
-  id        Int      @id @default(autoincrement())
-  name      String?
-  productId Int?     @map("product_id")
-  product   Product? @relation(fields: [productId], references: [id])
+  id   Int     @id @default(autoincrement())
+  name String?
 
-  countries ShippingZoneCountry[]
-  rules     ShippingRule[]
+  countries            ShippingZoneCountry[]
+  productShippingZones ProductShippingZone[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([productId])
   @@map("shipping_zone")
 }
 
@@ -276,21 +273,36 @@ model ShippingZoneCountry {
   @@map("shipping_zone_country")
 }
 
-model ShippingRule {
-  id          Int          @id @default(autoincrement())
-  zone        ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-  zoneId      Int          @map("shipping_zone_id")
-  name        String?
-  priceCents  Int          @map("price_cents")
-  minQuantity Int?         @map("min_quantity")
-  maxQuantity Int?         @map("max_quantity")
+model ProductShippingZone {
+  id        Int     @id @default(autoincrement())
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int     @map("product_id")
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  zone   ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneId Int          @map("shipping_zone_id")
 
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  productShippingRules ProductShippingRule[]
+
+  @@unique([productId, zoneId])
+  @@index([productId])
   @@index([zoneId])
-  @@index([zoneId, minQuantity])
-  @@map("shipping_rule")
+  @@map("product_shipping_zone")
+}
+
+model ProductShippingRule {
+  id                    Int                 @id @default(autoincrement())
+  productShippingZone   ProductShippingZone @relation(fields: [productShippingZoneId], references: [id], onDelete: Cascade)
+  productShippingZoneId Int                 @map("product_shipping_zone_id")
+
+  minQuantity Int? @map("min_quantity")
+  maxQuantity Int? @map("max_quantity")
+
+  priceCents Int @map("price_cents")
+
+  @@index([productShippingZoneId])
+  @@map("product_shipping_rule")
 }
 
 model ProductOption {

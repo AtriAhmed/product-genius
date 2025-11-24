@@ -36,6 +36,8 @@ export function formatCurrencyCents(cents: number, currency: string = "USD") {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency,
+    currencyDisplay: "narrowSymbol",
+    trailingZeroDisplay: "stripIfInteger",
   }).format(cents / 100);
 }
 
