@@ -61,15 +61,13 @@ const variantSchema = z.object({
 });
 
 const shippingRuleSchema = z.object({
-  name: z.string().optional().nullable(),
   priceCents: z.number().int().min(0),
   minQuantity: z.number().int().min(0).optional().nullable(),
   maxQuantity: z.number().int().min(0).optional().nullable(),
 });
 
-const shippingZoneSchema = z.object({
-  name: z.string().optional().nullable(),
-  countries: z.array(z.string()).min(1), // array of country codes
+const productShippingZoneSchema = z.object({
+  zoneId: z.number().int().positive(),
   rules: z.array(shippingRuleSchema).min(1),
 });
 
@@ -86,7 +84,7 @@ const updateProductSchema = z.object({
   suppliers: z.array(supplierSchema).optional().default([]),
   options: z.array(productOptionSchema).max(3).optional().default([]),
   variants: z.array(variantSchema).optional().default([]),
-  shippingZones: z.array(shippingZoneSchema).optional().default([]),
+  shippingZones: z.array(productShippingZoneSchema).optional().default([]),
 });
 
 const patchProductSchema = z.object({
@@ -102,7 +100,7 @@ const patchProductSchema = z.object({
   suppliers: z.array(supplierSchema).optional(),
   options: z.array(productOptionSchema).max(3).optional(),
   variants: z.array(variantSchema).optional(),
-  shippingZones: z.array(shippingZoneSchema).optional(),
+  shippingZones: z.array(productShippingZoneSchema).optional(),
 });
 
 export async function GET(request: NextRequest, ctx: RouteContext<"/api/products/[id]">) {
@@ -168,10 +166,14 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/products
             prices: true,
           },
         },
-        shippingZones: {
+        productShippingZones: {
           include: {
-            countries: true,
-            rules: true,
+            zone: {
+              include: {
+                countries: true,
+              },
+            },
+            productShippingRules: true,
           },
         },
       },
@@ -734,27 +736,21 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       }
     }
 
-    // Handle shipping zones - delete old ones and create new ones
+    // Handle shipping zones - delete old links and create new ones
     if (validatedData.shippingZones !== undefined) {
-      // Delete all existing shipping zones (cascade will delete countries and rules)
-      await prisma.shippingZone.deleteMany({
+      // Delete all existing product shipping zone links (cascade will delete rules)
+      await prisma.productShippingZone.deleteMany({
         where: { productId },
       });
 
-      // Create new shipping zones with nested countries and rules
+      // Create new product shipping zone links with rules
       for (const zone of validatedData.shippingZones) {
-        await prisma.shippingZone.create({
+        await prisma.productShippingZone.create({
           data: {
-            name: zone.name,
             productId: productId,
-            countries: {
-              create: zone.countries.map((countryCode) => ({
-                countryCode,
-              })),
-            },
-            rules: {
+            zoneId: zone.zoneId,
+            productShippingRules: {
               create: zone.rules.map((rule) => ({
-                name: rule.name,
                 priceCents: rule.priceCents,
                 minQuantity: rule.minQuantity,
                 maxQuantity: rule.maxQuantity,
@@ -809,10 +805,14 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               prices: true,
             },
           },
-          shippingZones: {
+          productShippingZones: {
             include: {
-              countries: true,
-              rules: true,
+              zone: {
+                include: {
+                  countries: true,
+                },
+              },
+              productShippingRules: true,
             },
           },
         },
@@ -859,10 +859,14 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               prices: true,
             },
           },
-          shippingZones: {
+          productShippingZones: {
             include: {
-              countries: true,
-              rules: true,
+              zone: {
+                include: {
+                  countries: true,
+                },
+              },
+              productShippingRules: true,
             },
           },
         },
