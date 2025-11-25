@@ -78,7 +78,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell>
 
       {/* Product Name */}
-      <TableCell className="py-1 font-medium">
+      <TableCell className="max-w-[400px] py-1 font-medium">
         <Link
           href={`/admin/products/${product.id}`}
           className="flex flex-col hover:underline"
@@ -105,6 +105,21 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
           </span>
         )}
       </TableCell> */}
+
+      <TableCell className="py-1">
+        <div className="flex flex-wrap gap-1">
+          {product?.plans?.slice(0, 3).map((plan) => (
+            <Badge key={plan.name} variant="secondary" className="text-[10px]">
+              {plan.name}
+            </Badge>
+          ))}
+          {product?.plans && product?.plans?.length > 3 && (
+            <Badge variant="outline" className="text-[10px]">
+              +{product?.plans?.length - 3}
+            </Badge>
+          )}
+        </div>
+      </TableCell>
 
       {/* Category */}
       <TableCell className="py-1">
@@ -133,7 +148,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
       </TableCell>
 
       {/* Translations */}
-      <TableCell className="py-1">
+      {/* <TableCell className="py-1">
         <div className="flex flex-wrap gap-1">
           {product?.translations?.slice(0, 3).map((tr) => (
             <Badge key={tr.locale} variant="secondary" className="text-xs">
@@ -146,7 +161,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
             </Badge>
           )}
         </div>
-      </TableCell>
+      </TableCell> */}
 
       {/* Actions */}
       <TableCell className="py-1">

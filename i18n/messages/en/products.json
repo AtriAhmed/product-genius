@@ -226,5 +226,6 @@
   "shipping": "Shipping",
   "select": "Select",
   "shipping zone": "Shipping Zone",
-  "no shipping zones available": "No shipping zones available"
+  "no shipping zones available": "No shipping zones available",
+  "plans": "Plans"
 }

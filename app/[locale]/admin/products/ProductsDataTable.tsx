@@ -104,10 +104,11 @@ export default function ProductsDataTable({
             <TableHead className="w-16 font-medium">{t("image")}</TableHead>
             <TableHead className="font-medium">{t("name")}</TableHead>
             {/* <TableHead className="font-medium">{t("sku")}</TableHead> */}
+            <TableHead className="font-medium">{t("plans")}</TableHead>
             <TableHead className="font-medium">{t("category")}</TableHead>
             <TableHead className="font-medium">{t("price")}</TableHead>
             <TableHead className="font-medium">{t("status")}</TableHead>
-            <TableHead className="font-medium">{t("translations")}</TableHead>
+            {/* <TableHead className="font-medium">{t("translations")}</TableHead> */}
             <TableHead className="font-medium text-center">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
