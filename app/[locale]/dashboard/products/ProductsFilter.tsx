@@ -43,9 +43,9 @@ export default function ProductFilters({
   //     sortOrder !== "desc";
 
   return (
-    <div className="flex lg:flex-row flex-col gap-4 pb-2">
+    <div className="flex flex-wrap gap-2 pb-2">
       {/* Search */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-w-[200px]">
         <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
         <Input
           placeholder={t("search products")}
@@ -63,7 +63,7 @@ export default function ProductFilters({
           onSortChange(newSortBy, newSortOrder);
         }}
       >
-        <SelectTrigger className="w-full lg:w-48">
+        <SelectTrigger className="">
           {sortOrder === "asc" ? <SortAsc className="w-4 h-4 mr-2" /> : <SortDesc className="w-4 h-4 mr-2" />}
           <SelectValue />
         </SelectTrigger>

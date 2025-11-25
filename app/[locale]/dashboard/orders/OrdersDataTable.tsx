@@ -100,7 +100,7 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
           <TableRow className="border-border hover:bg-muted/50">
             <TableHead className="font-medium">{t("order number")}</TableHead>
             <TableHead className="font-medium">{t("shopify id")}</TableHead>
-            <TableHead className="font-medium">{t("shipment status")}</TableHead>
+            <TableHead className="font-medium">{t("status")}</TableHead>
             <TableHead className="font-medium">{t("tracking")}</TableHead>
             <TableHead className="font-medium">{t("order total")}</TableHead>
             <TableHead className="font-medium">{t("date")}</TableHead>

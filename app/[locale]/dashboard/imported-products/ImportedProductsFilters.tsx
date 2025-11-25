@@ -2,13 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -38,13 +32,12 @@ export default function ImportedProductsFilters({
     { value: "shop", label: t("shop") },
   ];
 
-  const hasActiveFilters =
-    search || sortBy !== "createdAt" || sortOrder !== "desc";
+  const hasActiveFilters = search || sortBy !== "createdAt" || sortOrder !== "desc";
 
   return (
-    <div className="flex flex-wrap items-end gap-4 mb-2">
+    <div className="flex flex-wrap gap-2 pb-2">
       {/* Search */}
-      <div className="flex-1 min-w-[200px]">
+      <div className="relative flex-1 min-w-[200px]">
         <Input
           placeholder={t("search products")}
           value={search}
@@ -68,12 +61,8 @@ export default function ImportedProductsFilters({
           <SelectContent>
             {sortOptions.map((option) => (
               <div key={option.value}>
-                <SelectItem value={`${option.value}-asc`}>
-                  {option.label} (A-Z)
-                </SelectItem>
-                <SelectItem value={`${option.value}-desc`}>
-                  {option.label} (Z-A)
-                </SelectItem>
+                <SelectItem value={`${option.value}-asc`}>{option.label} (A-Z)</SelectItem>
+                <SelectItem value={`${option.value}-desc`}>{option.label} (Z-A)</SelectItem>
               </div>
             ))}
           </SelectContent>
