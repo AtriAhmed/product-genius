@@ -118,7 +118,7 @@ export default function ProductPage() {
           <div className="mb-6">
             <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to products
+              {t("back to products")}
             </Button>
           </div>
           <ProductSkeleton />
@@ -141,7 +141,7 @@ export default function ProductPage() {
         <div className="mb-6">
           <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to products
+            {t("back to products")}
           </Button>
         </div>
 

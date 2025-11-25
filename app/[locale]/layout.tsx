@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 const exo2 = Exo_2({
   variable: "--font-exo2",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {

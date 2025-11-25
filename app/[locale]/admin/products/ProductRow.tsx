@@ -6,7 +6,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Link, useRouter } from "@/i18n/navigation";
 import { getCurrentTranslation } from "@/lib/products";
 import { getProductPrices } from "@/lib/productVariants";
-import { cn, formatCurrency, getMediaUrl, htmlToText, stopPropagation } from "@/lib/utils";
+import { cn, formatCurrency, getMediaUrl, htmlToText, stopPropagation, hueFromString } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -108,13 +108,24 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
 
       <TableCell className="py-1">
         <div className="flex flex-wrap gap-1">
-          {product?.plans?.slice(0, 3).map((plan) => (
-            <Badge key={plan.name} variant="secondary" className="text-[10px]">
-              {plan.name}
-            </Badge>
-          ))}
+          {product?.plans?.slice(0, 3).map((plan) => {
+            const hue = hueFromString(plan.name || "");
+            return (
+              <div
+                key={plan.name}
+                className="px-2 py-0.5 border rounded-sm font-bold text-[11px] text-nowrap"
+                style={{
+                  backgroundColor: `hsl(${hue}, 65%, 90%)`,
+                  borderColor: `hsl(${hue}, 65%, 75%)`,
+                  color: `hsl(${hue}, 65%, 25%)`,
+                }}
+              >
+                {plan.name}
+              </div>
+            );
+          })}
           {product?.plans && product?.plans?.length > 3 && (
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="font-bold text-[11px]">
               +{product?.plans?.length - 3}
             </Badge>
           )}
