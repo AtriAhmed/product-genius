@@ -40,9 +40,9 @@ export default function CategoriesFilters({
 
   return (
     <div className="mb-2">
-      <div className="flex md:flex-row flex-col flex-wrap md:justify-between md:items-center gap-4">
+      <div className="flex flex-wrap gap-2">
         {/* Search */}
-        <div className="relative flex-1 min-w-28 max-w-md">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2 transform" />
           <Input
             placeholder={t("search categories")}
@@ -52,10 +52,10 @@ export default function CategoriesFilters({
           />
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {/* Filter */}
           <Select value={filter} onValueChange={onFilterChange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="">
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4" />
                 <SelectValue placeholder={t("filter by")} />
@@ -70,7 +70,7 @@ export default function CategoriesFilters({
 
           {/* Sort */}
           <Select value={`${sortBy}_${sortOrder}`} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="">
               <div className="flex items-center gap-2">
                 <ArrowUpDown className="w-4 h-4" />
                 <SelectValue placeholder={t("sort by")} />
