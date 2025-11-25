@@ -99,6 +99,7 @@ export type Plan = {
 
   _count?: {
     subscriptions: number;
+    products: number;
   };
 };
 

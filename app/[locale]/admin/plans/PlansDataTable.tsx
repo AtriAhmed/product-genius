@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Edit, Trash2, Eye, Star, Users } from "lucide-react";
+import { Edit, Trash2, Eye, Star, Users, Package } from "lucide-react";
 import { format } from "date-fns";
 import { Plan } from "@/types";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -89,6 +89,11 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
         <Skeleton className="w-12 h-4 rounded" />
       </TableCell>
 
+      {/* Products */}
+      <TableCell className="py-1">
+        <Skeleton className="w-12 h-4 rounded" />
+      </TableCell>
+
       {/* Created */}
       <TableCell className="py-1">
         <Skeleton className="w-20 h-4 rounded" />
@@ -125,10 +130,11 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
           <TableRow className="border-border hover:bg-muted/50">
             <TableHead className="w-[300px] font-medium">{t("plan name")}</TableHead>
             <TableHead className="w-[150px] font-medium">{t("price")}</TableHead>
-            <TableHead className="w-[120px] font-medium">Status</TableHead>
+            <TableHead className="w-[120px] font-medium">{t("status")}</TableHead>
             <TableHead className="w-[100px] font-medium">{t("subscriptions")}</TableHead>
-            <TableHead className="w-[150px] font-medium">Created</TableHead>
-            <TableHead className="font-medium text-right">Actions</TableHead>
+            <TableHead className="w-[100px] font-medium">{t("products")}</TableHead>
+            <TableHead className="w-[150px] font-medium">{t("created")}</TableHead>
+            <TableHead className="font-medium text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -175,6 +181,12 @@ export default function PlansDataTable({ plans, onEdit, onDelete, isLoading = fa
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Users className="w-4 h-4" />
                       <span>{plan._count?.subscriptions || 0}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-1">
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Package className="w-4 h-4" />
+                      <span>{plan._count?.products || 0}</span>
                     </div>
                   </TableCell>
                   <TableCell className="py-1 text-muted-foreground">

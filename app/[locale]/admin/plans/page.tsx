@@ -126,7 +126,7 @@ export default function PlansPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto">
+      <div className="max-w-7xl">
         {/* Header */}
         <div className="flex flex-wrap justify-between items-center gap-2 mb-8">
           <div>

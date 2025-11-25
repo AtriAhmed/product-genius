@@ -103,5 +103,8 @@
   "cancel": "Cancel",
   "no features available": "No features available",
   "add features to your plan": "Add features to your plan",
-  "cannot delete plan with active subscriptions": "Cannot delete plan with active subscriptions"
+  "cannot delete plan with active subscriptions": "Cannot delete plan with active subscriptions",
+  "status": "Status",
+  "products": "Products",
+  "created": "Created"
 }
