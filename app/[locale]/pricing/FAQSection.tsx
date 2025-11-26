@@ -1,63 +1,96 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import useSWR from "swr";
+import axios from "axios";
+import { HelpCircle } from "lucide-react"; // Ensure you have lucide-react installed
+import { FAQ } from "@/types";
+
+interface FaqsResponse {
+  data: FAQ[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+async function fetcher() {
+  const response = await axios.get("/api/faqs", {
+    params: { limit: 100, sortBy: "order", sortOrder: "asc" },
+  });
+  return response.data;
+}
+
+// Static Skeleton Component
+function FAQSkeleton() {
+  return (
+    <div className="gap-6 grid md:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="h-40 p-6 border rounded-lg bg-background">
+          <div className="w-3/4 h-6 mb-4 rounded bg-muted" />
+          <div className="w-full h-4 rounded bg-muted" />
+          <div className="w-5/6 h-4 mt-2 rounded bg-muted" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function FAQSection() {
   const t = useTranslations("pricing");
 
-  const faqs = [
-    {
-      question: t("is there a free trial?"),
-      answer: t(
-        "yes! we offer a 7-day free trial for all plans; no credit card required"
-      ),
-    },
-    {
-      question: t("can i change plans later?"),
-      answer: t("absolutely; you can upgrade, downgrade, or cancel anytime"),
-    },
-    {
-      question: t("do you offer discounts?"),
-      answer: t("yes! we offer 20% off for annual subscriptions"),
-    },
-    {
-      question: t("what payment methods do you accept?"),
-      answer: t("we accept all major credit cards and paypal"),
-    },
-  ];
+  const { data, error, isLoading } = useSWR<FaqsResponse>(["faqs"], fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+  });
+
+  const faqs = data?.data || [];
+
+  if (error) return null;
 
   return (
-    <div className="bg-muted py-12">
+    <section className="py-16 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="lg:text-center">
-          <h2 className="text-base text-primary-500 font-semibold tracking-wide uppercase">
-            {t("faqs")}
-          </h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-foreground sm:text-4xl">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <h2 className="font-bold text-primary-500 text-base uppercase tracking-widest">{t("faqs")}</h2>
+          <p className="mt-3 font-bold text-foreground text-3xl sm:text-4xl tracking-tight">
             {t("frequently asked questions")}
           </p>
         </div>
 
-        {/* FAQ Grid */}
-        <div className="mt-10">
-          <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-8">
+        {/* Content */}
+        {isLoading ? (
+          <FAQSkeleton />
+        ) : (
+          <div className="gap-6 grid md:grid-cols-2">
             {faqs.map((faq, idx) => (
               <div
                 key={idx}
-                className="bg-background p-6 rounded-xl shadow-sm border hover:shadow-md transition hover:-translate-y-1"
+                className="group relative flex flex-col items-start p-6 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow"
               >
-                <h3 className="text-lg font-semibold text-foreground">
-                  {faq.question}
-                </h3>
-                <p className="mt-2 text-base text-muted-foreground">
-                  {faq.answer}
-                </p>
+                {/* Visual Accent */}
+                <div className="top-0 left-0 absolute w-1 h-full rounded-l-lg bg-primary-500" />
+
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex justify-center items-center w-8 h-8 rounded-full bg-primary/10 text-primary-500 shrink-0">
+                    <HelpCircle className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg leading-tight">{faq.question}</h3>
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">{faq.answer}</p>
               </div>
             ))}
           </div>
-        </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && faqs.length === 0 && (
+          <div className="p-12 border border-dashed rounded-lg text-muted-foreground text-center">
+            No FAQs available at the moment.
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 }

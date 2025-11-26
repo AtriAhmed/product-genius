@@ -47,9 +47,6 @@ export default function Navbar() {
                 <Link href="/#features" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
                   {t("features")}
                 </Link>
-                <Link href="/#niches" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
-                  {t("niches")}
-                </Link>
                 <Link href="/pricing" className="px-1 py-2 font-medium hover:text-primary-500 text-xs lg:text-sm">
                   {t("pricing")}
                 </Link>
