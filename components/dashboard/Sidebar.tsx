@@ -56,6 +56,7 @@ import {
 import { useAppProvider } from "@/contexts/AppProvider";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
+import Logo from "@/public/logo.svg";
 
 type NavigationItem = {
   title: string;
@@ -132,7 +133,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
             <SidebarMenuButton size="lg" asChild>
               <Link href="/" className="no-ring">
                 <div className="flex justify-center items-center size-8 aspect-square rounded-lg bg-primary-500 text-sidebar-primary-foreground">
-                  <Zap className="size-4" />
+                  <Logo className="w-5 h-5 fill-white" />
                 </div>
                 <div className="flex-1 grid text-sm text-left leading-tight">
                   <span className="font-semibold truncate">{t("winwaterfall")}</span>

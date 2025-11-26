@@ -10,6 +10,7 @@ import { LogOut, Menu, User, Zap } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import Logo from "@/public/logo.svg";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function Navbar() {
           {/* Logo + Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Zap className="w-8 h-8 text-primary-500" />
+              <Logo className="w-8 h-8" />
               <span className="ml-2 font-bold text-xl">WinWaterfall</span>
             </Link>
           </div>
