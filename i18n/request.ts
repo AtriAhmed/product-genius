@@ -26,6 +26,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     "imported-products",
     "notifications",
     "shipping-zones",
+    "faqs",
   ];
 
   // Import all message files and organize them by namespace

@@ -6,6 +6,7 @@ import {
   Bell,
   ChevronsUpDown,
   CreditCard,
+  FileQuestionMark,
   FolderTree,
   Globe,
   Languages,
@@ -85,6 +86,12 @@ const navigationData: NavigationItem[] = [
     title: "shipping zones",
     url: "/admin/shipping-zones",
     icon: Truck,
+    roles: ["OWNER", "ADMIN", "EDITOR"],
+  },
+  {
+    title: "faqs",
+    url: "/admin/faqs",
+    icon: FileQuestionMark,
     roles: ["OWNER", "ADMIN", "EDITOR"],
   },
   {

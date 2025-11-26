@@ -628,3 +628,12 @@ export type DeliveryInfo = {
 };
 
 export type Translation = ProductTranslation | CategoryTranslation;
+
+export type FAQ = {
+  id: number;
+  question?: string;
+  answer?: string;
+  order?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
