@@ -35,8 +35,8 @@ export default function FaqsPage() {
   const [editFaq, setEditFaq] = useState<FAQ | undefined>();
   const [showDialog, setShowDialog] = useState(false);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("order");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
   const limit = 20;
   const [isDeleting, setIsDeleting] = useState(false);
