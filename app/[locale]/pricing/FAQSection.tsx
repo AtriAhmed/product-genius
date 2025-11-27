@@ -48,6 +48,8 @@ export default function FAQSection() {
 
   if (error) return null;
 
+  if (faqs.length === 0 && !isLoading) return null;
+
   return (
     <section className="py-16 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
