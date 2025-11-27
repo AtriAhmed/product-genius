@@ -35,6 +35,8 @@ export default function Private({
     if (guestOnly) {
       if (session) {
         getRedirectTo((session?.user as any) || {}).then((redirectTo) => {
+          console.log("-------------------- redirectTo --------------------");
+          console.log(redirectTo);
           router.push(redirectTo);
         });
       }
