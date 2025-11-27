@@ -11,6 +11,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import Logo from "@/public/logo.svg";
+import LogoFull from "@/public/logo-full.svg";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,8 +36,9 @@ export default function Navbar() {
           {/* Logo + Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <Logo className="w-8 h-8" />
-              <span className="ml-2 font-bold text-xl">WinWaterfall</span>
+              {/* <Logo className="w-8 h-8" /> */}
+              <LogoFull className="h-8" />
+              {/* <span className="ml-2 font-bold text-xl">WinWaterfall</span> */}
             </Link>
           </div>
 
