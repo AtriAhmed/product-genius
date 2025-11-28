@@ -51,8 +51,8 @@ export function DashboardBreadcrumb() {
         <BreadcrumbList>
           {contextItems.map((item, index) => (
             <div key={item.href} className="flex items-center">
-              {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-              <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
+              {index > 0 && <BreadcrumbSeparator className="block" />}
+              <BreadcrumbItem className={index === 0 ? "block" : ""}>
                 {!isMounted || item.isLast ? (
                   <BreadcrumbPage>{item.label}</BreadcrumbPage>
                 ) : (
@@ -93,8 +93,8 @@ export function DashboardBreadcrumb() {
       <BreadcrumbList>
         {breadcrumbItems.map((item, index) => (
           <div key={item.href} className="flex items-center">
-            {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-            <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
+            {index > 0 && <BreadcrumbSeparator className="block" />}
+            <BreadcrumbItem className={index === 0 ? "block" : ""}>
               {!isMounted || item.isLast ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               ) : (

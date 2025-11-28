@@ -30,20 +30,20 @@ export default function UserDropdown() {
             alt="Avatar"
             width={36}
             height={36}
-            className="rounded-full border shadow-sm"
+            className="border rounded-full shadow-sm"
           />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link href="/profile" className="flex items-center no-ring">
-            <User className="mr-2 h-4 w-4" />
+            <User className="w-4 h-4 mr-2" />
             <span>{t("profile")}</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator /> */}
         <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="w-4 h-4 mr-2" />
           <span>{t("logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
