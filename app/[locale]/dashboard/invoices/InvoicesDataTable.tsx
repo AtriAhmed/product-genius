@@ -1,17 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Download, ExternalLink, Eye } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Invoice } from "@/types";
+import { Download, Eye, FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type InvoicesDataTableProps = {
   invoices: Invoice[];
@@ -20,12 +12,7 @@ type InvoicesDataTableProps = {
   isLoading: boolean;
 };
 
-export default function InvoicesDataTable({
-  invoices,
-  onDownload,
-  onViewHosted,
-  isLoading,
-}: InvoicesDataTableProps) {
+export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, isLoading }: InvoicesDataTableProps) {
   const t = useTranslations("invoices");
 
   const formatCurrency = (amountCents?: number, currency = "USD") => {
@@ -78,120 +65,97 @@ export default function InvoicesDataTable({
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="w-0 min-w-full overflow-hidden border rounded-lg bg-card shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("invoice id")}</TableHead>
-              <TableHead>{t("type")}</TableHead>
-              <TableHead>{t("status")}</TableHead>
-              <TableHead>{t("total")}</TableHead>
-              <TableHead>{t("actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <Skeleton className="w-16 h-4" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="w-12 h-6" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="w-12 h-6" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="w-32 h-4" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="w-16 h-4" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="w-24 h-8" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-  }
+  const skeletonRows = Array.from({ length: 5 }).map((_, index) => (
+    <TableRow key={`skeleton-${index}`}>
+      <TableCell className="py-1">
+        <div className="w-16 h-4 rounded bg-muted animate-pulse" />
+      </TableCell>
+      <TableCell className="py-1">
+        <div className="w-12 h-6 rounded bg-muted animate-pulse" />
+      </TableCell>
+      <TableCell className="py-1">
+        <div className="w-12 h-6 rounded bg-muted animate-pulse" />
+      </TableCell>
+      <TableCell className="py-1">
+        <div className="w-32 h-4 rounded bg-muted animate-pulse" />
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="w-24 h-8 ml-auto rounded bg-muted animate-pulse" />
+      </TableCell>
+    </TableRow>
+  ));
 
-  if (invoices.length === 0) {
-    return (
-      <div className="p-8 border rounded-lg bg-card shadow-sm text-center">
-        <h3 className="font-semibold text-foreground text-lg">
-          {t("no invoices")}
-        </h3>
-        <p className="mt-2 text-muted-foreground">
-          {t("no invoices description")}
-        </p>
-      </div>
-    );
-  }
+  const emptyStateRow = (
+    <TableRow>
+      <TableCell colSpan={5}>
+        <div className="p-8 text-center">
+          <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
+            <FileText className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="font-bold text-slate-800 text-lg">{t("no invoices")}</h3>
+          <p className="text-muted-foreground text-sm">{t("no invoices description")}</p>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
-    <div className="w-0 min-w-full overflow-hidden border rounded-lg bg-card shadow-sm">
+    <div className="w-0 min-w-full border rounded-lg bg-card">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("invoice id")}</TableHead>
-            <TableHead>{t("type")}</TableHead>
-            <TableHead>{t("status")}</TableHead>
-            <TableHead>{t("total")}</TableHead>
-            <TableHead className="text-end">{t("actions")}</TableHead>
+            <TableHead className="text-nowrap">{t("invoice id")}</TableHead>
+            <TableHead className="text-nowrap">{t("type")}</TableHead>
+            <TableHead className="text-nowrap">{t("status")}</TableHead>
+            <TableHead className="text-nowrap">{t("total")}</TableHead>
+            <TableHead className="text-right text-nowrap">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.id}>
-              <TableCell className="font-medium">
-                #{invoice.id?.toString()?.padStart(6, "0")}
-              </TableCell>
-              <TableCell>
-                {invoice.type && (
-                  <Badge className={getTypeColor(invoice.type)}>
-                    {t(invoice.type.toLowerCase())}
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                {invoice.status && (
-                  <Badge className={getStatusColor(invoice.status)}>
-                    {getStatusText(invoice.status)}
-                  </Badge>
-                )}
-              </TableCell>
-              <TableCell className="font-medium">
-                {formatCurrency(invoice.amountCents, invoice.currency)}
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDownload(invoice)}
-                    disabled={!invoice.pdfUrl}
-                    className="gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onViewHosted(invoice)}
-                    disabled={!invoice.hostedUrl}
-                    className="gap-2"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {isLoading
+            ? skeletonRows
+            : invoices.length > 0
+            ? invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell className="py-1 font-medium">#{invoice.id?.toString()?.padStart(6, "0")}</TableCell>
+                  <TableCell className="py-1">
+                    {invoice.type && (
+                      <Badge className={getTypeColor(invoice.type)}>{t(invoice.type.toLowerCase())}</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-1">
+                    {invoice.status && (
+                      <Badge className={getStatusColor(invoice.status)}>{getStatusText(invoice.status)}</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-1 font-medium">
+                    {formatCurrency(invoice.amountCents, invoice.currency)}
+                  </TableCell>
+                  <TableCell className="py-1 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onDownload(invoice)}
+                        disabled={!invoice.pdfUrl}
+                        className="gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onViewHosted(invoice)}
+                        disabled={!invoice.hostedUrl}
+                        className="gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            : emptyStateRow}
         </TableBody>
       </Table>
     </div>
