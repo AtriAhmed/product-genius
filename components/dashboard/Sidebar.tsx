@@ -249,7 +249,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuGroup>
+                {/* <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/profile" className="no-ring">
                       <Sparkles />
@@ -270,7 +270,7 @@ export function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) 
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
 
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator /> */}
 
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="gap-2">
