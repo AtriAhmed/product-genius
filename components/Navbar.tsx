@@ -32,12 +32,12 @@ export default function Navbar() {
   return (
     <nav className="top-0 right-0 left-0 z-50 fixed dark:border-b bg-background shadow-sm">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-[55px]">
+        <div className="flex justify-between h-navbar">
           {/* Logo + Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               {/* <Logo className="w-8 h-8" /> */}
-              <LogoFull className="h-8" />
+              <LogoFull className="h-7 md:h-8" />
               {/* <span className="ml-2 font-bold text-xl">WinWaterfall</span> */}
             </Link>
           </div>
@@ -88,10 +88,10 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex justify-center items-center p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset hover:bg-gray-100 text-gray-400 hover:text-gray-500"
+              className="inline-flex justify-center items-center p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset hover:bg-accent text-gray-400 hover:text-gray-500"
             >
               <span className="sr-only">Open main menu</span>
-              <Menu className="w-6 h-6" />
+              <Menu className="size-6" />
             </button>
           </div>
         </div>

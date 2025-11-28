@@ -77,7 +77,7 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[calc(100vh-55px)] px-4 sm:px-6 lg:px-8 py-12 bg-background">
+    <div className="flex justify-center items-center min-h-[calc(100vh-var(--navbar-height))] px-4 sm:px-6 lg:px-8 py-12 bg-background">
       <div className="space-y-8 w-full max-w-md p-10 rounded-xl dark:bg-muted-background shadow-card-1">
         <div>
           <Image src="/logo.svg" alt="Logo" width={48} height={48} className="mx-auto text-primary-500" />

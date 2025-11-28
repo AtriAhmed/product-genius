@@ -12,7 +12,7 @@ export default function HeroSection() {
   const user = session?.user;
 
   return (
-    <div className="relative min-h-screen lg:min-h-[calc(100vh-55px)] overflow-hidden bg-white dark:bg-background">
+    <div className="relative min-h-screen lg:min-h-[calc(100vh-var(--navbar-height))] overflow-hidden bg-white dark:bg-background">
       <div className="max-w-7xl h-full mx-auto">
         <div className="z-10 relative lg:w-full lg:max-w-2xl h-full pb-8 sm:pb-16 md:pb-20 lg:pb-28 xl:pb-32">
           {/* Skewed background shape for large screens */}

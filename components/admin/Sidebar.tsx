@@ -156,7 +156,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)] light:border-none shadow-[0_0_3px_rgb(0,0,0,.2)]"
+      className="top-navbar h-[calc(100vh-var(--navbar-height))] light:border-none shadow-[0_0_3px_rgb(0,0,0,.2)]"
       collapsible="icon"
       {...props}
     >
@@ -243,7 +243,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuGroup>
+                {/* <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link href="/admin/profile" className="no-ring">
                       <Sparkles />
@@ -256,15 +256,9 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                       {t("settings")}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin/notifications" className="no-ring">
-                      <Bell />
-                      {t("notifications")}
-                    </Link>
-                  </DropdownMenuItem>
                 </DropdownMenuGroup>
 
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator /> */}
 
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="gap-2">

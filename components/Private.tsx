@@ -64,7 +64,7 @@ export default function Private({
   // Show loader while checking
   if (status === "loading") {
     return (
-      <div className="flex justify-center items-center w-full h-[calc(100vh-55px)]">
+      <div className="flex justify-center items-center w-full h-[calc(100vh-var(--navbar-height))]">
         <MainLoader />
       </div>
     );
@@ -97,7 +97,7 @@ export default function Private({
 
   // Otherwise → nothing (will redirect)
   return (
-    <div className="flex justify-center items-center w-full h-full min-h-[calc(100vh-55px)]">
+    <div className="flex justify-center items-center w-full h-full min-h-[calc(100vh-var(--navbar-height))]">
       <MainLoader />
     </div>
   );

@@ -112,9 +112,7 @@ const navigationData: NavigationItem[] = [
   },
 ];
 
-export function AgentSidebar({
-  ...props
-}: React.ComponentProps<typeof Sidebar>) {
+export function AgentSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -126,7 +124,7 @@ export function AgentSidebar({
 
   return (
     <Sidebar
-      className="top-[55px] h-[calc(100vh-55px)] light:border-none shadow-[0_0_3px_rgb(0,0,0,.2)]"
+      className="top-navbar h-[calc(100vh-var(--navbar-height))] light:border-none shadow-[0_0_3px_rgb(0,0,0,.2)]"
       collapsible="icon"
       {...props}
     >
@@ -139,12 +137,8 @@ export function AgentSidebar({
                   <Zap className="size-4" />
                 </div>
                 <div className="flex-1 grid text-sm text-left leading-tight">
-                  <span className="font-semibold truncate">
-                    {t("winwaterfall")}
-                  </span>
-                  <span className="text-muted-foreground text-xs truncate">
-                    {t("agent panel")}
-                  </span>
+                  <span className="font-semibold truncate">{t("winwaterfall")}</span>
+                  <span className="text-muted-foreground text-xs truncate">{t("agent panel")}</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -163,12 +157,7 @@ export function AgentSidebar({
                   <>
                     <SidebarMenuButton
                       asChild
-                      isActive={
-                        pathname === item.url ||
-                        item.subItems.some(
-                          (subItem) => pathname === subItem.url
-                        )
-                      }
+                      isActive={pathname === item.url || item.subItems.some((subItem) => pathname === subItem.url)}
                     >
                       <Link href={item.url} className="no-ring">
                         <item.icon />
@@ -178,10 +167,7 @@ export function AgentSidebar({
                     <SidebarMenuSub>
                       {item.subItems.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={pathname === subItem.url}
-                          >
+                          <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
                             <Link href={subItem.url} className="no-ring">
                               <subItem.icon />
                               <span>{t(subItem.title)}</span>
@@ -215,21 +201,14 @@ export function AgentSidebar({
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="w-8 h-8 rounded-lg">
-                    <AvatarImage
-                      src={session?.user?.image || ""}
-                      alt={session?.user?.name || ""}
-                    />
+                    <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                     <AvatarFallback className="rounded-lg">
                       {session?.user?.name?.slice(0, 2)?.toUpperCase() || "US"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 grid text-sm text-left leading-tight">
-                    <span className="font-semibold truncate">
-                      {session?.user?.name || t("user")}
-                    </span>
-                    <span className="text-muted-foreground text-xs truncate">
-                      {session?.user?.email}
-                    </span>
+                    <span className="font-semibold truncate">{session?.user?.name || t("user")}</span>
+                    <span className="text-muted-foreground text-xs truncate">{session?.user?.email}</span>
                   </div>
                   <ChevronsUpDown className="size-4 ml-auto" />
                 </SidebarMenuButton>
@@ -244,22 +223,14 @@ export function AgentSidebar({
                   {/* User info header */}
                   <div className="flex items-center gap-2 px-1 py-1.5 text-sm text-left">
                     <Avatar className="w-8 h-8 rounded-lg">
-                      <AvatarImage
-                        src={session?.user?.image || ""}
-                        alt={session?.user?.name || ""}
-                      />
+                      <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
                       <AvatarFallback className="rounded-lg">
-                        {session?.user?.name?.slice(0, 2)?.toUpperCase() ||
-                          "US"}
+                        {session?.user?.name?.slice(0, 2)?.toUpperCase() || "US"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 grid text-sm text-left leading-tight">
-                      <span className="font-semibold truncate">
-                        {session?.user?.name || t("user")}
-                      </span>
-                      <span className="text-muted-foreground text-xs truncate">
-                        {session?.user?.email}
-                      </span>
+                      <span className="font-semibold truncate">{session?.user?.name || t("user")}</span>
+                      <span className="text-muted-foreground text-xs truncate">{session?.user?.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
