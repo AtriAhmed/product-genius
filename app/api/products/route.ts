@@ -565,6 +565,8 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    console.log("-------------------- query.isActive --------------------");
+    console.log(query.isActive);
     if (query.isActive) {
       where.isActive = query.isActive === "true";
     }

@@ -25,7 +25,7 @@ interface ProductsResponse {
 
 async function fetcher(page: number, limit: number, search: string, isActive: boolean | undefined) {
   const response = await axios.get("/api/products", {
-    params: { page, limit, search, active: isActive },
+    params: { page, limit, search, isActive },
   });
   return response.data;
 }
