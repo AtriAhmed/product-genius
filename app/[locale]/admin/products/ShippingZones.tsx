@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatCurrency } from "@/lib/utils";
 import { COUNTRIES } from "@/types/countries";
 import axios from "axios";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, MapPin, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -128,7 +128,13 @@ export default function ShippingZones() {
 
       <CardContent>
         {shippingZones.length === 0 ? (
-          <div className="py-6 text-muted-foreground text-center">{t("no shipping zones configured")}</div>
+          <div className="p-2 text-center">
+            <div className="flex justify-center items-center size-14 mx-auto mb-2 rounded-full bg-muted">
+              <MapPin className="size-6 text-muted-foreground" />
+            </div>
+            <h3 className="font-bold text-slate-800 text-sm">{t("no shipping zones configured")}</h3>
+            <p className="mb-2 text-muted-foreground text-xs">{t("add shipping zones to define rates")}</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {shippingZones.map((zone, index) => {
