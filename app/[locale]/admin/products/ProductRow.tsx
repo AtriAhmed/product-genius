@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Link, useRouter } from "@/i18n/navigation";
 import { getCurrentTranslation } from "@/lib/products";
-import { getProductPrices } from "@/lib/productVariants";
+import { formatPriceRange, getProductPrices } from "@/lib/productVariants";
 import { cn, formatCurrency, getMediaUrl, htmlToText, stopPropagation, hueFromString } from "@/lib/utils";
 import { Media, Product } from "@/types";
 import { Edit, Eye, Trash2 } from "lucide-react";
@@ -27,7 +27,7 @@ export default function ProductRow({ product, onEdit, onDelete }: ProductRowProp
   const categoryTranslation = getCurrentTranslation(product.category?.translations || [], locale);
   const primaryMedia: Media | undefined = product.media?.[0];
 
-  const { formattedPrice, minPrice, maxPrice } = getProductPrices(product?.variants || []);
+  const formattedPrice = formatPriceRange(product?.minPrice, product?.maxPrice);
 
   function handleView(event: React.MouseEvent, product: Product) {
     if (event.ctrlKey) {
