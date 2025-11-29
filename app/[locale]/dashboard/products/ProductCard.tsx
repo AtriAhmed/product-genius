@@ -4,7 +4,7 @@ import ShopifyIcon from "@/assets/images/shopify.svg";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentTranslation } from "@/lib/products";
-import { getProductPrices } from "@/lib/productVariants";
+import { formatPriceRange, getProductPrices } from "@/lib/productVariants";
 import { formatCurrency, getMediaUrl, htmlToText } from "@/lib/utils";
 import { Product } from "@/types";
 import { Play } from "lucide-react";
@@ -40,7 +40,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const isImported = (product.productMappings || []).length > 0;
 
-  const { formattedPrice, minPrice, maxPrice } = getProductPrices(product?.variants || []);
+  const formattedPrice = formatPriceRange(product?.minPrice, product?.maxPrice);
 
   return (
     <Link href={`/dashboard/products/${product.id}`}>

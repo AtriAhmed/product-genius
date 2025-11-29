@@ -7,7 +7,7 @@ import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceC
 import InternalSupplierCard from "@/app/[locale]/dashboard/products/[id]/InternalSupplierCard";
 import { Product, User } from "@/types";
 import { formatCurrency, hueFromString } from "@/lib/utils";
-import { getProductPrices } from "@/lib/productVariants";
+import { formatPriceRange, getProductPrices } from "@/lib/productVariants";
 
 interface ProvidersPreviewProps {
   product: Product;
@@ -26,7 +26,7 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
   // If no variants, no suppliers, and no internal pricing, don't render
   if (!suppliers?.length && variants.length === 0) return null;
 
-  const { formattedPrice } = getProductPrices(variants || []);
+  const formattedPrice = formatPriceRange(product.minPrice, product.maxPrice);
 
   // Helper function to get option value names for a variant
   const getVariantOptionNames = (variant: any) => {

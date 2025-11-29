@@ -192,6 +192,8 @@ export type Product = {
   variantMappings?: VariantMapping[];
   plans?: Plan[];
   productShippingZones?: ProductShippingZone[];
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 export type ShippingZone = {

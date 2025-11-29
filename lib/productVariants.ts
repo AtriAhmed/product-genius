@@ -197,3 +197,16 @@ export function getProductPrices(variants: FullProductVariant[]) {
 
   return { formattedPrice, minPrice, maxPrice };
 }
+
+export function formatPriceRange(minPrice?: number, maxPrice?: number) {
+  console.log("-------------------- minPrice --------------------");
+  console.log(minPrice);
+
+  if (minPrice === undefined || maxPrice === undefined) {
+    return null;
+  }
+
+  return minPrice === maxPrice
+    ? formatCurrency(minPrice)
+    : `${formatCurrency(minPrice)} -- ${formatCurrency(maxPrice)}`;
+}
