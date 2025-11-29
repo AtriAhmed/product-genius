@@ -177,10 +177,12 @@ export default function ProductSuppliers({ watch, setValue }: ProductSuppliersPr
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="h-32">
-                      <div className="flex flex-col justify-center items-center text-muted-foreground text-center">
-                        <Package className="w-8 h-8 mb-2" />
-                        <p className="font-medium text-sm">{t("no suppliers available")}</p>
-                        <p className="text-xs">{t("add suppliers to your product")}</p>
+                      <div className="p-2 text-center">
+                        <div className="flex justify-center items-center size-14 mx-auto mb-2 rounded-full bg-muted">
+                          <Package className="size-6 text-muted-foreground" />
+                        </div>
+                        <h3 className="font-bold text-slate-800 text-sm">{t("no suppliers available")}</h3>
+                        <p className="mb-2 text-muted-foreground text-xs">{t("add suppliers to your product")}</p>
                       </div>
                     </TableCell>
                   </TableRow>
