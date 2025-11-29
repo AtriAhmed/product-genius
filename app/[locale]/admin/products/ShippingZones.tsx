@@ -107,9 +107,10 @@ export default function ShippingZones() {
     <Card className={cn("bg-background", hasErrors && "border-red-200 dark:border-red-800")}>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>{t("shipping zones")}</CardTitle>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            {t("shipping zones")}
+          </CardTitle>
           <Button variant="primary" size="sm" onClick={() => handleOpenDialog()} type="button">
             <Plus className="w-4 h-4 mr-2" />
             {t("add zone")}

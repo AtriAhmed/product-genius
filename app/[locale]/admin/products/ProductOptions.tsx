@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   addOption,
   addOptionValue,
@@ -114,32 +114,28 @@ export default function ProductOptions({ maxOptions = 3, maxValuesPerOption = 50
 
   return (
     <Card className={cn("bg-background", hasErrors && "border-red-200 dark:border-red-800")}>
+      <CardHeader className="flex flex-wrap justify-between items-center gap-2">
+        <CardTitle className="flex items-center gap-2">
+          <Package className="w-5 h-5" />
+          {t("product options")}
+        </CardTitle>
+        <div className="flex justify-end ms-auto">
+          {options.length < maxOptions && (
+            <Button
+              type="button"
+              onClick={handleAddOption}
+              className="gap-2 ms-auto shadow-sm"
+              size="sm"
+              variant="primary"
+            >
+              <Plus className="w-4 h-4" />
+              {t("add option")}
+            </Button>
+          )}
+        </div>
+      </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Header */}
-          <div className="flex flex-wrap justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="flex justify-center items-center w-8 h-8 rounded-lg bg-primary/10">
-                <Package className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base">{t("product options")}</h3>
-              </div>
-            </div>
-            {options.length < maxOptions && (
-              <Button
-                type="button"
-                onClick={handleAddOption}
-                className="gap-2 ms-auto shadow-sm"
-                size="sm"
-                variant="primary"
-              >
-                <Plus className="w-4 h-4" />
-                {t("add option")}
-              </Button>
-            )}
-          </div>
-
           {/* Empty State */}
           {options.length === 0 && (
             <div className="p-6 border-2 border-muted-foreground/25 border-dashed rounded-lg">
