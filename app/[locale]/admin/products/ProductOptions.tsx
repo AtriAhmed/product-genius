@@ -144,12 +144,12 @@ export default function ProductOptions({ maxOptions = 3, maxValuesPerOption = 50
           {options.length === 0 && (
             <div className="p-6 border-2 border-muted-foreground/25 border-dashed rounded-lg">
               <div className="space-y-1 text-center">
-                <div className="flex justify-center items-center w-12 h-12 mx-auto rounded-full bg-muted">
-                  <Package className="w-6 h-6 text-muted-foreground" />
-                </div>
-                <div className="space-y-1 mb-3">
-                  <h3 className="font-medium text-sm">{t("no options configured")}</h3>
-                  <p className="max-w-md mx-auto text-muted-foreground text-xs">{t("add your first option")}</p>
+                <div className="p-2 text-center">
+                  <div className="flex justify-center items-center size-14 mx-auto mb-2 rounded-full bg-muted">
+                    <Package className="size-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-bold text-slate-800 text-sm">{t("no options configured")}</h3>
+                  <p className="mb-2 text-muted-foreground text-xs">{t("add your first option")}</p>
                 </div>
                 <div className="pt-2 border-t border-dashed">
                   <p className="mb-1 font-medium text-muted-foreground text-xs">{t("examples")}:</p>
