@@ -1,24 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Plan, PaymentMethod } from "@/types";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Crown,
-  Loader2,
-  AlertCircle,
-  ArrowLeft,
-  Zap,
-  Shield,
-  Star,
-} from "lucide-react";
+import { Crown, Loader2, AlertCircle, ArrowLeft, Zap, Shield, Star } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,18 +24,12 @@ type Props = {
 
 type Step = "review" | "payment" | "processing";
 
-export default function SubscriptionDialog({
-  plan,
-  isOpen,
-  onClose,
-  selectedInterval,
-}: Props) {
+export default function SubscriptionDialog({ plan, isOpen, onClose, selectedInterval }: Props) {
   const t = useTranslations("pricing");
   const router = useRouter();
   const [step, setStep] = useState<Step>("review");
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<string>("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [loadingCards, setLoadingCards] = useState(false);
@@ -108,9 +88,7 @@ export default function SubscriptionDialog({
       }, 2000);
     } catch (error: any) {
       console.error("Subscription error:", error);
-      setError(
-        error.response?.data?.error || t("failed to create subscription")
-      );
+      setError(error.response?.data?.error || t("failed to create subscription"));
       setStep("payment");
     } finally {
       setLoading(false);
@@ -137,7 +115,7 @@ export default function SubscriptionDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "max-w-md overflow-hidden mx-auto border-2 border-primary-300 dark:border-primary-700 bg-gradient-to-br from-primary-50 dark:from-neutral-900 via-primary-100 dark:via-primary-950 to-primary-200 dark:to-primary-900 shadow-2xl",
+          "max-w-md max-h-[800px] overflow-hidden mx-auto border-2 border-primary-300 dark:border-primary-700 bg-gradient-to-br from-primary-50 dark:from-neutral-900 via-primary-100 dark:via-primary-950 to-primary-200 dark:to-primary-900 shadow-2xl",
           step !== "processing" && "h-[calc(100dvh-40px)]"
         )}
       >
@@ -206,13 +184,7 @@ export default function SubscriptionDialog({
             )} */}
 
             {/* Review Step */}
-            {step === "review" && (
-              <ReviewStep
-                plan={plan}
-                onNext={handleNext}
-                selectedInterval={selectedInterval}
-              />
-            )}
+            {step === "review" && <ReviewStep plan={plan} onNext={handleNext} selectedInterval={selectedInterval} />}
 
             {/* Payment Step */}
             {step === "payment" && (
@@ -232,11 +204,8 @@ export default function SubscriptionDialog({
             {/* Processing Step */}
             {step === "processing" && (
               <div className="space-y-4 py-8 text-center">
-                <div className="relative w-20 h-20 mx-auto">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 animate-pulse"></div>
-                  <div className="absolute inset-2 flex justify-center items-center rounded-full bg-white dark:bg-neutral-900">
-                    <Loader2 className="w-8 h-8 text-primary-600 dark:text-primary-400 animate-spin" />
-                  </div>
+                <div className="flex justify-center items-center">
+                  <Loader2 className="w-12 h-12 text-primary-600 dark:text-primary-400 animate-spin" />
                 </div>
                 <div>
                   <h3 className="flex justify-center items-center gap-2 font-bold text-primary-900 dark:text-primary-100 text-base">
