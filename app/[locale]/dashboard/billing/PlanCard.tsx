@@ -45,7 +45,7 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
 
   return (
     <Card
-      className={`relative flex flex-col justify-between transition-all mx-auto w-full max-w-[400px] duration-500 rounded-3xl border-2 shadow-lg hover:shadow-2xl hover:-translate-y-2 group
+      className={`relative flex flex-col justify-between transition-all mx-auto w-full max-w-[400px] duration-500 rounded-2xl border-2 shadow-lg hover:shadow-2xl hover:-translate-y-2 group
         ${
           plan.mostPopular
             ? "border-gradient-to-r from-primary-400 to-primary-600 bg-gradient-to-br via-white  dark:from-primary-950/50 dark:via-card dark:to-primary-950/30 shadow-primary-200/50 dark:shadow-primary-800/20"
@@ -108,31 +108,33 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
           <div className="py-4 rounded-xl bg-muted/20 dark:bg-muted/10">
             <ul className="space-y-2">
               {(plan.features as PlanFeature[]).map((feature, index) => (
-                <li key={index} className="group/feature flex items-start space-x-3">
-                  <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                      feature.included
-                        ? "bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-200 dark:shadow-primary-800/30 group-hover/feature:scale-110"
-                        : "bg-muted border-2 border-muted-foreground/30"
-                    }`}
-                  >
-                    <Check
-                      className={`w-3 h-3 transition-all duration-300 ${
-                        feature.included ? "text-white" : "text-muted-foreground"
-                      }`}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <span
-                      className={`text-xs font-medium leading-relaxed transition-colors duration-300 ${
+                <li key={index} className="">
+                  <div className="group/feature flex items-center space-x-3">
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                         feature.included
-                          ? "text-foreground group-hover/feature:text-primary-700 dark:group-hover/feature:text-primary-300"
-                          : "text-muted-foreground line-through"
+                          ? "bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-200 dark:shadow-primary-800/30 group-hover/feature:scale-110"
+                          : "bg-muted border-2 border-muted-foreground/30"
                       }`}
                     >
-                      {feature.description}
-                    </span>
-                    {feature.note && <p className="mt-1 text-muted-foreground text-xs italic">{feature.note}</p>}
+                      <Check
+                        className={`h-3 transition-all duration-300 ${
+                          feature.included ? "text-white" : "text-muted-foreground"
+                        }`}
+                      />
+                    </div>
+                    <div className="flex-1 mb-1">
+                      <span
+                        className={`text-xs font-semibold transition-colors duration-300 ${
+                          feature.included
+                            ? "text-foreground group-hover/feature:text-primary-700 dark:group-hover/feature:text-primary-300"
+                            : "text-muted-foreground line-through"
+                        }`}
+                      >
+                        {feature.description}
+                      </span>
+                      {feature.note && <p className="mt-1 text-muted-foreground text-xs italic">{feature.note}</p>}
+                    </div>
                   </div>
                 </li>
               ))}
@@ -143,19 +145,23 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
 
       <CardFooter className="z-10 relative px-4 pt-3 pb-4">
         <Button
-          className={`w-full h-10 text-sm font-semibold transition-all duration-300 transform shadow-lg ${
-            hasActiveSubscription
-              ? "bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-inner border border-gray-300 dark:border-gray-600 opacity-75"
-              : plan.mostPopular
-              ? "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50 hover:scale-105 active:scale-95"
-              : "border-2 border-primary-500 text-primary-600 hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 hover:text-white hover:border-primary-600 hover:shadow-xl hover:shadow-primary-200 dark:hover:shadow-primary-800/30 hover:scale-105 active:scale-95"
+          className={`w-full h-10 text-sm font-semibold transition-all duration-300 transform shadow-lg disabled:opacity-100 ${
+            isFreePlan
+              ? "bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 text-green-700 dark:text-green-300 cursor-not-allowed border-2 border-green-300 dark:border-green-700"
+              : hasActiveSubscription && isCurrentPlan
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white cursor-not-allowed border-2 border-blue-400 dark:border-blue-500 shadow-blue-300 dark:shadow-blue-800/50"
+              : hasActiveSubscription
+              ? "bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-inner border-2 border-gray-300 dark:border-gray-600 opacity-70"
+              : "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50 hover:scale-[1.015] active:scale-95"
           }`}
-          variant={hasActiveSubscription ? "secondary" : plan.mostPopular ? "default" : "outline"}
+          variant={hasActiveSubscription || isFreePlan ? "secondary" : "default"}
           onClick={handleSelectPlan}
           disabled={hasActiveSubscription || isFreePlan}
         >
-          <span className={`flex items-center justify-center gap-2 ${hasActiveSubscription ? "opacity-80" : ""}`}>
-            {!hasActiveSubscription && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
+          <span className={`flex items-center justify-center gap-2`}>
+            {isFreePlan && <Check className="w-4 h-4" />}
+            {isCurrentPlan && !isFreePlan && <Check className="w-4 h-4" />}
+            {!hasActiveSubscription && !isFreePlan && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
             {isFreePlan
               ? t("included")
               : hasActiveSubscription
@@ -163,7 +169,7 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
                 ? t("current plan")
                 : t("already subscribed")
               : t("choose plan")}
-            {!hasActiveSubscription && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
+            {!hasActiveSubscription && !isFreePlan && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
           </span>
         </Button>
 
