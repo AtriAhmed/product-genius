@@ -1,5 +1,6 @@
 {
-  "page title": "Shopify Integration",
+  "shopify integration": "Shopify Integration",
+  "manage your shopify store connection": "Manage your Shopify store connection",
   "connect store": "Connect Your Shopify Store",
   "connected store": "Connected Store",
   "store domain": "Shopify Store Domain",
@@ -40,5 +41,10 @@
   "important note description": "Always maintain a valid saved payment card. Orders will not be processed automatically until payment issues are resolved manually.",
   "confirm connection": "Confirm Shopify Connection",
   "confirm connection description": "You are about to connect to the following Shopify store. This will redirect you to Shopify for authorization.",
-  "connecting to": "Connecting to"
+  "connecting to": "Connecting to",
+  "not authenticated": "You are not authenticated. Please log in to continue.",
+  "missing parameters": "Failed to connect",
+  "store already connected": "This Shopify store is already connected to another account.",
+  "authentication failed": "Shopify authentication failed. Please try again.",
+  "unexpected error": "An unexpected error occurred. Please try again later."
 }

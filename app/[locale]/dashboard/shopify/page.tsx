@@ -4,10 +4,14 @@ import type { User } from "@/types";
 import axios from "axios";
 import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import useSWR from "swr";
 import ConnectedShopifyStore from "./ConnectedShopifyStore";
 import ShopifyConnectionForm from "./ShopifyConnectionForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useRouter } from "@/i18n/navigation";
 
 async function fetcher(): Promise<User> {
   const response = await axios.get("/api/users/current");
@@ -16,6 +20,36 @@ async function fetcher(): Promise<User> {
 
 export default function ShopifyPage() {
   const t = useTranslations("shopify");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    const shopifyConnected = searchParams.get("shopify_connected");
+
+    if (shopifyConnected === "true") {
+      toast.success(t("store connected successfully"));
+      router.replace("/dashboard/shopify");
+    } else if (error) {
+      switch (error) {
+        case "not_authenticated":
+          toast.error(t("not authenticated"));
+          break;
+        case "missing_params":
+          toast.error(t("missing parameters"));
+          break;
+        case "store_already_connected":
+          toast.error(t("store already connected"));
+          break;
+        case "auth_failed":
+          toast.error(t("authentication failed"));
+          break;
+        default:
+          toast.error(t("connection error"));
+      }
+      router.replace("/dashboard/shopify");
+    }
+  }, [searchParams]);
 
   const {
     data: user,
@@ -75,16 +109,14 @@ export default function ShopifyPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center gap-3">
-        <h1 className="font-bold text-2xl">{t("page title")}</h1>
+      <div className="mb-8">
+        <h1 className="font-bold text-3xl tracking-tight">{t("shopify integration")}</h1>
+        <p className="mt-2 text-muted-foreground">{t("manage your shopify store connection")}</p>
       </div>
 
       {/* Main Content */}
       {shopifyStore ? (
-        <ConnectedShopifyStore
-          shopifyStore={shopifyStore}
-          onDisconnect={handleDisconnect}
-        />
+        <ConnectedShopifyStore shopifyStore={shopifyStore} onDisconnect={handleDisconnect} />
       ) : (
         <ShopifyConnectionForm onConnect={handleConnect} />
       )}
