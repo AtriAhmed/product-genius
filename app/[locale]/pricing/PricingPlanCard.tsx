@@ -3,45 +3,24 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plan, PlanFeature, User } from "@/types";
+import { Plan, PlanFeature } from "@/types";
 import { Check, Crown, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-import SubscriptionDialog from "./SubscriptionDialog";
 import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
 
 type Props = {
   plan: Plan;
-  user?: User;
-  onSelect?: (plan: Plan) => void;
   selectedInterval?: string;
 };
 
-export default function PlanCard({ plan, user, onSelect, selectedInterval }: Props) {
+export default function PricingPlanCard({ plan, selectedInterval }: Props) {
   const t = useTranslations("pricing");
-  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
 
-  console.log("-------------------- user --------------------");
-  console.log(user);
-  const hasActiveSubscription = !!user?.currentSubscription;
-  const isCurrentPlan = user?.currentSubscription?.plan?.id === plan.id;
-  const isFreePlan = plan?.isFree;
-
-  // Get the price for the selected interval, fallback to first available price
   const selectedPrice = selectedInterval
     ? plan.prices?.find((price) => price.interval === selectedInterval) ||
       plan.prices?.find((price) => price.price != null)
     : plan.prices?.find((price) => price.price != null);
-
-  const handleSelectPlan = () => {
-    if (hasActiveSubscription) return;
-
-    if (onSelect) {
-      onSelect(plan);
-    } else {
-      setShowSubscriptionDialog(true);
-    }
-  };
 
   return (
     <Card
@@ -52,7 +31,6 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
             : "border-gray-200 dark:border-gray-700 bg-white dark:bg-card hover:border-primary-300 dark:hover:border-primary-600 hover:bg-gradient-to-br hover:from-primary-50/30 hover:to-white dark:hover:from-primary-950/20 dark:hover:to-card"
         }`}
     >
-      {/* Animated gradient background for popular plans */}
       {plan.mostPopular && (
         <>
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary-400/10 via-primary-500/5 to-primary-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -145,40 +123,17 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
 
       <CardFooter className="z-10 relative px-4 pt-3 pb-4">
         <Button
-          className={`w-full h-10 text-sm font-semibold transition-all duration-300 transform shadow-lg disabled:opacity-100 ${
-            isFreePlan
-              ? "bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 text-green-700 dark:text-green-300 cursor-not-allowed border-2 border-green-300 dark:border-green-700"
-              : hasActiveSubscription && isCurrentPlan
-              ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white cursor-not-allowed border-2 border-blue-400 dark:border-blue-500 shadow-blue-300 dark:shadow-blue-800/50"
-              : hasActiveSubscription
-              ? "bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-inner border-2 border-gray-300 dark:border-gray-600 opacity-70"
-              : "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50 hover:scale-[1.015] active:scale-95"
-          }`}
-          variant={hasActiveSubscription || isFreePlan ? "secondary" : "default"}
-          onClick={handleSelectPlan}
-          disabled={hasActiveSubscription || isFreePlan}
+          className="w-full h-10 bg-gradient-to-r from-primary-600 hover:from-primary-700 to-primary-700 hover:to-primary-800 shadow-lg shadow-primary-300 hover:shadow-primary-400/50 hover:shadow-xl dark:hover:shadow-primary-700/50 dark:shadow-primary-800/50 font-semibold text-white text-sm hover:scale-[1.015] active:scale-95 transition-all duration-300 transform"
+          asChild
         >
-          <span className={`flex items-center justify-center gap-2`}>
-            {isFreePlan && <Check className="w-4 h-4" />}
-            {isCurrentPlan && !isFreePlan && <Check className="w-4 h-4" />}
-            {!hasActiveSubscription && !isFreePlan && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
-            {isFreePlan
-              ? t("included")
-              : hasActiveSubscription
-              ? isCurrentPlan
-                ? t("current plan")
-                : t("already subscribed")
-              : t("choose plan")}
-            {!hasActiveSubscription && !isFreePlan && plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
-          </span>
+          <Link href="/auth/register">
+            <span className="flex justify-center items-center gap-2">
+              {plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
+              {t("get started")}
+              {plan.mostPopular && <Star className="w-3 h-3 fill-current" />}
+            </span>
+          </Link>
         </Button>
-
-        <SubscriptionDialog
-          plan={plan}
-          isOpen={showSubscriptionDialog}
-          onClose={() => setShowSubscriptionDialog(false)}
-          selectedInterval={selectedInterval}
-        />
       </CardFooter>
     </Card>
   );

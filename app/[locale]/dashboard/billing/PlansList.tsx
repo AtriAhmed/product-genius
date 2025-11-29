@@ -103,6 +103,10 @@ export default function PlansList() {
     return plans.some((plan) => plan.prices?.some((price) => price.interval === interval && !!price.price));
   });
 
+  const plansToDisplay = plans.filter((plan) =>
+    plan.prices?.some((price) => price.interval === activeInterval && (price.price != null || plan?.isFree))
+  );
+
   // Set default active interval to first available, or fallback to "MONTH"
   const defaultInterval = availableIntervals.length > 0 ? availableIntervals[0] : "MONTH";
 
@@ -124,10 +128,7 @@ export default function PlansList() {
             {availableIntervals.length > 1 && (
               <div className="flex justify-center mb-6">
                 <TabsList
-                  className={`h-auto grid gap-2 w-auto bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-2xl py-1 px-2 shadow-xl shadow-gray-200/50 dark:shadow-gray-800/50 backdrop-blur-sm`}
-                  style={{
-                    gridTemplateColumns: `repeat(${availableIntervals.length}, minmax(0, 1fr))`,
-                  }}
+                  className={`h-auto flex gap-2 w-auto bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-2xl py-1 px-2 shadow-xl shadow-gray-200/50 dark:shadow-gray-800/50 backdrop-blur-sm`}
                 >
                   {availableIntervals.map((interval, index) => (
                     <TabsTrigger
@@ -155,14 +156,10 @@ export default function PlansList() {
 
             {availableIntervals.map((interval) => (
               <TabsContent key={interval} value={interval}>
-                <div className="justify-center gap-x-2 gap-y-4 grid sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
-                  {plans
-                    .filter((plan) =>
-                      plan.prices?.some((price) => price.interval === interval && (price.price != null || plan?.isFree))
-                    )
-                    .map((plan) => (
-                      <PlanCard key={plan.id} plan={plan} user={user} selectedInterval={interval} />
-                    ))}
+                <div className="flex flex-wrap justify-center gap-x-2 gap-y-4">
+                  {plansToDisplay.map((plan) => (
+                    <PlanCard key={plan.id} plan={plan} user={user} selectedInterval={interval} />
+                  ))}
                 </div>
               </TabsContent>
             ))}
