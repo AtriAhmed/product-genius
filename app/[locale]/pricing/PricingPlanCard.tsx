@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plan, PlanFeature } from "@/types";
-import { Check, Crown, Sparkles, Star } from "lucide-react";
+import { Check, Crown, Info, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Props = {
   plan: Plan;
@@ -101,7 +102,7 @@ export default function PricingPlanCard({ plan, selectedInterval }: Props) {
                         }`}
                       />
                     </div>
-                    <div className="flex-1 mb-1">
+                    <div className="flex flex-1 items-center gap-1.5">
                       <span
                         className={`text-xs font-semibold transition-colors duration-300 ${
                           feature.included
@@ -111,7 +112,16 @@ export default function PricingPlanCard({ plan, selectedInterval }: Props) {
                       >
                         {feature.description}
                       </span>
-                      {feature.note && <p className="mt-1 text-muted-foreground text-xs italic">{feature.note}</p>}
+                      {feature.note && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{feature.note}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
                   </div>
                 </li>

@@ -3,8 +3,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plan, PlanFeature, User } from "@/types";
-import { Check, Crown, Sparkles, Star } from "lucide-react";
+import { Check, Crown, Sparkles, Star, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import SubscriptionDialog from "./SubscriptionDialog";
@@ -123,7 +124,7 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
                         }`}
                       />
                     </div>
-                    <div className="flex-1 mb-1">
+                    <div className="flex flex-1 items-center gap-1.5 mb-1">
                       <span
                         className={`text-xs font-semibold transition-colors duration-300 ${
                           feature.included
@@ -133,7 +134,16 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
                       >
                         {feature.description}
                       </span>
-                      {feature.note && <p className="mt-1 text-muted-foreground text-xs italic">{feature.note}</p>}
+                      {feature.note && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">{feature.note}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
                   </div>
                 </li>
@@ -149,7 +159,7 @@ export default function PlanCard({ plan, user, onSelect, selectedInterval }: Pro
             isFreePlan
               ? "bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 text-green-700 dark:text-green-300 cursor-not-allowed border-2 border-green-300 dark:border-green-700"
               : hasActiveSubscription && isCurrentPlan
-              ? "bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white cursor-not-allowed border-2 border-blue-400 dark:border-blue-500 shadow-blue-300 dark:shadow-blue-800/50"
+              ? "bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 text-amber-700 dark:text-amber-300 cursor-not-allowed border-2 border-amber-300 dark:border-amber-600"
               : hasActiveSubscription
               ? "bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed shadow-inner border-2 border-gray-300 dark:border-gray-600 opacity-70"
               : "bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-primary-300 dark:shadow-primary-800/50 hover:shadow-xl hover:shadow-primary-400/50 dark:hover:shadow-primary-700/50 hover:scale-[1.015] active:scale-95"
