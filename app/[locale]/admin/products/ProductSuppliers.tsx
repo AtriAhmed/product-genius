@@ -124,7 +124,7 @@ export default function ProductSuppliers({ watch, setValue }: ProductSuppliersPr
   };
 
   return (
-    <Card>
+    <Card className="bg-background">
       <CardHeader className="flex flex-wrap justify-between items-center gap-2">
         <CardTitle className="flex items-center gap-2">
           <Users className="w-5 h-5" />

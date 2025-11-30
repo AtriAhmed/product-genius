@@ -143,61 +143,64 @@ export default function ShippingZones() {
               if (!zoneData) return null;
 
               return (
-                <Card key={index} className="border-2">
+                <Card
+                  key={index}
+                  className="border-2 border-muted-foreground/25 border-dashed bg-background shadow-none"
+                >
                   <CardContent>
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1 space-y-3">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex justify-between items-center">
                         {zoneData.name && <h4 className="font-semibold text-base">{zoneData.name}</h4>}
 
-                        <div>
-                          <p className="mb-2 font-medium text-muted-foreground text-xs">{t("countries")}:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {zoneData.countries.map((country) => (
-                              <Badge
-                                key={country.countryCode}
-                                variant="outline"
-                                className="py-1 pr-2 pl-1.5 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30"
-                              >
-                                <img
-                                  src={`https://flagsapi.com/${country.countryCode.toUpperCase()}/flat/32.png`}
-                                  alt={country.countryCode}
-                                  className="w-4 object-cover mr-1.5 rounded"
-                                />
-                                <span className="text-xs">{getCountryName(country.countryCode)}</span>
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="mb-2 font-medium text-muted-foreground text-xs">{t("shipping rules")}:</p>
-                          <div className="space-y-1.5">
-                            {zone.rules.map((rule, ruleIndex) => (
-                              <div
-                                key={ruleIndex}
-                                className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 text-sm"
-                              >
-                                <Badge variant="secondary" className="font-mono text-xs">
-                                  {rule.minQuantity || 1} - {rule.maxQuantity || "∞"}
-                                </Badge>
-                                <span className="text-muted-foreground">→</span>
-                                <span className="font-semibold text-green-600 dark:text-green-400">
-                                  {formatCurrency(rule.price)}
-                                </span>
-                                <span className="text-muted-foreground text-xs">{t("shipping")}</span>
-                              </div>
-                            ))}
-                          </div>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(index)} type="button">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteZone(index)} type="button">
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
                         </div>
                       </div>
 
-                      <div className="flex gap-1 shrink-0">
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(index)} type="button">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteZone(index)} type="button">
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+                      <div>
+                        <p className="mb-2 font-medium text-muted-foreground text-xs">{t("countries")}:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {zoneData.countries.map((country) => (
+                            <Badge
+                              key={country.countryCode}
+                              variant="outline"
+                              className="py-1 pr-2 pl-1.5 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30"
+                            >
+                              <img
+                                src={`https://flagsapi.com/${country.countryCode.toUpperCase()}/flat/32.png`}
+                                alt={country.countryCode}
+                                className="w-4 object-cover mr-1.5 rounded"
+                              />
+                              <span className="text-xs text-wrap">{getCountryName(country.countryCode)}</span>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="mb-2 font-medium text-muted-foreground text-xs">{t("shipping rules")}:</p>
+                        <div className="space-y-1.5">
+                          {zone.rules.map((rule, ruleIndex) => (
+                            <div
+                              key={ruleIndex}
+                              className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/50 text-sm"
+                            >
+                              <Badge variant="secondary" className="font-mono text-xs">
+                                {rule.minQuantity || 1} - {rule.maxQuantity || "∞"}
+                              </Badge>
+                              <span className="text-muted-foreground">→</span>
+                              <span className="font-semibold text-green-600 dark:text-green-400">
+                                {formatCurrency(rule.price)}
+                              </span>
+                              <span className="text-muted-foreground text-xs">{t("shipping")}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
