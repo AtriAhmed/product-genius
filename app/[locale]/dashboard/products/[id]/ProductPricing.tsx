@@ -14,14 +14,11 @@ interface ProvidersPreviewProps {
   user: User;
 }
 
-export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
+export function ProductPricing({ product, user }: ProvidersPreviewProps) {
   const t = useTranslations("products");
   const suppliers = product.suppliers || [];
   const variants = product.variants || [];
   const options = product.options || [];
-  const productId = product.id;
-  const hasStore = !!user?.shopifyStores?.[0];
-  const isImported = product?.productMappings?.length! > 0;
 
   // If no variants, no suppliers, and no internal pricing, don't render
   if (!suppliers?.length && variants.length === 0) return null;
@@ -140,29 +137,6 @@ export function ProductSuppliers({ product, user }: ProvidersPreviewProps) {
                 </Accordion>
               </div>
             )}
-
-            {/* Import to Shopify Button */}
-            <InternalSupplierCard
-              hasStore={hasStore}
-              productId={productId}
-              compareAtPrice={
-                variants.find((v) => v.compareAtPrice)?.compareAtPrice || variants[0]?.compareAtPrice || undefined
-              }
-              isImported={isImported}
-              formattedPrice={formattedPrice || "N/A"}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* External Marketplaces */}
-      {suppliers.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-medium text-muted-foreground text-sm">Marketplaces</h4>
-          <div className="gap-2 grid xl:grid-cols-2">
-            {suppliers.map((supplier) => (
-              <MarketplaceCard key={supplier.id} supplier={supplier} compact={true} />
-            ))}
           </div>
         </div>
       )}

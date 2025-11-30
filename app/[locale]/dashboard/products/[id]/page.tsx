@@ -3,18 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
 import { getCurrentTranslation } from "@/lib/products";
+import { Product, User } from "@/types";
+import axios from "axios";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import useSWR from "swr";
 import { ImageGallery } from "./ImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { ProductSkeleton } from "./ProductSkeleton";
-import { ProductSuppliers } from "./ProductSuppliers";
-import { Product, User } from "@/types";
-import axios from "axios";
-import useSWR from "swr";
 
 async function fetcher(id: string) {
   const response = await axios.get(`/api/products/${id}`);

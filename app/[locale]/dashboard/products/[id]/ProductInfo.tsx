@@ -8,7 +8,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Product, ProductTranslation, User } from "@/types";
 import ShopifyIcon from "@/assets/images/shopify.svg";
 import sanitizeHtml from "sanitize-html";
-import { ProductSuppliers } from "@/app/[locale]/dashboard/products/[id]/ProductSuppliers";
+import { ProductPricing } from "@/app/[locale]/dashboard/products/[id]/ProductPricing";
+import MarketplaceCard from "@/app/[locale]/dashboard/products/[id]/MarketplaceCard";
+import InternalSupplierCard from "@/app/[locale]/dashboard/products/[id]/InternalSupplierCard";
+import { formatPriceRange } from "@/lib/productVariants";
 
 interface ProductInfoProps {
   product: Product;
@@ -45,6 +48,11 @@ export function ProductInfo({
   const t = useTranslations("products");
   const isImportedToShopify = product.productMappings && product.productMappings.length > 0;
   const shopifyMapping = product.productMappings?.[0];
+  const productId = product.id;
+  const hasStore = !!user?.shopifyStores?.[0];
+  const isImported = product?.productMappings?.length! > 0;
+
+  const formattedPrice = formatPriceRange(product.minPrice, product.maxPrice);
 
   return (
     <div className="space-y-6">
@@ -110,7 +118,32 @@ export function ProductInfo({
         </div>
       </div>
 
-      <ProductSuppliers product={product} user={user as User} />
+      <ProductPricing product={product} user={user as User} />
+
+      {/* Import to Shopify Button */}
+      <InternalSupplierCard
+        hasStore={hasStore}
+        productId={productId}
+        compareAtPrice={
+          product?.variants?.find((v) => v.compareAtPrice)?.compareAtPrice ||
+          product?.variants?.[0]?.compareAtPrice ||
+          undefined
+        }
+        isImported={isImported}
+        formattedPrice={formattedPrice || "N/A"}
+      />
+
+      {/* External Marketplaces */}
+      {product?.suppliers?.length! > 0 && (
+        <div className="space-y-2">
+          <h4 className="font-medium text-muted-foreground text-sm">Marketplaces</h4>
+          <div className="gap-2 grid xl:grid-cols-2">
+            {product?.suppliers?.map((supplier) => (
+              <MarketplaceCard key={supplier.id} supplier={supplier} compact={true} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Price and SKU */}
       {/* <div className="space-y-2">
