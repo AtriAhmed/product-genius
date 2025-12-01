@@ -117,10 +117,12 @@ export async function createAndPayInvoice(
     totalCents: number;
     currency: string;
     userId: number;
-    items: Array<{
+    stripeItems?: Array<{
+      type: "PRODUCT" | "SHIPPING";
       productId?: number;
       quantity: number;
-      unitPriceCents: number;
+      unitPriceCents?: number;
+      totalCents?: number;
       title: string;
     }>;
   },
@@ -149,19 +151,33 @@ export async function createAndPayInvoice(
       },
     });
 
-    // Add invoice items
-    for (const item of order.items) {
-      await stripe.invoiceItems.create({
-        customer: customerId,
-        invoice: invoice.id,
-        currency: order.currency.toLowerCase(),
-        amount: item.unitPriceCents * item.quantity,
-        description: item.title,
-        metadata: {
-          productId: item.productId?.toString() || "",
+    // Add invoice items in order (products followed by their shipping items)
+    if (order.stripeItems && order.stripeItems.length > 0) {
+      for (const item of order.stripeItems) {
+        let amount: number;
+        let metadata: any = {
           orderId: order.id?.toString(),
-        },
-      });
+          type: item.type,
+        };
+
+        if (item.type === "PRODUCT") {
+          amount = (item.unitPriceCents || 0) * item.quantity;
+          metadata.productId = item.productId?.toString() || "";
+        } else if (item.type === "SHIPPING") {
+          amount = item.totalCents || 0;
+        } else {
+          continue; // Skip unknown types
+        }
+
+        await stripe.invoiceItems.create({
+          customer: customerId,
+          invoice: invoice.id,
+          currency: order.currency.toLowerCase(),
+          amount: amount,
+          description: item.title,
+          metadata: metadata,
+        });
+      }
     }
 
     // Finalize invoice

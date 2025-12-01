@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import { ProductMapping } from "@/types";
 import Image from "next/image";
 import { format } from "date-fns";
-import { getMediaUrl } from "@/lib/utils";
+import { getMediaUrl, stopPropagation } from "@/lib/utils";
 import DeleteMappingDialog from "./DeleteMappingDialog";
 import axios from "axios";
 import { toast } from "sonner";
@@ -164,6 +164,7 @@ export default function ImportedProductsDataTable({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800"
+                          onClick={stopPropagation}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -197,7 +198,10 @@ export default function ImportedProductsDataTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteMapping(mapping)}
+                      onClick={(e) => {
+                        e?.stopPropagation();
+                        handleDeleteMapping(mapping);
+                      }}
                       className="hover:bg-destructive/10 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />

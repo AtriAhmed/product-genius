@@ -147,7 +147,7 @@ export default function DashboardOrderDetailsPage() {
             {/* Main Content */}
             <div className="space-y-4 lg:col-span-2">
               <OrderOverview order={order} />
-              <OrderItems order={order} t={t} />
+              <OrderItems order={order} />
             </div>
 
             {/* Sidebar */}

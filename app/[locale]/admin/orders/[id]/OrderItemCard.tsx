@@ -1,6 +1,6 @@
 "use client";
 
-import { Package } from "lucide-react";
+import { Package, Truck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OrderItem } from "@/types";
 import { getMediaUrl, htmlToText, hueFromString } from "@/lib/utils";
@@ -86,15 +86,28 @@ export default function OrderItemCard({ item, currency = "USD" }: OrderItemCardP
               Unit Price: <span className="font-medium">{formatCurrency(item.unitPriceCents, currency)}</span>
             </span>
           )}
+          {item.shippingCents && item.shippingCents > 0 && (
+            <span className="text-muted-foreground">
+              {t("shipping")}: <span className="font-medium">{formatCurrency(item.shippingCents, currency)}</span>
+            </span>
+          )}
         </div>
       </div>
 
       {/* Price */}
-      <div className="text-right">
+      <div className="text-sm text-right">
         {item.unitPriceCents && item.quantity && (
-          <p className="font-semibold text-foreground">
-            {formatCurrency(item.unitPriceCents * item.quantity, currency)}
-          </p>
+          <>
+            <p className="font-semibold text-foreground">
+              {formatCurrency(item.unitPriceCents * item.quantity + (item.shippingCents || 0), currency)}
+            </p>
+            {item.shippingCents && item.shippingCents > 0 && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Truck className="size-4" />
+                <p className="font-semibold">{formatCurrency(item.shippingCents, currency)}</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

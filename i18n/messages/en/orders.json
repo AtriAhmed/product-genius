@@ -138,5 +138,6 @@
   "cancel": "Cancel",
   "save": "Save",
   "tracking": "Tracking",
-  "shopify id": "Shopify ID"
+  "shopify id": "Shopify ID",
+  "invalid": "INVALID"
 }

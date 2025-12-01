@@ -411,6 +411,7 @@ export type OrderItem = {
   title?: string;
   unitPriceCents?: number;
   quantity?: number;
+  shippingCents?: number;
   variantId?: number;
   // Independent product data
   productTitle?: string;

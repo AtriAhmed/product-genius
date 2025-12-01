@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Order } from "@/types";
 import OrderItemCard from "./OrderItemCard";
+import { useTranslations } from "next-intl";
 
 type OrderItemsProps = {
   order: Order;
-  t: (key: string) => string;
 };
 
-export default function OrderItems({ order, t }: OrderItemsProps) {
+export default function OrderItems({ order }: OrderItemsProps) {
+  const t = useTranslations("orders");
+
   return (
     <Card>
       <CardHeader>

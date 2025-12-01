@@ -46,9 +46,19 @@ interface ShopifyOrder {
     province: string;
     zip: string;
     country: string;
+    country_code?: string;
     phone?: string;
   };
 }
+
+type StripeItem = {
+  type: "PRODUCT" | "SHIPPING";
+  productId?: number;
+  quantity: number;
+  unitPriceCents?: number;
+  totalCents?: number;
+  title: string;
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -104,9 +114,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    // Get shipping country from shipping address
+    const shippingCountryCode = shopifyOrder.shipping_address?.country_code?.toLocaleLowerCase();
+    console.log("Shipping country:", shippingCountryCode);
+
+    // If no shipping address is provided, we'll skip shipping validation
+    if (!shippingCountryCode) {
+      console.log("No shipping address provided - skipping shipping cost calculation");
+    }
+
     // Process line items and check for WinWaterfall mappings
     const validOrderItems = [];
+    const stripeItems: StripeItem[] = []; // Combined array for product and shipping items
     let totalCents = 0;
+    let hasUnsupportedShipping = false;
 
     for (const lineItem of shopifyOrder.line_items) {
       // Check if this Shopify variant is mapped to our products
@@ -128,6 +149,18 @@ export async function POST(request: NextRequest) {
                     orderBy: { sortOrder: "asc" },
                     take: 1,
                   },
+                  productShippingZones: {
+                    include: {
+                      zone: {
+                        include: {
+                          countries: true,
+                        },
+                      },
+                      productShippingRules: {
+                        orderBy: { minQuantity: "asc" },
+                      },
+                    },
+                  },
                 },
               },
               options: {
@@ -147,6 +180,18 @@ export async function POST(request: NextRequest) {
               media: {
                 orderBy: { sortOrder: "asc" },
                 take: 1,
+              },
+              productShippingZones: {
+                include: {
+                  zone: {
+                    include: {
+                      countries: true,
+                    },
+                  },
+                  productShippingRules: {
+                    orderBy: { minQuantity: "asc" },
+                  },
+                },
               },
             },
           },
@@ -173,16 +218,68 @@ export async function POST(request: NextRequest) {
           });
         }
 
+        // Get product for shipping calculation
+        const product = variantMapping.variant?.product || variantMapping.product;
+        let shippingCents = 0;
+        let shippingSupported = false;
+
+        // Check if shipping to destination country is supported
+        if (shippingCountryCode && product.productShippingZones && product.productShippingZones.length > 0) {
+          for (const productShippingZone of product.productShippingZones) {
+            // Check if this shipping zone supports the destination country
+            const countrySupported = productShippingZone.zone.countries.some(
+              (country) => country.countryCode === shippingCountryCode
+            );
+
+            if (countrySupported) {
+              shippingSupported = true;
+
+              // Find applicable shipping rule based on quantity
+              const applicableRule = productShippingZone.productShippingRules.find(
+                (rule) =>
+                  (!rule.minQuantity || lineItem.quantity >= rule.minQuantity) &&
+                  (!rule.maxQuantity || lineItem.quantity <= rule.maxQuantity)
+              );
+
+              if (applicableRule) {
+                shippingCents = applicableRule.price * 100;
+                console.log(`Shipping cost for ${productTitle}: ${shippingCents} cents (total shipping cost)`);
+
+                // Shipping info will be added to stripeItems after the product item
+
+                totalCents += shippingCents;
+              } else {
+                console.log(`No shipping rule found for quantity ${lineItem.quantity} for product: ${productTitle}`);
+              }
+              break;
+            }
+          }
+
+          // If shipping country is provided but not supported, mark as unsupported
+          if (!shippingSupported) {
+            console.log(`Shipping to ${shippingCountryCode} not supported for product: ${productTitle}`);
+            hasUnsupportedShipping = true;
+          }
+        } else if (
+          shippingCountryCode &&
+          (!product.productShippingZones || product.productShippingZones.length === 0)
+        ) {
+          // Product has no shipping zones configured - allow order but with warning
+          console.log(`Product ${productTitle} has no shipping zones configured - proceeding with zero shipping cost`);
+          shippingSupported = true; // Don't mark as unsupported if no zones are configured
+        }
+
         // Get image data
         const firstMedia = variantMapping.product.media[0];
-        const imageUrl = firstMedia.type === "IMAGE" ? firstMedia?.url : firstMedia.poster || null;
+        const imageUrl = firstMedia?.type === "IMAGE" ? firstMedia?.url : firstMedia?.poster || null;
         const imageAlt = firstMedia?.alt || null;
 
-        validOrderItems.push({
+        const orderItem = {
           productId: variantMapping.productId,
           variantId: variantMapping.variantId,
           quantity: lineItem.quantity,
           unitPriceCents,
+          shippingCents,
           title: lineItem.title,
           productTitle,
           productDescription,
@@ -192,7 +289,29 @@ export async function POST(request: NextRequest) {
           imageAlt,
           shopifyVariantId: lineItem.variant_id.toString(),
           shopifyProductId: lineItem.product_id.toString(),
+        };
+
+        validOrderItems.push(orderItem);
+
+        // Add product item to stripe items
+        stripeItems.push({
+          type: "PRODUCT",
+          productId: variantMapping.productId,
+          quantity: lineItem.quantity,
+          unitPriceCents,
+          title: lineItem.title,
         });
+
+        // Add shipping item right after the product item if shipping applies
+        if (shippingCents > 0) {
+          stripeItems.push({
+            type: "SHIPPING",
+            quantity: 1,
+            unitPriceCents: shippingCents,
+            totalCents: shippingCents,
+            title: `Shipping - ${productTitle}`,
+          });
+        }
       }
     }
 
@@ -201,6 +320,9 @@ export async function POST(request: NextRequest) {
       console.log("No WinWaterfall items found in Shopify order");
       return NextResponse.json({ success: true });
     }
+
+    // Determine order status based on shipping support
+    const orderStatus = hasUnsupportedShipping ? "INVALID" : "UNPAID";
 
     // Prepare delivery information
     const shippingAddress = shopifyOrder.shipping_address;
@@ -213,7 +335,7 @@ export async function POST(request: NextRequest) {
         shopifyStoreId: shopifyStore.id,
         totalCents,
         currency: shopifyOrder.currency || "USD",
-        status: "UNPAID",
+        status: orderStatus,
         shopifyOrderId: shopifyOrder.id.toString(),
         deliveryName: [shippingAddress?.first_name, shippingAddress?.last_name].filter(Boolean).join(" ") || null,
         deliveryPhone: shippingAddress?.phone,
@@ -230,6 +352,7 @@ export async function POST(request: NextRequest) {
             variantId: item.variantId,
             quantity: item.quantity,
             unitPriceCents: item.unitPriceCents,
+            shippingCents: item.shippingCents,
             title: item.title,
             productTitle: item.productTitle,
             productDescription: item.productDescription,
@@ -246,7 +369,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("Order created:", order.orderNumber);
+    console.log("Order created:", order.orderNumber, "Status:", orderStatus);
+
+    // Skip payment processing for invalid orders
+    if (hasUnsupportedShipping) {
+      console.log("Order marked as INVALID due to unsupported shipping destination");
+      return NextResponse.json({
+        success: true,
+        orderNumber: order.orderNumber,
+        status: "INVALID",
+        message: "Order created but shipping to destination country is not supported",
+      });
+    }
 
     // Ensure user has Stripe customer ID
     if (!order.user.stripeCustomerId) {
@@ -269,12 +403,7 @@ export async function POST(request: NextRequest) {
         totalCents: order.totalCents,
         currency: order.currency,
         userId: order.userId,
-        items: order.items.map((item) => ({
-          productId: item.productId || 0, // Fallback to 0 if productId is null
-          quantity: item.quantity,
-          unitPriceCents: item.unitPriceCents,
-          title: item.title,
-        })),
+        stripeItems: stripeItems,
       },
       order.user.stripeCustomerId,
       defaultPaymentMethod

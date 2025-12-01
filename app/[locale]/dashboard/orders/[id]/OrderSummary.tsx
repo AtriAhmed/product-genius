@@ -27,42 +27,51 @@ export default function OrderSummary({ order, t }: OrderSummaryProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {order.items && order.items.length > 0 && (
+        {order.items && order.items.length > 0 ? (
           <>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                Items ({order.items.length})
-              </span>
-              <span>
-                {order.items.reduce((total, item) => {
-                  if (item.unitPriceCents && item.quantity) {
-                    return total + item.unitPriceCents * item.quantity;
-                  }
-                  return total;
-                }, 0) > 0
-                  ? formatCurrency(
-                      order.items.reduce((total, item) => {
-                        if (item.unitPriceCents && item.quantity) {
-                          return total + item.unitPriceCents * item.quantity;
-                        }
-                        return total;
-                      }, 0),
-                      order.currency
-                    )
-                  : t("n/a")}
-              </span>
+            {/* Individual Items */}
+            <div className="space-y-2">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex justify-between items-start text-sm">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground line-clamp-1">
+                      {item.productTitle || item.title || t("unknown product")}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Qty: {item.quantity} ×{" "}
+                      {item.unitPriceCents ? formatCurrency(item.unitPriceCents, order.currency) : t("n/a")}
+                    </p>
+                  </div>
+                  <div className="ml-4 text-right">
+                    {item.unitPriceCents && item.quantity ? (
+                      <p className="font-medium">
+                        {formatCurrency(item.unitPriceCents * item.quantity, order.currency)}
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground">{t("n/a")}</p>
+                    )}
+                    {item.shippingCents && item.shippingCents > 0 && (
+                      <p className="text-muted-foreground text-xs">
+                        + {formatCurrency(item.shippingCents, order.currency)} shipping
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
+
+            <Separator />
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground text-sm">{t("no items found")}</p>
             <Separator />
           </>
         )}
 
         <div className="flex justify-between font-semibold">
           <span>{t("total")}</span>
-          <span>
-            {order.totalCents
-              ? formatCurrency(order.totalCents, order.currency)
-              : t("n/a")}
-          </span>
+          <span>{order.totalCents ? formatCurrency(order.totalCents, order.currency) : t("n/a")}</span>
         </div>
       </CardContent>
     </Card>
