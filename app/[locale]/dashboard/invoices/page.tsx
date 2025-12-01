@@ -9,6 +9,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import InvoicesFilters from "@/app/[locale]/dashboard/invoices/InvoicesFilters";
 import InvoicesDataTable from "@/app/[locale]/dashboard/invoices/InvoicesDataTable";
+import PayInvoiceDialog from "@/app/[locale]/dashboard/invoices/PayInvoiceDialog";
 
 type InvoicesResponse = {
   data: Invoice[];
@@ -38,6 +39,8 @@ export default function InvoicesPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [page, setPage] = useState(1);
   const limit = 20;
+  const [showPayDialog, setShowPayDialog] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   // SWR hook for data fetching
   const { data, error, isLoading } = useSWR<InvoicesResponse>(
@@ -91,6 +94,11 @@ export default function InvoicesPage() {
     toast.success(t("opened invoice"));
   };
 
+  const handlePayInvoice = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setShowPayDialog(true);
+  };
+
   const clearFilters = () => {
     setType("all");
     setStatus("all");
@@ -142,6 +150,7 @@ export default function InvoicesPage() {
           invoices={invoices}
           onDownload={handleDownloadInvoice}
           onViewHosted={handleViewHostedInvoice}
+          onPay={handlePayInvoice}
           isLoading={isLoading}
         />
 
@@ -160,6 +169,16 @@ export default function InvoicesPage() {
             })}
           </div>
         )}
+
+        {/* Pay Invoice Dialog */}
+        <PayInvoiceDialog
+          invoice={selectedInvoice}
+          isOpen={showPayDialog}
+          onClose={() => {
+            setShowPayDialog(false);
+            setSelectedInvoice(null);
+          }}
+        />
       </div>
     </div>
   );

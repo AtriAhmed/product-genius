@@ -25,6 +25,7 @@ interface ShopifyOrder {
     email: string;
     first_name: string;
     last_name: string;
+    phone?: string;
   };
   billing_address?: {
     first_name: string;
@@ -338,7 +339,7 @@ export async function POST(request: NextRequest) {
         status: orderStatus,
         shopifyOrderId: shopifyOrder.id.toString(),
         deliveryName: [shippingAddress?.first_name, shippingAddress?.last_name].filter(Boolean).join(" ") || null,
-        deliveryPhone: shippingAddress?.phone,
+        deliveryPhone: shippingAddress?.phone || shopifyOrder?.customer?.phone,
         deliveryEmail: shopifyOrder.email,
         deliveryAddress1: shippingAddress?.address1,
         deliveryAddress2: shippingAddress?.address2,

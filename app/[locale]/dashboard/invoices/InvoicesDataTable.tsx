@@ -2,17 +2,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Invoice } from "@/types";
-import { Download, Eye, FileText } from "lucide-react";
+import { CreditCard, Download, Eye, FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type InvoicesDataTableProps = {
   invoices: Invoice[];
   onDownload: (invoice: Invoice) => void;
   onViewHosted: (invoice: Invoice) => void;
+  onPay: (invoice: Invoice) => void;
   isLoading: boolean;
 };
 
-export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, isLoading }: InvoicesDataTableProps) {
+export default function InvoicesDataTable({
+  invoices,
+  onDownload,
+  onViewHosted,
+  onPay,
+  isLoading,
+}: InvoicesDataTableProps) {
   const t = useTranslations("invoices");
 
   const formatCurrency = (amountCents?: number, currency = "USD") => {
@@ -25,10 +32,12 @@ export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, 
 
   const formatDate = (date?: Date | string) => {
     if (!date) return "-";
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("en-UK", {
       year: "numeric",
       month: "short",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(date));
   };
 
@@ -79,6 +88,9 @@ export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, 
       <TableCell className="py-1">
         <div className="w-32 h-4 rounded bg-muted animate-pulse" />
       </TableCell>
+      <TableCell className="py-1">
+        <div className="w-20 h-4 rounded bg-muted animate-pulse" />
+      </TableCell>
       <TableCell className="text-right">
         <div className="w-24 h-8 ml-auto rounded bg-muted animate-pulse" />
       </TableCell>
@@ -87,7 +99,7 @@ export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, 
 
   const emptyStateRow = (
     <TableRow>
-      <TableCell colSpan={5}>
+      <TableCell colSpan={6}>
         <div className="p-8 text-center">
           <div className="flex justify-center items-center size-18 mx-auto mb-4 rounded-full bg-muted">
             <FileText className="w-8 h-8 text-muted-foreground" />
@@ -108,6 +120,7 @@ export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, 
             <TableHead className="text-nowrap">{t("type")}</TableHead>
             <TableHead className="text-nowrap">{t("status")}</TableHead>
             <TableHead className="text-nowrap">{t("total")}</TableHead>
+            <TableHead className="text-nowrap">{t("created at")}</TableHead>
             <TableHead className="text-right text-nowrap">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -128,30 +141,43 @@ export default function InvoicesDataTable({ invoices, onDownload, onViewHosted, 
                       <Badge className={getStatusColor(invoice.status)}>{getStatusText(invoice.status)}</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="py-1 font-medium">
+                  <TableCell className="py-1 font-medium text-nowrap">
                     {formatCurrency(invoice.amountCents, invoice.currency)}
                   </TableCell>
+                  <TableCell className="py-1 text-muted-foreground">{formatDate(invoice.createdAt)}</TableCell>
                   <TableCell className="py-1 text-right">
-                    <div className="flex justify-end gap-2">
+                    {invoice?.status === "paid" ? (
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onDownload(invoice)}
+                          disabled={!invoice.pdfUrl}
+                          className="gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onViewHosted(invoice)}
+                          disabled={!invoice.hostedUrl}
+                          className="gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : invoice?.status === "open" ? (
+                      // paid invoice button
                       <Button
-                        variant="outline"
                         size="sm"
-                        onClick={() => onDownload(invoice)}
-                        disabled={!invoice.pdfUrl}
-                        className="gap-2"
+                        onClick={() => onPay(invoice)}
+                        className="gap-2 bg-green-600 hover:bg-green-700"
                       >
-                        <Download className="w-4 h-4" />
+                        <CreditCard className="w-4 h-4" />
+                        {t("pay")}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onViewHosted(invoice)}
-                        disabled={!invoice.hostedUrl}
-                        className="gap-2"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))

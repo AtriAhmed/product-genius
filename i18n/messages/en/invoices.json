@@ -34,5 +34,6 @@
   "no hosted url available": "No hosted URL available for this invoice",
   "unpaid": "Unpaid",
   "paid": "Paid",
-  "unavailable": "Unavailable"
+  "unavailable": "Unavailable",
+  "pay": "Pay"
 }
