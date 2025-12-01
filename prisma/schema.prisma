@@ -520,6 +520,7 @@ model OrderItem {
   title          String
   unitPriceCents Int    @map("unit_price_cents")
   quantity       Int
+  shippingCents  Int    @default(0) @map("shipping_cents")
 
   productId Int?     @map("product_id")
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
