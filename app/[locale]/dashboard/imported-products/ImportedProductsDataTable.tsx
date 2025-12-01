@@ -144,9 +144,9 @@ export default function ImportedProductsDataTable({
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="py-1">
+                  <TableCell className="max-w-[400px] py-1 font-medium">
                     <Link href={`/dashboard/products/${mapping.product?.id}`} className="hover:underline">
-                      <span className="font-medium">
+                      <span className="w-[150px] line-clamp-1">
                         {getCurrentTranslation(mapping?.product?.translations || [])?.title || "Untitled Product"}
                       </span>
                       <div className="text-muted-foreground text-sm">ID: {mapping.product?.id}</div>
@@ -184,7 +184,7 @@ export default function ImportedProductsDataTable({
                   </TableCell>
                   <TableCell className="py-1">
                     {mapping.createdAt ? (
-                      <div className="text-sm">
+                      <div className="text-sm text-nowrap">
                         {format(new Date(mapping.createdAt), "MMM dd, yyyy")}
                         <div className="text-muted-foreground text-xs">
                           {format(new Date(mapping.createdAt), "HH:mm")}
