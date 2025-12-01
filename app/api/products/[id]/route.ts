@@ -71,22 +71,6 @@ const productShippingZoneSchema = z.object({
   rules: z.array(shippingRuleSchema).min(1),
 });
 
-const updateProductSchema = z.object({
-  price: z.number().gte(0).optional().nullable(),
-  compareAtPrice: z.number().gte(0).optional().nullable(),
-  sellingPrice: z.number().gte(0).optional().nullable(),
-  currency: z.string().length(3).optional(),
-  categoryId: z.number().int().positive().optional().nullable(),
-  planIds: z.array(z.number().int().positive()).optional().default([]),
-  isActive: z.boolean(),
-  translations: z.array(translationSchema).min(1),
-  media: z.array(mediaSchema).optional().default([]),
-  suppliers: z.array(supplierSchema).optional().default([]),
-  options: z.array(productOptionSchema).max(3).optional().default([]),
-  variants: z.array(variantSchema).optional().default([]),
-  shippingZones: z.array(productShippingZoneSchema).optional().default([]),
-});
-
 const patchProductSchema = z.object({
   price: z.number().gte(0).optional().nullable(),
   compareAtPrice: z.number().gte(0).optional().nullable(),

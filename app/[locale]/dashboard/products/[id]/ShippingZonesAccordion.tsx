@@ -1,9 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { COUNTRIES } from "@/types/countries";
 
@@ -13,11 +16,25 @@ type ShippingZonesAccordionProps = {
 
 export function ShippingZonesAccordion({ shippingZones }: ShippingZonesAccordionProps) {
   const t = useTranslations("products");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Helper function to get country name from code
   const getCountryName = (code: string) => {
     const country = COUNTRIES.find((c) => c.alpha2 === code);
     return country?.name || code?.toUpperCase?.();
+  };
+
+  // Filter countries based on search term
+  const filterCountries = (countries: any[]) => {
+    if (!searchTerm.trim()) return countries;
+
+    return countries.filter((country: any) => {
+      const countryName = getCountryName(country.countryCode || "").toLowerCase();
+      const countryCode = (country.countryCode || "").toLowerCase();
+      const search = searchTerm.toLowerCase();
+
+      return countryName.includes(search) || countryCode.includes(search);
+    });
   };
 
   if (shippingZones.length === 0) return null;
@@ -30,9 +47,25 @@ export function ShippingZonesAccordion({ shippingZones }: ShippingZonesAccordion
         </AccordionTrigger>
         <AccordionContent className="px-4 pb-4 bg-white dark:bg-gray-900">
           <div className="space-y-3 mt-3">
+            {/* Search input */}
+            <div className="relative">
+              <Search className="top-1/2 left-3 absolute w-4 h-4 text-muted-foreground -translate-y-1/2" />
+              <Input
+                placeholder={t("search countries")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
             {shippingZones.map((productShippingZone) => {
               const zone = productShippingZone.zone;
               if (!zone) return null;
+
+              const filteredCountries = filterCountries(zone.countries || []);
+
+              // Don't show zones with no matching countries when searching
+              if (searchTerm.trim() && filteredCountries.length === 0) return null;
 
               return (
                 <Card
@@ -42,9 +75,12 @@ export function ShippingZonesAccordion({ shippingZones }: ShippingZonesAccordion
                   <CardContent>
                     <div className="space-y-3">
                       <div>
-                        <p className="mb-2 font-medium text-muted-foreground text-xs">{t("countries")}:</p>
+                        <p className="mb-2 font-medium text-muted-foreground text-xs">
+                          {t("countries")}{" "}
+                          {searchTerm.trim() && `(${filteredCountries.length}/${zone.countries?.length || 0})`}:
+                        </p>
                         <div className="flex flex-wrap gap-2">
-                          {zone.countries?.map((country: any) => (
+                          {filteredCountries.map((country: any) => (
                             <Badge
                               key={country.id}
                               variant="outline"
