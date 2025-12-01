@@ -389,7 +389,12 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
     }
 
     // Handle options and variants with proper CRUD operations
-    if (validatedData.options !== undefined || validatedData.variants !== undefined) {
+    if (
+      validatedData.options !== undefined ||
+      validatedData.variants !== undefined ||
+      validatedData.price !== undefined ||
+      validatedData.sellingPrice !== undefined
+    ) {
       const options = validatedData.options || [];
       const variants = validatedData.variants || [];
 
