@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Link, useRouter } from "@/i18n/navigation";
+import { stopPropagation } from "@/lib/utils";
 import { Order, OrderStatus } from "@/types";
 import { ExternalLink, Eye, NotepadText, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -52,6 +54,7 @@ const formatDate = (date: Date) => {
 
 export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDataTableProps) {
   const t = useTranslations("orders");
+  const router = useRouter();
 
   const skeletonRows = Array.from({ length: 5 }).map((_, idx) => (
     <TableRow key={`skeleton-${idx}`} className="border-border transition-colors">
@@ -73,9 +76,6 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
       <TableCell className="py-1">
         <Skeleton className="w-28 h-4" />
       </TableCell>
-      <TableCell className="py-1 text-right">
-        <Skeleton className="w-16 h-8 ml-auto" />
-      </TableCell>
     </TableRow>
   ));
 
@@ -93,6 +93,14 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
     </TableRow>
   );
 
+  function handleView(event: React.MouseEvent, order: Order) {
+    if (event.ctrlKey) {
+      window.open(`/dashboard/orders/${order.id}`, "_blank");
+    } else {
+      router.push(`/dashboard/orders/${order.id}`);
+    }
+  }
+
   return (
     <div className="w-0 min-w-full border rounded-md bg-background">
       <Table>
@@ -104,7 +112,6 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
             <TableHead className="font-medium">{t("tracking")}</TableHead>
             <TableHead className="font-medium">{t("order total")}</TableHead>
             <TableHead className="font-medium">{t("date")}</TableHead>
-            <TableHead className="font-medium text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -112,12 +119,22 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
             ? skeletonRows
             : orders.length > 0
             ? orders.map((order) => (
-                <TableRow key={order.id}>
+                <TableRow
+                  key={order.id}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    handleView(e, order);
+                  }}
+                >
                   <TableCell className="py-1 font-medium">
-                    <div className="flex items-center gap-2">
+                    <Link
+                      className="flex items-center gap-2 hover:underline"
+                      href={`/dashboard/orders/${order.id}`}
+                      onClick={stopPropagation}
+                    >
                       <Package className="w-4 h-4 text-muted-foreground" />
                       <span className="max-w-[120px] truncate">{order.orderNumber}</span>
-                    </div>
+                    </Link>
                   </TableCell>
                   <TableCell className="py-1">
                     <div className="flex items-center gap-2">
@@ -128,6 +145,7 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800"
+                          onClick={stopPropagation}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -155,11 +173,8 @@ export default function OrdersDataTable({ orders, onView, isLoading }: OrdersDat
                     </div>
                   </TableCell>
                   <TableCell className="py-1">{formatCurrency(order.totalCents || 0, order.currency)}</TableCell>
-                  <TableCell className="py-1">{order.createdAt ? formatDate(order.createdAt) : "N/A"}</TableCell>
-                  <TableCell className="py-1 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => onView(order)} className="gap-2">
-                      <Eye className="w-4 h-4" />
-                    </Button>
+                  <TableCell className="py-1 text-nowrap">
+                    {order.createdAt ? formatDate(order.createdAt) : "N/A"}
                   </TableCell>
                 </TableRow>
               ))

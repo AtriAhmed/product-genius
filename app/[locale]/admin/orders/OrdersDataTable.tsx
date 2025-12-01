@@ -156,6 +156,7 @@ export default function OrdersDataTable({ orders, onEditTracking, isLoading }: O
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800"
+                          onClick={stopPropagation}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
