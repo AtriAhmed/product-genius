@@ -11,7 +11,15 @@ export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
 
 export type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "diners" | "jcb" | "unionpay" | "unknown";
 
-export type OrderStatus = "DRAFT" | "UNPAID" | "PAID" | "PROCESSING" | "COMPLETED" | "CANCELED" | "REFUNDED";
+export type OrderStatus =
+  | "DRAFT"
+  | "UNPAID"
+  | "PAID"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "CANCELED"
+  | "REFUNDED"
+  | "INVALID";
 
 export type PlanInterval = "DAY" | "WEEK" | "MONTH" | "YEAR";
 
