@@ -148,7 +148,7 @@ export default function InvoicesDataTable({
                   <TableCell className="py-1 text-right">
                     {invoice?.status === "paid" ? (
                       <div className="flex justify-end gap-2">
-                        <Button
+                        {/* <Button
                           variant="outline"
                           size="sm"
                           onClick={() => onDownload(invoice)}
@@ -156,7 +156,7 @@ export default function InvoicesDataTable({
                           className="gap-2"
                         >
                           <Download className="w-4 h-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="outline"
                           size="sm"
