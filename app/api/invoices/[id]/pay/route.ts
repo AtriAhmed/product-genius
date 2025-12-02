@@ -9,7 +9,7 @@ const paramsSchema = z.object({
   id: z.string().regex(/^\d+$/, "ID must be a valid number"),
 });
 
-export async function POST(request: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(request: NextRequest, ctx: RouteContext<"/api/invoices/[id]/pay">) {
   try {
     const params = await ctx.params;
 
