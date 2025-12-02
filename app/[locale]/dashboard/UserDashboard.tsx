@@ -14,7 +14,7 @@ import UserTopProducts from "@/app/[locale]/dashboard/UserTopProducts";
 import UserRecentActivity from "@/app/[locale]/dashboard/UserRecentActivity";
 import UserSubscriptionCard from "@/app/[locale]/dashboard/UserSubscriptionCard";
 
-type Period = "7d" | "30d" | "90d" | "1y" | "all";
+type Period = "1d" | "7d" | "30d" | "90d" | "1y" | "all";
 
 async function fetcher(url: string) {
   const response = await axios.get(url);
@@ -84,6 +84,7 @@ export default function UserDashboard() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="1d">Last 24 hours</SelectItem>
             <SelectItem value="7d">Last 7 days</SelectItem>
             <SelectItem value="30d">Last 30 days</SelectItem>
             <SelectItem value="90d">Last 90 days</SelectItem>

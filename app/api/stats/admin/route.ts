@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 // Validation schema for query parameters
 const querySchema = z.object({
-  period: z.enum(["7d", "30d", "90d", "1y", "all"]).optional().default("30d"),
+  period: z.enum(["1d", "7d", "30d", "90d", "1y", "all"]).optional().default("30d"),
   timezone: z.string().optional().default("UTC"),
 });
 
@@ -21,6 +21,9 @@ export async function GET(request: Request) {
     let startDate: Date;
 
     switch (period) {
+      case "1d":
+        startDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+        break;
       case "7d":
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
@@ -62,13 +65,25 @@ export async function GET(request: Request) {
       }),
       prisma.product.count(),
       prisma.product.count({ where: { isActive: true } }),
-      prisma.order.count(),
+      prisma.order.count({
+        where: {
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
+        },
+      }),
       prisma.category.count(),
       prisma.invoice.aggregate({
         _sum: { amountCents: true },
-        where: { status: "paid" },
+        where: {
+          status: "paid",
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
+        },
       }),
-      prisma.invoice.count({ where: { status: "paid" } }),
+      prisma.invoice.count({
+        where: {
+          status: "paid",
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
+        },
+      }),
       prisma.subscription.count(),
       prisma.shopifyStore.count(),
     ]);
@@ -111,6 +126,9 @@ export async function GET(request: Request) {
     const subscriptionsByStatus = await prisma.subscription.groupBy({
       by: ["status"],
       _count: { id: true },
+      where: {
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
+      },
     });
 
     // User roles distribution (for pie charts)
@@ -123,6 +141,9 @@ export async function GET(request: Request) {
     const ordersByStatus = await prisma.order.groupBy({
       by: ["status"],
       _count: { id: true },
+      where: {
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
+      },
     });
 
     // Top categories by product count (for bar charts)
@@ -189,6 +210,9 @@ export async function GET(request: Request) {
         role: true,
         createdAt: true,
       },
+      where: {
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
+      },
       orderBy: { createdAt: "desc" },
       take: 5,
     });
@@ -207,6 +231,9 @@ export async function GET(request: Request) {
             email: true,
           },
         },
+      },
+      where: {
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
       },
       orderBy: { createdAt: "desc" },
       take: 5,
@@ -258,6 +285,7 @@ export async function GET(request: Request) {
       _avg: { totalCents: true },
       where: {
         status: { in: ["PAID", "COMPLETED"] },
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
       },
     });
 
@@ -266,8 +294,11 @@ export async function GET(request: Request) {
     const subscribedUsers = await prisma.user.count({
       where: {
         subscriptions: {
-          some: {},
+          some: {
+            ...(period !== "all" && { createdAt: { gte: startDate } }),
+          },
         },
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
       },
     });
 
@@ -276,8 +307,10 @@ export async function GET(request: Request) {
         orders: {
           some: {
             status: { in: ["PAID", "COMPLETED"] },
+            ...(period !== "all" && { createdAt: { gte: startDate } }),
           },
         },
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
       },
     });
 

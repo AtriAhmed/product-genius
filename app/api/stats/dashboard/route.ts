@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 
 // Validation schema for query parameters
 const querySchema = z.object({
-  period: z.enum(["7d", "30d", "90d", "1y", "all"]).optional().default("30d"),
+  period: z.enum(["1d", "7d", "30d", "90d", "1y", "all"]).optional().default("30d"),
   timezone: z.string().optional().default("UTC"),
 });
 
@@ -30,6 +30,9 @@ export async function GET(request: Request) {
     let startDate: Date;
 
     switch (period) {
+      case "1d":
+        startDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+        break;
       case "7d":
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
@@ -60,7 +63,10 @@ export async function GET(request: Request) {
     ] = await Promise.all([
       // Total orders for this user
       prisma.order.count({
-        where: { userId },
+        where: {
+          userId,
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
+        },
       }),
 
       // Total amount spent
@@ -69,6 +75,7 @@ export async function GET(request: Request) {
         where: {
           userId,
           status: { in: ["PAID", "COMPLETED"] },
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
         },
       }),
 
@@ -122,7 +129,10 @@ export async function GET(request: Request) {
 
       // Recent orders
       prisma.order.findMany({
-        where: { userId },
+        where: {
+          userId,
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
+        },
         include: {
           items: {
             select: {
@@ -167,7 +177,10 @@ export async function GET(request: Request) {
     const ordersByStatus = await prisma.order.groupBy({
       by: ["status"],
       _count: { id: true },
-      where: { userId },
+      where: {
+        userId,
+        ...(period !== "all" && { createdAt: { gte: startDate } }),
+      },
     });
 
     // Monthly spending pattern
@@ -188,7 +201,10 @@ export async function GET(request: Request) {
       _count: { id: true },
       _sum: { quantity: true },
       where: {
-        order: { userId },
+        order: {
+          userId,
+          ...(period !== "all" && { createdAt: { gte: startDate } }),
+        },
         productId: { not: null },
       },
       orderBy: {
