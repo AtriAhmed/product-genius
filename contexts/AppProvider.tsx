@@ -60,6 +60,14 @@ export default function AppProvider({ children }: AppProviderProps) {
     });
   }, []);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") {
+      console.log = () => {};
+      console.info = () => {};
+      console.debug = () => {};
+    }
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
