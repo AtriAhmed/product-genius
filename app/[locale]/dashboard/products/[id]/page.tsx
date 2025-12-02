@@ -14,6 +14,7 @@ import useSWR from "swr";
 import { ImageGallery } from "./ImageGallery";
 import { ProductInfo } from "./ProductInfo";
 import { ProductSkeleton } from "./ProductSkeleton";
+import RecommendedProducts from "./RecommendedProducts";
 
 async function fetcher(id: string) {
   const response = await axios.get(`/api/products/${id}`);
@@ -163,6 +164,11 @@ export default function ProductPage() {
               onShare={handleShare}
             />
           </div>
+        </div>
+
+        {/* Recommended Products Section */}
+        <div className="mt-12">
+          <RecommendedProducts />
         </div>
       </div>
     </div>
