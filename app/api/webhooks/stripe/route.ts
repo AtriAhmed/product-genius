@@ -128,7 +128,7 @@ async function handleSubscriptionUpdated(subscription: any) {
 
     // Only update planId if we found a matching plan
     if (planId) {
-      updateData.planId = planId;
+      updateData.planId = Number(planId);
     }
 
     // Update interval if provided in metadata

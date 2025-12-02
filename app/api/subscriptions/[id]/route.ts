@@ -6,15 +6,10 @@ import { updateSubscription, cancelSubscription } from "@/lib/stripe";
 import { z } from "zod";
 
 const updateSubscriptionSchema = z.object({
-  planId: z.number().optional(),
-  cancelAtPeriodEnd: z.boolean().optional(),
-  interval: z.enum(["DAY", "WEEK", "MONTH", "YEAR"]).optional(),
+  cancelAtPeriodEnd: z.boolean(),
 });
 
-export async function GET(
-  request: NextRequest,
-  ctx: RouteContext<"/api/subscriptions/[id]">
-) {
+export async function GET(request: NextRequest, ctx: RouteContext<"/api/subscriptions/[id]">) {
   const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
@@ -47,26 +42,17 @@ export async function GET(
     });
 
     if (!subscription) {
-      return NextResponse.json(
-        { error: "Subscription not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
     }
 
     return NextResponse.json(subscription);
   } catch (error) {
     console.error("Error fetching subscription:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch subscription" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch subscription" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  ctx: RouteContext<"/api/subscriptions/[id]">
-) {
+export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/subscriptions/[id]">) {
   const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
@@ -85,63 +71,18 @@ export async function PUT(
         id: subscriptionId,
         userId,
       },
-      include: {
-        plan: {
-          include: {
-            prices: true,
-          },
-        },
-      },
     });
 
     if (!subscription) {
-      return NextResponse.json(
-        { error: "Subscription not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
     }
 
     if (!subscription.stripeSubscriptionId) {
-      return NextResponse.json(
-        { error: "Stripe subscription not found" },
-        { status: 400 }
-      );
-    }
-
-    let newPriceId = undefined;
-
-    if (updates.planId || updates.interval) {
-      const targetPlanId = updates.planId || subscription.planId;
-      const targetInterval = updates.interval;
-
-      const plan = await prisma.plan.findUnique({
-        where: { id: targetPlanId },
-        include: { prices: true },
-      });
-
-      if (!plan) {
-        return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
-      }
-
-      if (targetInterval) {
-        const planPrice = plan.prices.find(
-          (price) => price.interval === targetInterval && price.stripePriceId
-        );
-
-        if (!planPrice?.stripePriceId) {
-          return NextResponse.json(
-            { error: "No valid price found for the specified interval" },
-            { status: 400 }
-          );
-        }
-
-        newPriceId = planPrice.stripePriceId;
-      }
+      return NextResponse.json({ error: "Stripe subscription not found" }, { status: 400 });
     }
 
     // Update in Stripe only - database will be updated via webhook
     await updateSubscription(subscription.stripeSubscriptionId, {
-      priceId: newPriceId,
       cancelAtPeriodEnd: updates.cancelAtPeriodEnd,
     });
 
@@ -151,17 +92,11 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Error updating subscription:", error);
-    return NextResponse.json(
-      { error: "Failed to update subscription" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  ctx: RouteContext<"/api/product-mappings/[id]">
-) {
+export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/subscriptions/[id]">) {
   const params = await ctx.params;
   try {
     const session = await getServerSession(authOptions);
@@ -181,10 +116,7 @@ export async function DELETE(
     });
 
     if (!subscription) {
-      return NextResponse.json(
-        { error: "Subscription not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
     }
 
     // Cancel in Stripe only - database will be updated via webhook
@@ -198,9 +130,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Error canceling subscription:", error);
-    return NextResponse.json(
-      { error: "Failed to cancel subscription" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to cancel subscription" }, { status: 500 });
   }
 }

@@ -41,5 +41,13 @@
   "unpaid": "Unpaid",
   "subscription created successfully": "Subscription created successfully",
   "no active subscription": "No active subscription",
-  "choose a plan to enjoy our premium features": "Choose a plan to enjoy our premium features"
+  "choose a plan to enjoy our premium features": "Choose a plan to enjoy our premium features",
+  "cancels at period end": "Cancels at period end",
+  "cancel at period end": "Cancel at period end",
+  "reactivate auto renewal": "Reactivate Auto-Renewal",
+  "auto renewal active": "Auto-Renewal Active",
+  "canceling": "Canceling...",
+  "reactivating": "Reactivating...",
+  "auto renewal reactivated": "Auto-renewal reactivated",
+  "subscription will cancel at period end": "Subcription will cancel at period end"
 }
