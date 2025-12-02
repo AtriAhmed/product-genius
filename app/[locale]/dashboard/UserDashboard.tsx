@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import OverviewCards from "@/app/[locale]/admin/OverviewCards";
-import GrowthCharts from "@/app/[locale]/admin/GrowthCharts";
-import DistributionCharts from "@/app/[locale]/admin/DistributionCharts";
-import TopPerformers from "@/app/[locale]/admin/TopPerformers";
-import ConversionFunnel from "@/app/[locale]/admin/ConversionFunnel";
-import RecentActivity from "@/app/[locale]/admin/RecentActivity";
 import axios from "axios";
+
+import UserOverviewCards from "@/app/[locale]/dashboard/UserOverviewCards";
+import UserGrowthCharts from "@/app/[locale]/dashboard/UserGrowthCharts";
+import UserDistributionCharts from "@/app/[locale]/dashboard/UserDistributionCharts";
+import UserTopProducts from "@/app/[locale]/dashboard/UserTopProducts";
+import UserRecentActivity from "@/app/[locale]/dashboard/UserRecentActivity";
+import UserSubscriptionCard from "@/app/[locale]/dashboard/UserSubscriptionCard";
 
 type Period = "7d" | "30d" | "90d" | "1y" | "all";
 
@@ -21,15 +21,15 @@ async function fetcher(url: string) {
   return response.data;
 }
 
-export default function AdminDashboard() {
+export default function UserDashboard() {
   const [period, setPeriod] = useState<Period>("30d");
 
   const {
     data: stats,
     error,
     isLoading,
-  } = useSWR(`/api/stats/admin?period=${period}`, fetcher, {
-    refreshInterval: 60000, // Refresh every minute
+  } = useSWR(`/api/stats/dashboard?period=${period}`, fetcher, {
+    refreshInterval: 300000, // Refresh every 5 minutes
   });
 
   if (error) {
@@ -37,7 +37,7 @@ export default function AdminDashboard() {
       <div className="container">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-red-600 text-center">Failed to load admin statistics. Please try again later.</div>
+            <div className="text-red-600 text-center">Failed to load your dashboard. Please try again later.</div>
           </CardContent>
         </Card>
       </div>
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
     return (
       <div className="container">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="font-bold text-3xl">Admin Dashboard</h1>
+          <h1 className="font-bold text-3xl">Dashboard</h1>
           <Skeleton className="w-32 h-10" />
         </div>
         <div className="gap-6 grid">
@@ -75,7 +75,10 @@ export default function AdminDashboard() {
     <div className="container">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center gap-2 mb-6">
-        <h1 className="font-bold text-3xl">Admin Dashboard</h1>
+        <div>
+          <h1 className="font-bold text-3xl">Your Dashboard</h1>
+          <p className="text-muted-foreground">Track your orders, spending, and activity</p>
+        </div>
         <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
           <SelectTrigger className="w-32 ms-auto">
             <SelectValue />
@@ -92,43 +95,49 @@ export default function AdminDashboard() {
 
       <div className="space-y-8">
         {/* Overview Cards */}
-        <OverviewCards data={stats.data.overview} />
+        <UserOverviewCards data={stats.data.overview} />
 
-        {/* Recent Activity Section */}
-        <div className="space-y-6">
-          <div className="pb-2 border-b">
-            <h2 className="font-semibold text-2xl">Recent Activity</h2>
-            <p className="text-muted-foreground">Latest users and orders</p>
-          </div>
-          <RecentActivity data={stats.data.recent} />
-        </div>
+        {/* Subscription Card (if user has subscription) */}
+        {stats.data.subscription && <UserSubscriptionCard data={stats.data.subscription} />}
 
         {/* Analytics Section */}
         <div className="space-y-6">
           <div className="pb-2 border-b">
-            <h2 className="font-semibold text-2xl">Analytics</h2>
-            <p className="text-muted-foreground">Growth trends and conversion metrics</p>
+            <h2 className="font-semibold text-2xl">Your Activity</h2>
+            <p className="text-muted-foreground">Orders and spending trends over time</p>
           </div>
-          <GrowthCharts data={stats.data.growth} />
-          <ConversionFunnel data={stats.data.funnel} />
+          <UserGrowthCharts data={stats.data.growth} />
         </div>
 
-        {/* Distributions Section */}
-        <div className="space-y-6">
-          <div className="pb-2 border-b">
-            <h2 className="font-semibold text-2xl">Distributions</h2>
-            <p className="text-muted-foreground">Status and category breakdowns</p>
+        {/* Order Status Distribution */}
+        {stats.data.distributions.orderStatus.length > 0 && (
+          <div className="space-y-6">
+            <div className="pb-2 border-b">
+              <h2 className="font-semibold text-2xl">Order Status</h2>
+              <p className="text-muted-foreground">Breakdown of your order statuses</p>
+            </div>
+            <UserDistributionCharts data={stats.data.distributions} />
           </div>
-          <DistributionCharts data={stats.data.distributions} />
-        </div>
+        )}
 
-        {/* Performance Section */}
+        {/* Top Products */}
+        {stats.data.topProducts.length > 0 && (
+          <div className="space-y-6">
+            <div className="pb-2 border-b">
+              <h2 className="font-semibold text-2xl">Your Favorite Products</h2>
+              <p className="text-muted-foreground">Products you order most frequently</p>
+            </div>
+            <UserTopProducts data={stats.data.topProducts} />
+          </div>
+        )}
+
+        {/* Recent Activity */}
         <div className="space-y-6">
           <div className="pb-2 border-b">
-            <h2 className="font-semibold text-2xl">Top Performers</h2>
-            <p className="text-muted-foreground">Best categories and products</p>
+            <h2 className="font-semibold text-2xl">Recent Orders</h2>
+            <p className="text-muted-foreground">Your latest purchase activity</p>
           </div>
-          <TopPerformers categories={stats.data.topCategories} products={stats.data.topProducts} />
+          <UserRecentActivity data={stats.data.recent} />
         </div>
       </div>
     </div>
