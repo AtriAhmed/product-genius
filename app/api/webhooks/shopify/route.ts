@@ -294,13 +294,20 @@ export async function POST(request: NextRequest) {
 
         validOrderItems.push(orderItem);
 
+        // Create title with variant options for better identification
+        let productTitleWithOptions = lineItem.title;
+        if (Object.keys(variantOptions).length > 0) {
+          const optionValues = Object.values(variantOptions).join(" / ");
+          productTitleWithOptions = `${lineItem.title} - ${optionValues}`;
+        }
+
         // Add product item to stripe items
         stripeItems.push({
           type: "PRODUCT",
           productId: variantMapping.productId,
           quantity: lineItem.quantity,
           unitPriceCents,
-          title: lineItem.title,
+          title: productTitleWithOptions,
         });
 
         // Add shipping item right after the product item if shipping applies
@@ -310,7 +317,7 @@ export async function POST(request: NextRequest) {
             quantity: 1,
             unitPriceCents: shippingCents,
             totalCents: shippingCents,
-            title: `Shipping - ${productTitle}`,
+            title: `Shipping - ${productTitleWithOptions}`,
           });
         }
       }
