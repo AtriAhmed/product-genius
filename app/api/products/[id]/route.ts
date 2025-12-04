@@ -236,10 +236,15 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
     // Prepare update data object - only include fields that are provided
     const updateData: any = {};
 
+    console.log(
+      "-------------------- validatedData.price, validatedData.compareAtPrice, validatedData.sellingPrice --------------------"
+    );
+    console.log(validatedData.price, validatedData.compareAtPrice, validatedData.sellingPrice);
+
     // Handle basic product fields
-    if (validatedData.price !== undefined) updateData.price = validatedData.price;
-    if (validatedData.compareAtPrice !== undefined) updateData.compareAtPrice = validatedData.compareAtPrice;
-    if (validatedData.sellingPrice !== undefined) updateData.sellingPrice = validatedData.sellingPrice;
+    updateData.price = validatedData.price;
+    updateData.compareAtPrice = validatedData.compareAtPrice;
+    updateData.sellingPrice = validatedData.sellingPrice;
     if (validatedData.currency !== undefined) updateData.currency = validatedData.currency;
     if (validatedData.categoryId !== undefined) updateData.categoryId = validatedData.categoryId;
     if (validatedData.isActive !== undefined) updateData.isActive = validatedData.isActive;

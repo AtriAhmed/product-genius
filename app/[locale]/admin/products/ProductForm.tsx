@@ -177,9 +177,9 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         productData = {};
 
         // Only include dirty fields
-        if (dirtyFields.price) productData.price = data.price;
-        if (dirtyFields.compareAtPrice) productData.compareAtPrice = data.compareAtPrice;
-        if (dirtyFields.sellingPrice) productData.sellingPrice = data.sellingPrice;
+        productData.price = data.price;
+        productData.compareAtPrice = data.compareAtPrice || null;
+        productData.sellingPrice = data.sellingPrice || null;
         if (dirtyFields.currency) productData.currency = data.currency;
         if (dirtyFields.categoryId) productData.categoryId = data.categoryId;
         if (dirtyFields.planIds) productData.planIds = data.planIds;

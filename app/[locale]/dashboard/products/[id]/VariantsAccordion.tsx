@@ -24,7 +24,7 @@ export function VariantsAccordion({ variants }: VariantsAccordionProps) {
             {variants.map((variant) => (
               <div
                 key={variant.id}
-                className="flex justify-between items-center p-2 border rounded-lg bg-gray-50 dark:bg-gray-800"
+                className="flex flex-wrap justify-between items-center p-2 border rounded-lg bg-gray-50 dark:bg-gray-800"
               >
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
@@ -55,13 +55,29 @@ export function VariantsAccordion({ variants }: VariantsAccordionProps) {
                     <div className="text-muted-foreground text-xs">Stock: {variant.inventory || 0}</div>
                   )}
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold">{formatCurrency(variant.price!)}</div>
-                  {variant.compareAtPrice && (
-                    <div className="text-muted-foreground text-xs line-through">
-                      {formatCurrency(variant.compareAtPrice)}
+                <div className="min-w-[120px] ms-auto text-right">
+                  <div className="space-y-1">
+                    <div className="flex justify-end items-center gap-1 mb-0">
+                      {variant.compareAtPrice && (
+                        <div className="self-end text-slate-500 dark:text-slate-400 text-xs line-through">
+                          {formatCurrency(variant.compareAtPrice)}
+                        </div>
+                      )}
+                      <div className="font-bold text-slate-900 dark:text-slate-100">
+                        {formatCurrency(variant.price!)}
+                      </div>
                     </div>
-                  )}
+                    {variant.sellingPrice && (
+                      <div className="pt-0.5 border-slate-200 dark:border-slate-600">
+                        <div className="flex justify-end items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                          <div className="font-semibold text-[11px] text-slate-500 dark:text-slate-400">
+                            SUGGESTED SELLING PRICE: {formatCurrency(variant.sellingPrice)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

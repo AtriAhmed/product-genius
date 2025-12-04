@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Product, User } from "@/types";
-import { hueFromString } from "@/lib/utils";
+import { formatCurrency, hueFromString } from "@/lib/utils";
 import { formatPriceRange } from "@/lib/productVariants";
 import { VariantsAccordion } from "@/app/[locale]/dashboard/products/[id]/VariantsAccordion";
 import { ShippingZonesAccordion } from "@/app/[locale]/dashboard/products/[id]/ShippingZonesAccordion";
@@ -33,15 +33,45 @@ export function ProductPricing({ product, user }: ProvidersPreviewProps) {
         <div className="space-y-4">
           <div className="space-y-2">
             {options.length === 0 ? (
-              <div className="mb-8">
-                <span className="text-muted-foreground text-sm">Price:</span>
-                <div className="font-semibold text-2xl">{formattedPrice}</div>
+              <div className="p-6 border border-slate-200 dark:border-slate-700 rounded-xl bg-gradient-to-r from-slate-50 dark:from-slate-900/50 to-gray-50 dark:to-gray-900/50 shadow-sm">
+                <div className="mb-0 font-medium text-slate-600 dark:text-slate-400 text-sm">PRICE</div>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-baseline gap-3">
+                    <div className="font-bold text-slate-900 dark:text-slate-100 text-3xl tracking-tight">
+                      {formattedPrice}
+                    </div>
+                    {product?.variants?.[0]?.compareAtPrice && (
+                      <div className="text-slate-500 dark:text-slate-400 text-lg line-through">
+                        {formatCurrency(product?.variants?.[0]?.compareAtPrice)}
+                      </div>
+                    )}
+                  </div>
+                  {!!product?.variants?.[0]?.sellingPrice && (
+                    <div className="pt-4 border-slate-200 dark:border-slate-700 border-t">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-slate-500"></div>
+                            <div className="font-bold text-slate-500 text-xs">SUGGESTED SELLING PRICE</div>
+                          </div>
+                          <div className="font-semibold text-slate-500 dark:text-blue-100 text-lg">
+                            {formatCurrency(product?.variants?.[0]?.sellingPrice, product.currency)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
-              // Multiple options case - show price range, options, and variants
               <div className="space-y-4">
-                {/* Price Range */}
-                <div className="font-semibold text-2xl">{formattedPrice}</div>
+                {/* Enhanced Price Range for Multiple Options */}
+                <div className="p-6 border border-slate-200 dark:border-slate-700 rounded-xl bg-gradient-to-r from-slate-50 dark:from-slate-900/50 to-gray-50 dark:to-gray-900/50 shadow-sm">
+                  <div className="mb-2 font-medium text-slate-600 dark:text-slate-400 text-sm">PRICE RANGE</div>
+                  <div className="font-bold text-slate-900 dark:text-slate-100 text-3xl tracking-tight">
+                    {formattedPrice}
+                  </div>
+                </div>
 
                 {/* Available Options */}
                 <div className="space-y-3">

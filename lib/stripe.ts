@@ -161,7 +161,8 @@ export async function createAndPayInvoice(
         };
 
         if (item.type === "PRODUCT") {
-          amount = (item.unitPriceCents || 0) * item.quantity;
+          // amount = (item.unitPriceCents || 0) * item.quantity;
+          amount = item.unitPriceCents || 0;
           metadata.productId = item.productId?.toString() || "";
         } else if (item.type === "SHIPPING") {
           amount = item.totalCents || 0;
@@ -173,7 +174,8 @@ export async function createAndPayInvoice(
           customer: customerId,
           invoice: invoice.id,
           currency: order.currency.toLowerCase(),
-          amount: amount,
+          unit_amount_decimal: (item.unitPriceCents || 0)?.toString(),
+          quantity: item.quantity,
           description: item.title,
           metadata: metadata,
         });

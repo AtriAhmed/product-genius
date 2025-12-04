@@ -59,7 +59,7 @@ export default function InvoicesDataTable({
       case "open":
         return t("unpaid");
       default:
-        return "unavailable";
+        return t("unavailable");
     }
   };
 

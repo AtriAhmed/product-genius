@@ -282,6 +282,7 @@ export type ProductVariant = {
   productId?: number;
   price?: number;
   compareAtPrice?: number;
+  sellingPrice?: number;
   costPrice?: number;
   sku?: string;
   inventory?: number;

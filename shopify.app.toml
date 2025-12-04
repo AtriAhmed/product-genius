@@ -2,8 +2,8 @@
 
 client_id = "00a9156083941bc91783d546e3ced7b8"
 name = "product-genius"
-# application_url = "https://gn2ngl9j-3000.uks1.devtunnels.ms"
-application_url = "https://winwaterfall.com"
+application_url = "https://gn2ngl9j-3000.uks1.devtunnels.ms"
+# application_url = "https://winwaterfall.com"
 embedded = true
 
 [webhooks]

@@ -99,7 +99,7 @@ export default function OrderItemCard({ item, currency = "USD" }: OrderItemCardP
         {item.unitPriceCents && item.quantity && (
           <>
             <p className="font-semibold text-foreground">
-              {formatCurrency(item.unitPriceCents * item.quantity + (item.shippingCents || 0), currency)}
+              {formatCurrency(item.unitPriceCents * item.quantity, currency)}
             </p>
             {item.shippingCents && item.shippingCents > 0 && (
               <div className="flex items-center gap-2 text-muted-foreground">

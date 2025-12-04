@@ -24,7 +24,7 @@ export function getMediaUrl(mediaPath?: string, fullForm: boolean = false): stri
 }
 
 export function formatCurrency(price: number, currency: string = "USD") {
-  return new Intl.NumberFormat("en-UK", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency,
     currencyDisplay: "narrowSymbol",
