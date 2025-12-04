@@ -37,7 +37,9 @@ export const optionSchema = z.object({
 // ---- NEW: VARIANTS ----
 export const productVariantSchema = z.object({
   id: idSchema,
-  price: z.number().gte(0, "Price must be >= 0").optional().nullable(),
+  price: z.number().min(0, "Price must be >= 0").optional().nullable(),
+  compareAtPrice: z.number().min(0, "Compare at price must be >= 0").optional().nullable(),
+  sellingPrice: z.number().min(0, "Suggested price must be >= 0").optional().nullable(),
   options: z.record(idSchema, idSchema), // optionId -> valueId
 });
 

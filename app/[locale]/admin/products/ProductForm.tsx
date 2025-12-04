@@ -2,23 +2,22 @@
 
 import BasicInformation from "@/app/[locale]/admin/products/BasicInformation";
 import MediaUpload from "@/app/[locale]/admin/products/MediaUpload";
-import ProductContentForm from "@/app/[locale]/admin/products/ProductContentForm";
+import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
 import PricingSection from "@/app/[locale]/admin/products/PricingSection";
-import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
+import ProductContentForm from "@/app/[locale]/admin/products/ProductContentForm";
 import ProductOptions from "@/app/[locale]/admin/products/ProductOptions";
+import ProductSuppliers from "@/app/[locale]/admin/products/ProductSuppliers";
 import ProductVariants from "@/app/[locale]/admin/products/ProductVariants";
 import ShippingZones from "@/app/[locale]/admin/products/ShippingZones";
-import PlanSelector from "@/app/[locale]/admin/products/PlanSelector";
 import { ProductFormData, productFormSchema } from "@/app/[locale]/admin/products/types";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FloatingSaveBar from "@/components/FloatingSaveBar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { Marketplace, Plan, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosProgressEvent } from "axios";
-import { ArrowLeft, Globe, ImageIcon, Save, Trash2, Package } from "lucide-react";
+import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -194,11 +193,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           productData.media = data.media.map(({ file, posterFile, ...rest }) => rest);
         }
 
-        // -----------------------------------------------------
-        // -----------------------------------------------------
-        // -------------------- Disabled for now, problem with synchronizing with shopify --------------------
-        // -----------------------------------------------------
-        // -----------------------------------------------------
         // Handle options and variants together (they're tightly coupled)
         if (dirtyFields.options || dirtyFields.variants) {
           productData.options = data.options;

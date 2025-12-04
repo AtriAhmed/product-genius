@@ -23,8 +23,14 @@ export default function ProductVariants({}: ProductVariantsPreviewProps) {
   const variants = watch("variants") || [];
   const options = watch("options") || [];
 
-  function onVariantPriceChange(variantId: string | number, price: number | undefined) {
-    const updatedVariants = variants.map((variant) => (variant.id === variantId ? { ...variant, price } : variant));
+  function onVariantFieldChange(
+    variantId: string | number,
+    field: "price" | "compareAtPrice" | "sellingPrice",
+    value: number | undefined
+  ) {
+    const updatedVariants = variants.map((variant) =>
+      variant.id === variantId ? { ...variant, [field]: value } : variant
+    );
     setValue("variants", updatedVariants, { shouldDirty: true });
   }
 
@@ -92,25 +98,69 @@ export default function ProductVariants({}: ProductVariantsPreviewProps) {
                   </div>
                 </div>
 
-                {/* Price Input */}
-                <div className="flex items-center gap-1">
-                  <DollarSign className="w-4 h-4 text-muted-foreground" />
-                  <div className="space-x-3 space-y-1">
-                    <Label htmlFor={`variant-price-${variant.id}`} className="text-xs">
-                      {t("price")}
-                    </Label>
-                    <Input
-                      id={`variant-price-${variant.id}`}
-                      type="number"
-                      step="0.5"
-                      value={variant.price ?? ""}
-                      onChange={(e) => {
-                        const price = e.target.value ? parseFloat(e.target.value) : undefined;
-                        onVariantPriceChange(variant.id, price);
-                      }}
-                      className="w-24 text-sm"
-                      placeholder="0.00"
-                    />
+                {/* Price Inputs */}
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <div className="space-x-1">
+                      <Label htmlFor={`variant-price-${variant.id}`} className="text-xs">
+                        {t("price")}
+                      </Label>
+                      <Input
+                        id={`variant-price-${variant.id}`}
+                        type="number"
+                        step="0.01"
+                        value={variant.price ?? ""}
+                        onChange={(e) => {
+                          const price = e.target.value ? parseFloat(e.target.value) : undefined;
+                          onVariantFieldChange(variant.id, "price", price);
+                        }}
+                        className="w-24 text-sm"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <div className="space-x-1">
+                      <Label htmlFor={`variant-compare-price-${variant.id}`} className="text-xs">
+                        {t("compare at price")}
+                      </Label>
+                      <Input
+                        id={`variant-compare-price-${variant.id}`}
+                        type="number"
+                        step="0.01"
+                        value={variant.compareAtPrice ?? ""}
+                        onChange={(e) => {
+                          const compareAtPrice = e.target.value ? parseFloat(e.target.value) : undefined;
+                          onVariantFieldChange(variant.id, "compareAtPrice", compareAtPrice);
+                        }}
+                        className="w-24 text-sm"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <div className="space-x-1">
+                      <Label htmlFor={`variant-selling-price-${variant.id}`} className="text-xs">
+                        {t("suggested price")}
+                      </Label>
+                      <Input
+                        id={`variant-selling-price-${variant.id}`}
+                        type="number"
+                        step="0.01"
+                        value={variant.sellingPrice ?? ""}
+                        onChange={(e) => {
+                          const sellingPrice = e.target.value ? parseFloat(e.target.value) : undefined;
+                          onVariantFieldChange(variant.id, "sellingPrice", sellingPrice);
+                        }}
+                        className="w-24 text-sm"
+                        placeholder="0.00"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
