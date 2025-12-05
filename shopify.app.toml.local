@@ -1,14 +1,9 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-# ----------------- Local -----------------
 client_id = "00a9156083941bc91783d546e3ced7b8"
-# ----------------- Server -----------------
-# client_id = "a4a95529b41050107124d7faf0f5420d"
-name = "winwaterfall"
-# ----------------- Local -----------------
-application_url = "https://gn2ngl9j-3000.uks1.devtunnels.ms"
-# ----------------- Server -----------------
-# application_url = "https://winwaterfall.com"
+name = "product-genius"
+# application_url = "https://gn2ngl9j-3000.uks1.devtunnels.ms"
+application_url = "https://winwaterfall.com"
 embedded = true
 
 [webhooks]
