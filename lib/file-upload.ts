@@ -3,10 +3,11 @@ import { existsSync } from "fs";
 import { mkdir, rename, rmdir, unlink, writeFile } from "fs/promises";
 import path, { join } from "path";
 import sharp from "sharp";
+import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "@/lib/r2";
 
 export interface UploadOptions {
   directory: string;
-  subdirectory?: string;
   generateUniqueFilename?: boolean;
   allowedExtensions?: string[];
   maxFileSize?: number; // in bytes
@@ -15,6 +16,14 @@ export interface UploadOptions {
 
 export interface UploadResult {
   url: string;
+  filename: string;
+  originalName: string;
+  size: number;
+  type: string;
+}
+
+export interface S3UploadResult {
+  key: string;
   filename: string;
   originalName: string;
   size: number;
@@ -168,7 +177,7 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
   const filename = options.generateUniqueFilename ? generateUniqueFilename(finalFilename) : finalFilename;
 
   // Build directory path
-  const uploadDir = join(process.cwd(), options.directory, ...(options.subdirectory ? [options.subdirectory] : []));
+  const uploadDir = join(process.cwd(), options.directory);
 
   console.log("-------------------- uploadDir --------------------");
   console.log(uploadDir);
@@ -181,7 +190,7 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
   await writeFile(filepath, buffer);
 
   // Generate public URL
-  const publicUrl = `/${options.directory}${options.subdirectory ? `/${options.subdirectory}` : ""}/${filename}`;
+  const publicUrl = `/${options.directory}/${filename}`;
 
   return {
     url: publicUrl,
@@ -198,17 +207,102 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
 export async function uploadMultipleFiles(files: File[], options: UploadOptions): Promise<UploadResult[]> {
   const results: UploadResult[] = [];
 
-  for (const file of files) {
+  const uploadResults = await Promise.all(
+    files.map(async (file) => {
+      try {
+        const result = await uploadFile(file, options);
+        return result;
+      } catch (error) {
+        console.error(`Failed to upload file ${file.name}:`, error);
+        throw new Error(
+          `Failed to upload file ${file.name}: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
+    })
+  );
+  results.push(...uploadResults);
+
+  return results;
+}
+
+/**
+ * Uploads a single file to Cloudflare R2
+ */
+export async function uploadFileToS3(file: File, options: UploadOptions): Promise<S3UploadResult> {
+  // Validate file size
+  if (options.maxFileSize && file.size > options.maxFileSize) {
+    throw new Error(`File size exceeds maximum limit of ${options.maxFileSize} bytes`);
+  }
+
+  // Validate file extension
+  if (options.allowedExtensions && !validateFileExtension(file.name, options.allowedExtensions)) {
+    throw new Error(`File type not allowed. Allowed extensions: ${options.allowedExtensions.join(", ")}`);
+  }
+
+  // Convert file to buffer
+  const bytes = await file.arrayBuffer();
+  let buffer: Buffer = Buffer.from(bytes);
+  let finalFilename = file.name;
+  let finalMimeType = file.type;
+
+  // Compress image if compression options are provided and it's an image file
+  if (options?.imageCompression !== false && isImageFile(file)) {
     try {
-      const result = await uploadFile(file, options);
-      results.push(result);
+      const compressed = await compressImage(buffer, file.name, options?.imageCompression);
+      buffer = Buffer.from(compressed.buffer);
+      finalFilename = compressed.filename;
+      finalMimeType = compressed.mimeType;
     } catch (error) {
-      console.error(`Failed to upload file ${file.name}:`, error);
-      throw new Error(
-        `Failed to upload file ${file.name}: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      console.warn(`Failed to compress image ${file.name}:`, error);
+      // Continue with original file if compression fails
     }
   }
+
+  // Generate filename (use compressed filename if available)
+  const filename = options.generateUniqueFilename ? generateUniqueFilename(finalFilename) : finalFilename;
+
+  // Build S3 key path
+  const key = `${options.directory}/${filename}`;
+
+  // Upload to R2
+  const command = new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME!,
+    Key: key,
+    Body: buffer,
+    ContentType: finalMimeType,
+  });
+
+  await s3Client.send(command);
+
+  return {
+    key,
+    filename,
+    originalName: file.name,
+    size: buffer.length,
+    type: finalMimeType,
+  };
+}
+
+/**
+ * Uploads multiple files to Cloudflare R2
+ */
+export async function uploadMultipleFilesToS3(files: File[], options: UploadOptions): Promise<S3UploadResult[]> {
+  const results: S3UploadResult[] = [];
+
+  const uploadResults = await Promise.all(
+    files.map(async (file) => {
+      try {
+        const result = await uploadFileToS3(file, options);
+        return result;
+      } catch (error) {
+        console.error(`Failed to upload file ${file.name} to S3:`, error);
+        throw new Error(
+          `Failed to upload file ${file.name} to S3: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
+    })
+  );
+  results.push(...uploadResults);
 
   return results;
 }
@@ -269,6 +363,31 @@ export async function removeEmptyDirectories(directoryPaths: string[]): Promise<
       // This is expected behavior for cleanup, so we don't log errors
     }
   }
+}
+
+/**
+ * Deletes a file from Cloudflare R2
+ */
+export async function deleteFileFromS3(key: string): Promise<void> {
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    });
+
+    await s3Client.send(command);
+  } catch (error) {
+    console.error(`Failed to delete file from S3 ${key}:`, error);
+    // Don't throw error for file deletion failures in production
+    // as the file might already be deleted or not exist
+  }
+}
+
+/**
+ * Deletes multiple files from Cloudflare R2
+ */
+export async function deleteMultipleFilesFromS3(keys: string[]): Promise<void> {
+  await Promise.all(keys.map(deleteFileFromS3));
 }
 
 /**

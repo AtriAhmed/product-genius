@@ -1,7 +1,8 @@
 import { authOptions } from "@/lib/auth";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
-import { deleteMultipleFiles, getMediaType, uploadFile } from "@/lib/file-upload";
+import { deleteMultipleFilesFromS3, getMediaType, uploadFileToS3 } from "@/lib/file-upload";
 import { prisma } from "@/lib/prisma";
+import { generateSignedUrlsForProduct, generateSignedUrlsForProducts } from "@/lib/products";
 import { syncProductToShopify } from "@/lib/syncShopifyProduct";
 // Removed variant-generator import as we now use proper table relationships
 import { MARKETPLACES } from "@/types";
@@ -17,7 +18,9 @@ const translationSchema = z.object({
 });
 
 const mediaSchema = z.object({
-  url: z.string().min(1),
+  url: z.string().nullable().optional(),
+  key: z.string().nullable().optional(),
+  posterKey: z.string().nullable().optional(),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0),
   poster: z.string().nullable().optional(),
@@ -167,7 +170,10 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/products
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json(product);
+    // Generate signed URLs for media with keys
+    const productWithSignedUrls = await generateSignedUrlsForProduct(product);
+
+    return NextResponse.json(productWithSignedUrls);
   } catch (error) {
     console.error("Product fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
@@ -301,16 +307,15 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               const allowedVideoExtensions = ["mp4", "webm", "ogg"];
               const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
-              const uploadResult = await uploadFile(file, {
-                directory: "uploads/products",
-                subdirectory: productId.toString(),
+              const uploadResult = await uploadFileToS3(file, {
+                directory: `products/${productId}`,
                 generateUniqueFilename: true,
                 allowedExtensions,
               });
 
-              // Update the URL in the media map
+              // Update the key in the media map
               const mediaObject = mediaMap.get(index)!;
-              mediaObject.url = uploadResult.url;
+              mediaObject.key = uploadResult.key;
               mediaObject.type = getMediaType(file);
             }
           } else if (key.startsWith("poster_") && value instanceof File) {
@@ -333,16 +338,15 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
                 "avif",
               ];
 
-              const posterUploadResult = await uploadFile(file, {
-                directory: "uploads/products",
-                subdirectory: `${productId}/posters`,
+              const posterUploadResult = await uploadFileToS3(file, {
+                directory: `products/${productId}/posters`,
                 generateUniqueFilename: true,
                 allowedExtensions: allowedImageExtensions,
               });
 
-              // Update the poster in the media map
+              // Update the posterKey in the media map
               const mediaObject = mediaMap.get(index)!;
-              mediaObject.poster = posterUploadResult.url;
+              mediaObject.posterKey = posterUploadResult.key;
             }
           }
         })
@@ -351,28 +355,26 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       // Convert map back to array and sort by sortOrder
       allMediaRecords = Array.from(mediaMap.values()).sort((a, b) => a.sortOrder - b.sortOrder);
 
-      // Identify files to delete (local files that are no longer in the new media list)
-      const newMediaUrls = new Set(allMediaRecords.map((m) => m.url));
-      const newPosterUrls = new Set(allMediaRecords.map((m) => m.poster).filter(Boolean));
+      // Identify files to delete (S3 keys that are no longer in the new media list)
+      const newMediaKeys = new Set(allMediaRecords.map((m) => m.key).filter(Boolean));
+      const newPosterKeys = new Set(allMediaRecords.map((m) => m.posterKey).filter(Boolean));
 
       filesToDelete = [
         // Delete media files that are no longer in the list
-        ...existingProduct.media
-          .filter((m) => m.url.startsWith("/uploads/") && !newMediaUrls.has(m.url))
-          .map((m) => m.url),
+        ...existingProduct.media.filter((m) => m.key && !newMediaKeys.has(m.key)).map((m) => m.key),
         // Delete poster files that are no longer in the list
-        ...existingProduct.media
-          .filter((m) => m.poster && m.poster.startsWith("/uploads/") && !newPosterUrls.has(m.poster))
-          .map((m) => m.poster!),
-      ];
+        ...existingProduct.media.filter((m) => m.posterKey && !newPosterKeys.has(m.posterKey)).map((m) => m.posterKey),
+      ].filter((m) => m !== null);
 
       updateData.media = {
         deleteMany: {}, // Remove existing media
         create: allMediaRecords.map((item, index) => ({
-          url: item.url,
+          url: item.url || null,
+          key: item.key || null,
+          posterKey: item.posterKey || null,
           type: item.type,
           sortOrder: index,
-          provider: item.url.startsWith("/uploads/") ? "local" : "external",
+          provider: item.key ? "s3" : "external",
           poster: item.poster || null,
         })),
       };
@@ -867,10 +869,10 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       });
     }
 
-    // Clean up deleted files (don't await to avoid slowing down the response)
+    // Clean up deleted files from S3 (don't await to avoid slowing down the response)
     if (filesToDelete.length > 0) {
-      deleteMultipleFiles(filesToDelete).catch((error) => {
-        console.error("Error cleaning up old media files:", error);
+      deleteMultipleFilesFromS3(filesToDelete).catch((error) => {
+        console.error("Error cleaning up old media files from S3:", error);
       });
     }
 
@@ -933,7 +935,7 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
       where: { id: productId },
       include: {
         media: {
-          select: { url: true, poster: true },
+          select: { url: true, poster: true, key: true, posterKey: true },
         },
       },
     });
@@ -942,12 +944,15 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Get local files to delete (both media and poster files)
-    const localFiles = [
-      // Media files
-      ...existingProduct.media.filter((m) => m.url.startsWith("/uploads/")).map((m) => m.url),
-      // Poster files
-      ...existingProduct.media.filter((m) => m.poster && m.poster.startsWith("/uploads/")).map((m) => m.poster!),
+    // Get S3 keys to delete (both media and poster keys)
+    const s3Keys = [
+      // Media keys
+      ...existingProduct.media
+        .filter((m) => m.key)
+        .map((m) => m.key)
+        .filter((m) => m !== null),
+      // Poster keys
+      ...existingProduct.media.filter((m) => m.posterKey).map((m) => m.posterKey!),
     ];
 
     // Delete the product (cascade will handle related records)
@@ -955,10 +960,10 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
       where: { id: productId },
     });
 
-    // Clean up associated files (don't await to avoid slowing down the response)
-    if (localFiles.length > 0) {
-      deleteMultipleFiles(localFiles).catch((error) => {
-        console.error("Error cleaning up product files:", error);
+    // Clean up associated files from S3 (don't await to avoid slowing down the response)
+    if (s3Keys.length > 0) {
+      deleteMultipleFilesFromS3(s3Keys).catch((error) => {
+        console.error("Error cleaning up product files from S3:", error);
       });
     }
 

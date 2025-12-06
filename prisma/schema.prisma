@@ -443,16 +443,20 @@ model ProductTranslation {
 }
 
 model Media {
-  id        Int       @id @default(autoincrement())
-  product   Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId Int?      @map("product_id")
-  url       String
-  poster    String?
-  provider  String?
-  type      MediaType
-  alt       String?
-  sortOrder Int       @default(0) @map("sort_order")
-  createdAt DateTime  @default(now()) @map("created_at")
+  id         Int       @id @default(autoincrement())
+  product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int?      @map("product_id")
+  url        String?
+  key        String?
+  poster     String?
+  posterKey  String?   @map("poster_key")
+  preview    String?
+  previewKey String?   @map("preview_key")
+  provider   String?
+  type       MediaType
+  alt        String?
+  sortOrder  Int       @default(0) @map("sort_order")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   @@map("media")
 }

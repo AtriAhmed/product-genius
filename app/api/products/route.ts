@@ -1,5 +1,6 @@
-import { deleteMultipleFiles, getMediaType, uploadFile } from "@/lib/file-upload";
+import { deleteMultipleFilesFromS3, getMediaType, uploadFileToS3 } from "@/lib/file-upload";
 import { prisma } from "@/lib/prisma";
+import { generateSignedUrlsForProducts } from "@/lib/products";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 // Removed variant-generator import as we now use proper table relationships
@@ -9,7 +10,9 @@ import { getUserSubscriptionInfo } from "@/lib/subscriptionInfoUtils";
 
 // Validation schemas (unchanged media/translation/supplier/productOption)
 const mediaSchema = z.object({
-  url: z.string().min(1),
+  url: z.string().optional(),
+  key: z.string().optional(),
+  posterKey: z.string().optional(),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0).default(0),
   provider: z.string().optional(),
@@ -90,14 +93,14 @@ async function performFileCleanup(uploadedFiles: string[] = []) {
     return; // Nothing to cleanup
   }
 
-  console.log("Performing file cleanup for failed product creation...");
+  console.log("Performing S3 file cleanup for failed product creation...");
 
   try {
-    // Use the helper function to delete all uploaded files at once
-    await deleteMultipleFiles(uploadedFiles);
-    console.log(`Deleted ${uploadedFiles.length} uploaded files`);
+    // Use the helper function to delete all uploaded files from S3
+    await deleteMultipleFilesFromS3(uploadedFiles);
+    console.log(`Deleted ${uploadedFiles.length} uploaded files from S3`);
   } catch (cleanupError) {
-    console.error("Error during file cleanup:", cleanupError);
+    console.error("Error during S3 file cleanup:", cleanupError);
     // Don't throw here to avoid masking the original error
   }
 }
@@ -184,18 +187,17 @@ export async function POST(request: NextRequest) {
 
             const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
-            const uploadResult = await uploadFile(file, {
-              directory: "uploads/products",
-              subdirectory: createdProduct.id.toString(),
+            const uploadResult = await uploadFileToS3(file, {
+              directory: `products/${createdProduct.id}`,
               generateUniqueFilename: true,
               allowedExtensions,
             });
 
             // Track uploaded files for cleanup
-            uploadedFiles.push(uploadResult.url);
+            uploadedFiles.push(uploadResult.key);
 
             const mediaObject = mediaMap.get(index)!;
-            mediaObject.url = uploadResult.url;
+            mediaObject.key = uploadResult.key;
             mediaObject.type = getMediaType(file);
           }
         } else if (key.startsWith("poster_") && value instanceof File) {
@@ -217,18 +219,17 @@ export async function POST(request: NextRequest) {
               "avif",
             ];
 
-            const posterUploadResult = await uploadFile(file, {
-              directory: "uploads/products",
-              subdirectory: `${createdProduct.id}/posters`,
+            const posterUploadResult = await uploadFileToS3(file, {
+              directory: `products/${createdProduct.id}/posters`,
               generateUniqueFilename: true,
               allowedExtensions: allowedImageExtensions,
             });
 
             // Track uploaded files for cleanup
-            uploadedFiles.push(posterUploadResult.url);
+            uploadedFiles.push(posterUploadResult.key);
 
             const mediaObject = mediaMap.get(index)!;
-            mediaObject.poster = posterUploadResult.url;
+            mediaObject.posterKey = posterUploadResult.key;
           }
         }
       }
@@ -236,10 +237,12 @@ export async function POST(request: NextRequest) {
       // Create media records
       const allMediaRecords = Array.from(mediaMap.values()).map((media) => ({
         productId: createdProduct.id,
-        url: media.url,
+        url: media.url || null,
+        key: media.key || null,
+        posterKey: media.posterKey || null,
         type: media.type,
         sortOrder: media.sortOrder,
-        provider: media.url.startsWith("/uploads/") ? "local" : media.provider || "external",
+        provider: media.key ? "s3" : media.provider || "external",
         poster: media.poster || null,
       }));
 
@@ -674,8 +677,11 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where }),
     ]);
 
+    // Generate signed URLs for media with keys
+    const productsWithSignedUrls = await generateSignedUrlsForProducts(products);
+
     return NextResponse.json({
-      data: products,
+      data: productsWithSignedUrls,
       total,
       page: query.page,
       limit: query.limit,
