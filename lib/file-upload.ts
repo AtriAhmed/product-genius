@@ -367,7 +367,7 @@ export async function uploadFileToS3(file: File, options: UploadOptions): Promis
     const previewFilenameFinal = options.generateUniqueFilename
       ? generateUniqueFilename(previewFilename)
       : previewFilename;
-    const previewKey = `${options.directory}/${previewFilenameFinal}`;
+    const previewKey = `${options.directory}/previews/${previewFilenameFinal}`;
 
     const previewCommand = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,

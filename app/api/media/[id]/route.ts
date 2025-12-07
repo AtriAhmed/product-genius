@@ -5,10 +5,7 @@ import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
 
-export async function GET(
-  request: NextRequest,
-  ctx: RouteContext<"/api/media/[id]">
-) {
+export async function GET(request: NextRequest, ctx: RouteContext<"/api/media/[id]">) {
   const params = await ctx.params;
   try {
     // Check authentication for admin routes
@@ -32,6 +29,11 @@ export async function GET(
 
     if (!media) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
+    }
+
+    // Check if URL exists
+    if (!media.url) {
+      return NextResponse.json({ error: "Media URL not found" }, { status: 404 });
     }
 
     // If it's an external URL (starts with http/https), redirect to it
@@ -101,16 +103,10 @@ export async function GET(
       });
     } catch (fileError) {
       console.error("Error reading file:", fileError);
-      return NextResponse.json(
-        { error: "Error reading file" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Error reading file" }, { status: 500 });
     }
   } catch (error) {
     console.error("Media serving error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
