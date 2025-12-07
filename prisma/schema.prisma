@@ -446,11 +446,11 @@ model Media {
   id         Int       @id @default(autoincrement())
   product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId  Int?      @map("product_id")
-  url        String?
+  url        String?   @db.Text
   key        String?
-  poster     String?
+  poster     String?   @db.Text
   posterKey  String?   @map("poster_key")
-  preview    String?
+  preview    String?   @db.Text
   previewKey String?   @map("preview_key")
   provider   String?
   type       MediaType
