@@ -20,10 +20,12 @@ const translationSchema = z.object({
 const mediaSchema = z.object({
   url: z.string().nullable().optional(),
   key: z.string().nullable().optional(),
+  poster: z.string().nullable().optional(),
   posterKey: z.string().nullable().optional(),
+  preview: z.string().nullable().optional(),
+  previewKey: z.string().nullable().optional(),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0),
-  poster: z.string().nullable().optional(),
 });
 export const supplierSchema = z.object({
   tempId: z.string().optional(),
@@ -304,7 +306,24 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
                 "ico",
                 "avif",
               ];
-              const allowedVideoExtensions = ["mp4", "webm", "ogg"];
+              const allowedVideoExtensions = [
+                "mp4",
+                "webm",
+                "ogg",
+                "avi",
+                "mov",
+                "wmv",
+                "flv",
+                "mkv",
+                "m4v",
+                "3gp",
+                "3g2",
+                "asf",
+                "vob",
+                "ts",
+                "mts",
+                "m2ts",
+              ];
               const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
               const uploadResult = await uploadFileToS3(file, {
@@ -317,6 +336,10 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               const mediaObject = mediaMap.get(index)!;
               mediaObject.key = uploadResult.key;
               mediaObject.type = getMediaType(file);
+              // Save preview key if available (for video previews)
+              if (uploadResult.preview?.key) {
+                mediaObject.previewKey = uploadResult.preview.key;
+              }
             }
           } else if (key.startsWith("poster_") && value instanceof File) {
             const file = value as File;
@@ -358,12 +381,17 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
       // Identify files to delete (S3 keys that are no longer in the new media list)
       const newMediaKeys = new Set(allMediaRecords.map((m) => m.key).filter(Boolean));
       const newPosterKeys = new Set(allMediaRecords.map((m) => m.posterKey).filter(Boolean));
+      const newPreviewKeys = new Set(allMediaRecords.map((m) => m.previewKey).filter(Boolean));
 
       filesToDelete = [
         // Delete media files that are no longer in the list
         ...existingProduct.media.filter((m) => m.key && !newMediaKeys.has(m.key)).map((m) => m.key),
         // Delete poster files that are no longer in the list
         ...existingProduct.media.filter((m) => m.posterKey && !newPosterKeys.has(m.posterKey)).map((m) => m.posterKey),
+        // Delete preview files that are no longer in the list
+        ...existingProduct.media
+          .filter((m) => m.previewKey && !newPreviewKeys.has(m.previewKey))
+          .map((m) => m.previewKey),
       ].filter((m) => m !== null);
 
       updateData.media = {
@@ -371,11 +399,13 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
         create: allMediaRecords.map((item, index) => ({
           url: item.url || null,
           key: item.key || null,
+          poster: item.poster || null,
           posterKey: item.posterKey || null,
+          preview: item.preview || null,
+          previewKey: item.previewKey || null,
           type: item.type,
           sortOrder: index,
           provider: item.key ? "s3" : "external",
-          poster: item.poster || null,
         })),
       };
     }
@@ -935,7 +965,7 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
       where: { id: productId },
       include: {
         media: {
-          select: { url: true, poster: true, key: true, posterKey: true },
+          select: { url: true, poster: true, key: true, posterKey: true, previewKey: true },
         },
       },
     });
@@ -944,7 +974,7 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Get S3 keys to delete (both media and poster keys)
+    // Get S3 keys to delete (media, poster, and preview keys)
     const s3Keys = [
       // Media keys
       ...existingProduct.media
@@ -953,6 +983,8 @@ export async function DELETE(request: NextRequest, ctx: RouteContext<"/api/produ
         .filter((m) => m !== null),
       // Poster keys
       ...existingProduct.media.filter((m) => m.posterKey).map((m) => m.posterKey!),
+      // Preview keys
+      ...existingProduct.media.filter((m) => m.previewKey).map((m) => m.previewKey!),
     ];
 
     // Delete the product (cascade will handle related records)

@@ -3,7 +3,14 @@ import { generateSignedUrl } from "@/lib/r2";
 
 export async function generateSignedUrlsForProduct<
   T extends {
-    media?: Array<{ key?: string | null; posterKey?: string | null; url?: string | null; poster?: string | null }>;
+    media?: Array<{
+      key?: string | null;
+      posterKey?: string | null;
+      url?: string | null;
+      poster?: string | null;
+      previewKey?: string | null;
+      preview?: string | null;
+    }>;
   }
 >(product: T): Promise<T> {
   if (!product.media || product.media.length === 0) {
@@ -29,6 +36,15 @@ export async function generateSignedUrlsForProduct<
           updatedMedia.poster = await generateSignedUrl(media.posterKey);
         } catch (error) {
           console.error(`Failed to generate signed URL for poster key ${media.posterKey}:`, error);
+        }
+      }
+
+      // Generate signed URL for preview key
+      if (media.previewKey) {
+        try {
+          updatedMedia.preview = await generateSignedUrl(media.previewKey);
+        } catch (error) {
+          console.error(`Failed to generate signed URL for preview key ${media.previewKey}:`, error);
         }
       }
 

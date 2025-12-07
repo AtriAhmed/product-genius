@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         hostname: "www.molinel.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "winwaterfall.68100c37874bdd738b318e093e6a8cd2.r2.cloudflarestorage.com",
+        pathname: "/**",
+      },
     ],
     // If you prefer the simpler form, you could use:
     // domains: ["www.molinel.com"],

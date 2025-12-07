@@ -92,7 +92,7 @@ function RecommendedProductCard({ product }: { product: Product }) {
               >
                 <video
                   ref={videoRef}
-                  src={getMediaUrl(mainMedia.url)}
+                  src={getMediaUrl(mainMedia.preview || mainMedia.url)}
                   className="w-full h-full object-cover"
                   muted
                   loop

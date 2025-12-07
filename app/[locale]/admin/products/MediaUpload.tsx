@@ -36,7 +36,24 @@ export interface MediaItem {
 }
 
 const allowedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp", "tiff", "tif", "ico", "avif"];
-const allowedVideoExtensions = ["mp4", "webm", "ogg"];
+const allowedVideoExtensions = [
+  "mp4",
+  "webm",
+  "ogg",
+  "avi",
+  "mov",
+  "wmv",
+  "flv",
+  "mkv",
+  "m4v",
+  "3gp",
+  "3g2",
+  "asf",
+  "vob",
+  "ts",
+  "mts",
+  "m2ts",
+];
 
 interface MediaUploadProps {
   value: MediaItem[];

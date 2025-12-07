@@ -3,8 +3,10 @@ import { existsSync } from "fs";
 import { mkdir, rename, rmdir, unlink, writeFile } from "fs/promises";
 import path, { join } from "path";
 import sharp from "sharp";
+import { spawn } from "child_process";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "@/lib/r2";
+import { compressVideo } from "@/lib/videos";
 
 export interface UploadOptions {
   directory: string;
@@ -12,6 +14,7 @@ export interface UploadOptions {
   allowedExtensions?: string[];
   maxFileSize?: number; // in bytes
   imageCompression?: false | CompressImageOptions; // true = default compression, object = custom settings, false/undefined = no compression
+  videoCompression?: false | CompressVideoOptions; // false = no compression, object = custom settings, undefined = default compression
 }
 
 export interface UploadResult {
@@ -20,6 +23,11 @@ export interface UploadResult {
   originalName: string;
   size: number;
   type: string;
+  preview?: {
+    url: string;
+    filename: string;
+    size: number;
+  };
 }
 
 export interface S3UploadResult {
@@ -28,12 +36,34 @@ export interface S3UploadResult {
   originalName: string;
   size: number;
   type: string;
+  preview?: {
+    key: string;
+    filename: string;
+    size: number;
+  };
 }
 
 export interface CompressImageOptions {
   width?: number;
   height?: number;
   quality?: number; // 0-100
+}
+
+export interface CompressVideoOptions {
+  bitrate?: string; // e.g., '1000k', '2M'
+  crf?: number; // 0-51, lower = better quality
+  generatePreview?: boolean;
+  previewDuration?: number; // seconds for preview
+  previewQuality?: number; // CRF for preview (higher = lower quality)
+  previewScale?: number; // 0-1, e.g., 0.5 = 50% of original resolution
+}
+
+export interface VideoCompressionResult {
+  compressedBuffer: Buffer;
+  previewBuffer?: Buffer;
+  compressedFilename: string;
+  previewFilename?: string;
+  mimeType: string;
 }
 
 /**
@@ -159,6 +189,8 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
   let buffer: Buffer = Buffer.from(bytes);
   let finalFilename = file.name;
   let finalMimeType = file.type;
+  let previewBuffer: Buffer | undefined;
+  let previewFilename: string | undefined;
 
   // Compress image if compression options are provided and it's an image file
   if (options?.imageCompression !== false && isImageFile(file)) {
@@ -169,6 +201,24 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
       finalMimeType = compressed.mimeType;
     } catch (error) {
       console.warn(`Failed to compress image ${file.name}:`, error);
+      // Continue with original file if compression fails
+    }
+  }
+
+  // Compress video if compression options are provided and it's a video file
+  if (options?.videoCompression !== false && isVideoFile(file)) {
+    try {
+      const compressed = await compressVideo(buffer, file.name, options?.videoCompression);
+      buffer = Buffer.from(compressed.compressedBuffer);
+      finalFilename = compressed.compressedFilename;
+      finalMimeType = compressed.mimeType;
+
+      if (compressed.previewBuffer && compressed.previewFilename) {
+        previewBuffer = Buffer.from(compressed.previewBuffer);
+        previewFilename = compressed.previewFilename;
+      }
+    } catch (error) {
+      console.warn(`Failed to compress video ${file.name}:`, error);
       // Continue with original file if compression fails
     }
   }
@@ -185,9 +235,25 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
   // Ensure directory exists
   await ensureDirectoryExists(uploadDir);
 
-  // Write file
+  // Write main file
   const filepath = join(uploadDir, filename);
   await writeFile(filepath, buffer);
+
+  // Write preview file if it exists
+  let previewInfo: { url: string; filename: string; size: number } | undefined;
+  if (previewBuffer && previewFilename) {
+    const previewFilenameFinal = options.generateUniqueFilename
+      ? generateUniqueFilename(previewFilename)
+      : previewFilename;
+    const previewFilepath = join(uploadDir, previewFilenameFinal);
+    await writeFile(previewFilepath, previewBuffer);
+
+    previewInfo = {
+      url: `/${options.directory}/${previewFilenameFinal}`,
+      filename: previewFilenameFinal,
+      size: previewBuffer.length,
+    };
+  }
 
   // Generate public URL
   const publicUrl = `/${options.directory}/${filename}`;
@@ -198,6 +264,7 @@ export async function uploadFile(file: File, options: UploadOptions): Promise<Up
     originalName: file.name,
     size: buffer.length,
     type: finalMimeType,
+    preview: previewInfo,
   };
 }
 
@@ -244,6 +311,8 @@ export async function uploadFileToS3(file: File, options: UploadOptions): Promis
   let buffer: Buffer = Buffer.from(bytes);
   let finalFilename = file.name;
   let finalMimeType = file.type;
+  let previewBuffer: Buffer | undefined;
+  let previewFilename: string | undefined;
 
   // Compress image if compression options are provided and it's an image file
   if (options?.imageCompression !== false && isImageFile(file)) {
@@ -258,13 +327,31 @@ export async function uploadFileToS3(file: File, options: UploadOptions): Promis
     }
   }
 
+  // Compress video if compression options are provided and it's a video file
+  if (options?.videoCompression !== false && isVideoFile(file)) {
+    try {
+      const compressed = await compressVideo(buffer, file.name, options?.videoCompression);
+      buffer = Buffer.from(compressed.compressedBuffer);
+      finalFilename = compressed.compressedFilename;
+      finalMimeType = compressed.mimeType;
+
+      if (compressed.previewBuffer && compressed.previewFilename) {
+        previewBuffer = Buffer.from(compressed.previewBuffer);
+        previewFilename = compressed.previewFilename;
+      }
+    } catch (error) {
+      console.warn(`Failed to compress video ${file.name}:`, error);
+      // Continue with original file if compression fails
+    }
+  }
+
   // Generate filename (use compressed filename if available)
   const filename = options.generateUniqueFilename ? generateUniqueFilename(finalFilename) : finalFilename;
 
   // Build S3 key path
   const key = `${options.directory}/${filename}`;
 
-  // Upload to R2
+  // Upload main file to R2
   const command = new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME!,
     Key: key,
@@ -274,12 +361,37 @@ export async function uploadFileToS3(file: File, options: UploadOptions): Promis
 
   await s3Client.send(command);
 
+  // Upload preview file to R2 if it exists
+  let previewInfo: { key: string; filename: string; size: number } | undefined;
+  if (previewBuffer && previewFilename) {
+    const previewFilenameFinal = options.generateUniqueFilename
+      ? generateUniqueFilename(previewFilename)
+      : previewFilename;
+    const previewKey = `${options.directory}/${previewFilenameFinal}`;
+
+    const previewCommand = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: previewKey,
+      Body: previewBuffer,
+      ContentType: "video/mp4",
+    });
+
+    await s3Client.send(previewCommand);
+
+    previewInfo = {
+      key: previewKey,
+      filename: previewFilenameFinal,
+      size: previewBuffer.length,
+    };
+  }
+
   return {
     key,
     filename,
     originalName: file.name,
     size: buffer.length,
     type: finalMimeType,
+    preview: previewInfo,
   };
 }
 

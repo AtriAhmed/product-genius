@@ -11,9 +11,7 @@ export function generateVideoPoster(
 ): Promise<{ posterUrl: string; posterFile: File }>;
 
 // Overload for existing video element
-export function generateVideoPoster(
-  videoSource: HTMLVideoElement
-): Promise<{ posterUrl: string; posterFile: File }>;
+export function generateVideoPoster(videoSource: HTMLVideoElement): Promise<{ posterUrl: string; posterFile: File }>;
 
 export function generateVideoPoster(
   videoSource: File | string | HTMLVideoElement,

@@ -10,13 +10,15 @@ import { getUserSubscriptionInfo } from "@/lib/subscriptionInfoUtils";
 
 // Validation schemas (unchanged media/translation/supplier/productOption)
 const mediaSchema = z.object({
-  url: z.string().optional(),
-  key: z.string().optional(),
-  posterKey: z.string().optional(),
+  url: z.string().nullable().optional(),
+  key: z.string().nullable().optional(),
+  poster: z.string().nullable().optional(),
+  posterKey: z.string().nullable().optional(),
+  preview: z.string().nullable().optional(),
+  previewKey: z.string().nullable().optional(),
   type: z.enum(["IMAGE", "VIDEO"]),
   sortOrder: z.number().int().min(0).default(0),
   provider: z.string().optional(),
-  poster: z.string().nullable().optional(),
 });
 
 const translationSchema = z.object({
@@ -183,7 +185,24 @@ export async function POST(request: NextRequest) {
               "ico",
               "avif",
             ];
-            const allowedVideoExtensions = ["mp4", "webm", "ogg"];
+            const allowedVideoExtensions = [
+              "mp4",
+              "webm",
+              "ogg",
+              "avi",
+              "mov",
+              "wmv",
+              "flv",
+              "mkv",
+              "m4v",
+              "3gp",
+              "3g2",
+              "asf",
+              "vob",
+              "ts",
+              "mts",
+              "m2ts",
+            ];
 
             const allowedExtensions = [...allowedImageExtensions, ...allowedVideoExtensions];
 
@@ -195,10 +214,17 @@ export async function POST(request: NextRequest) {
 
             // Track uploaded files for cleanup
             uploadedFiles.push(uploadResult.key);
+            if (uploadResult.preview?.key) {
+              uploadedFiles.push(uploadResult.preview.key);
+            }
 
             const mediaObject = mediaMap.get(index)!;
             mediaObject.key = uploadResult.key;
             mediaObject.type = getMediaType(file);
+            // Save preview key if available (for video previews)
+            if (uploadResult.preview?.key) {
+              mediaObject.previewKey = uploadResult.preview.key;
+            }
           }
         } else if (key.startsWith("poster_") && value instanceof File) {
           const file = value as File;
@@ -239,11 +265,13 @@ export async function POST(request: NextRequest) {
         productId: createdProduct.id,
         url: media.url || null,
         key: media.key || null,
+        poster: media.poster || null,
         posterKey: media.posterKey || null,
+        preview: media.preview || null,
+        previewKey: media.previewKey || null,
         type: media.type,
         sortOrder: media.sortOrder,
         provider: media.key ? "s3" : media.provider || "external",
-        poster: media.poster || null,
       }));
 
       if (allMediaRecords.length > 0) {
