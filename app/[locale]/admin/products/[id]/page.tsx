@@ -1,11 +1,7 @@
 import ProductForm from "@/app/[locale]/admin/products/ProductForm";
+import { prisma } from "@/lib/prisma";
 import { Product } from "@/types";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { generateSignedUrlsForProduct } from "@/lib/products";
 
 type Props = {
   params: Promise<{ id: string; locale: string }>;
@@ -68,11 +64,7 @@ async function getProduct(id: number): Promise<Product | null> {
       return null;
     }
 
-    // Generate signed URLs for media with keys
-    const productWithSignedUrls = await generateSignedUrlsForProduct(product);
-
-    // Transform the product to match the Product type
-    return productWithSignedUrls as any;
+    return product as any;
   } catch (error) {
     console.error("Failed to fetch product:", error);
     return null;

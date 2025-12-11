@@ -1,6 +1,5 @@
 import { deleteMultipleFilesFromS3, getMediaType, uploadFileToS3 } from "@/lib/file-upload";
 import { prisma } from "@/lib/prisma";
-import { generateSignedUrlsForProducts } from "@/lib/products";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 // Removed variant-generator import as we now use proper table relationships
@@ -220,10 +219,12 @@ export async function POST(request: NextRequest) {
 
             const mediaObject = mediaMap.get(index)!;
             mediaObject.key = uploadResult.key;
+            mediaObject.url = `${process.env.CDN_URL}/${uploadResult.key}`;
             mediaObject.type = getMediaType(file);
             // Save preview key if available (for video previews)
             if (uploadResult.preview?.key) {
               mediaObject.previewKey = uploadResult.preview.key;
+              mediaObject.preview = `${process.env.CDN_URL}/${uploadResult.preview.key}`;
             }
           }
         } else if (key.startsWith("poster_") && value instanceof File) {
@@ -256,6 +257,7 @@ export async function POST(request: NextRequest) {
 
             const mediaObject = mediaMap.get(index)!;
             mediaObject.posterKey = posterUploadResult.key;
+            mediaObject.poster = `${process.env.CDN_URL}/${posterUploadResult.key}`;
           }
         }
       }
@@ -705,11 +707,8 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where }),
     ]);
 
-    // Generate signed URLs for media with keys
-    const productsWithSignedUrls = await generateSignedUrlsForProducts(products);
-
     return NextResponse.json({
-      data: productsWithSignedUrls,
+      data: products,
       total,
       page: query.page,
       limit: query.limit,

@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "winwaterfall.68100c37874bdd738b318e093e6a8cd2.r2.cloudflarestorage.com",
+        hostname: "cdn.bratvaa.com",
         pathname: "/**",
       },
     ],

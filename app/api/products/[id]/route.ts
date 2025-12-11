@@ -2,7 +2,6 @@ import { authOptions } from "@/lib/auth";
 import { isAuthenticatedServerSide } from "@/lib/authUtilsServer";
 import { deleteMultipleFilesFromS3, getMediaType, uploadFileToS3 } from "@/lib/file-upload";
 import { prisma } from "@/lib/prisma";
-import { generateSignedUrlsForProduct, generateSignedUrlsForProducts } from "@/lib/products";
 import { syncProductToShopify } from "@/lib/syncShopifyProduct";
 // Removed variant-generator import as we now use proper table relationships
 import { MARKETPLACES } from "@/types";
@@ -172,10 +171,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/products
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Generate signed URLs for media with keys
-    const productWithSignedUrls = await generateSignedUrlsForProduct(product);
-
-    return NextResponse.json(productWithSignedUrls);
+    return NextResponse.json(product);
   } catch (error) {
     console.error("Product fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
