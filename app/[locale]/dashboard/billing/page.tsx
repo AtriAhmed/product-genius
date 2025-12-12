@@ -6,12 +6,18 @@ import { useTranslations } from "next-intl";
 import CurrentSubscription from "@/app/[locale]/dashboard/billing/CurrentSubscription";
 import SavedCards from "@/app/[locale]/dashboard/billing/SavedCards";
 import PlansList from "@/app/[locale]/dashboard/billing/PlansList";
+import { useRef } from "react";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function BillingPage() {
   const t = useTranslations("billing");
+
+  const plansListRef = useRef<HTMLDivElement | null>(null);
+  function scrollToPlansList() {
+    plansListRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
 
   return (
     <Elements stripe={stripePromise}>
@@ -24,13 +30,15 @@ export default function BillingPage() {
           </div>
 
           {/* Current Subscription Section */}
-          <CurrentSubscription />
+          <CurrentSubscription scrollToPlansList={scrollToPlansList} />
 
           {/* Saved Cards Section */}
           <SavedCards />
 
           {/* Available Plans Section */}
-          <PlansList />
+          <div ref={plansListRef}>
+            <PlansList />
+          </div>
         </div>
       </div>
     </Elements>

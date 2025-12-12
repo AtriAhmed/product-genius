@@ -70,11 +70,7 @@ export const authOptions: NextAuthOptions = {
 
         if (dbUser) {
           if (!dbUser.stripeCustomerId) {
-            await createCustomer(
-              dbUser.id,
-              dbUser.email,
-              dbUser.name || "No Name"
-            );
+            await createCustomer(dbUser.id, dbUser.email, dbUser.name || "No Name");
           }
 
           session.user.id = dbUser.id.toString();

@@ -172,16 +172,16 @@ export default function SubscriptionDialog({ plan, isOpen, onClose, selectedInte
             </div>
           </DialogHeader>
 
-          <div className="z-10 relative flex-1 space-y-4 mt-6">
+          <div className="z-10 relative flex flex-col flex-1 space-y-4 mt-6">
             {/* Error Alert */}
-            {/* {error && (
+            {error && (
               <Alert className="border-2 border-red-300 dark:border-red-700 bg-gradient-to-r dark:bg-gradient-to-r from-red-50 dark:from-red-950/50 to-pink-50 dark:to-pink-950/50 shadow-lg">
                 <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                 <AlertDescription className="font-medium text-red-900 dark:text-red-200 text-sm">
                   {error}
                 </AlertDescription>
               </Alert>
-            )} */}
+            )}
 
             {/* Review Step */}
             {step === "review" && <ReviewStep plan={plan} onNext={handleNext} selectedInterval={selectedInterval} />}

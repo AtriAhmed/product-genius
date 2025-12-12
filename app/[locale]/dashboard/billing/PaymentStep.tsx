@@ -73,7 +73,7 @@ export default function PaymentStep({
   }
 
   return (
-    <div className="flex flex-col space-y-4 h-full">
+    <div className="flex flex-col grow space-y-4">
       <div className="grow h-0">
         <h4 className="flex items-center gap-2 mb-4 font-bold text-primary-900 dark:text-primary-100 text-lg">
           <Shield className="w-5 h-5 text-primary-600 dark:text-primary-400" />

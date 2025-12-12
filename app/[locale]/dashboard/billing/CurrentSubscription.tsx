@@ -18,11 +18,14 @@ async function fetcher(): Promise<User> {
   return response.data;
 }
 
-export default function CurrentSubscription() {
+type Props = {
+  scrollToPlansList: () => void;
+};
+
+export default function CurrentSubscription({ scrollToPlansList }: Props) {
   const t = useTranslations("billing");
   const [showPlanDialog, setShowPlanDialog] = useState(false);
-  const [isCanceling, setIsCanceling] = useState(false);
-  const [isReactivating, setIsReactivating] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
 
   const {
     data: user,
@@ -101,43 +104,32 @@ export default function CurrentSubscription() {
     }
   };
 
-  const handleCancelSubscription = async () => {
+  const handleSubscriptionToggle = async (cancelAtPeriodEnd: boolean) => {
     if (!subscription?.id) return;
 
     try {
-      setIsCanceling(true);
+      setIsToggling(true);
       await axios.patch(`/api/subscriptions/${subscription.id}`, {
-        cancelAtPeriodEnd: true,
+        cancelAtPeriodEnd,
       });
-      toast.success(t("subscription will cancel at period end"));
-      setTimeout(() => {
-        mutate();
-      }, 2000);
-    } catch (error) {
-      console.error("Error canceling subscription:", error);
-      toast.error(t("failed to cancel subscription"));
-    } finally {
-      setIsCanceling(false);
-    }
-  };
 
-  const handleReactivateSubscription = async () => {
-    if (!subscription?.id) return;
+      const successMessage = cancelAtPeriodEnd
+        ? t("subscription will cancel at period end")
+        : t("auto renewal reactivated");
 
-    try {
-      setIsReactivating(true);
-      await axios.patch(`/api/subscriptions/${subscription.id}`, {
-        cancelAtPeriodEnd: false,
-      });
-      toast.success(t("auto renewal reactivated"));
-      setTimeout(() => {
-        mutate();
-      }, 2000);
+      toast.success(successMessage);
+      setTimeout(async () => {
+        await mutate();
+        setIsToggling(false);
+      }, 1500);
     } catch (error) {
-      console.error("Error reactivating subscription:", error);
-      toast.error(t("failed to reactivate subscription"));
+      console.error("Error updating subscription:", error);
+      const errorMessage = cancelAtPeriodEnd
+        ? t("failed to cancel subscription")
+        : t("failed to reactivate subscription");
+      toast.error(errorMessage);
+      setIsToggling(false);
     } finally {
-      setIsReactivating(false);
     }
   };
 
@@ -218,7 +210,7 @@ export default function CurrentSubscription() {
                   {t("choose a plan to enjoy our premium features")}
                 </p>
               </div>
-              <Button size="sm" className="gap-1.5">
+              <Button size="sm" className="gap-1.5" onClick={scrollToPlansList}>
                 <Zap className="w-3.5 h-3.5" />
                 {t("upgrade now")}
               </Button>
@@ -331,11 +323,11 @@ export default function CurrentSubscription() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={handleCancelSubscription}
-                          disabled={isCanceling}
+                          onClick={() => handleSubscriptionToggle(true)}
+                          disabled={isToggling}
                           className="h-7 px-2 py-1 text-xs"
                         >
-                          {isCanceling ? (
+                          {isToggling ? (
                             <div className="flex items-center gap-1.5">
                               <div className="w-3 h-3 border border-gray-300 border-t-transparent rounded-full animate-spin" />
                               <span>{t("canceling")}</span>
@@ -350,11 +342,11 @@ export default function CurrentSubscription() {
                       ) : (
                         <Button
                           size="sm"
-                          onClick={handleReactivateSubscription}
-                          disabled={isReactivating}
+                          onClick={() => handleSubscriptionToggle(false)}
+                          disabled={isToggling}
                           className="h-7 px-2 py-1 hover:border-green-500/50 bg-green-600 hover:bg-green-700 text-xs"
                         >
-                          {isReactivating ? (
+                          {isToggling ? (
                             <div className="flex items-center gap-1.5">
                               <div className="w-3 h-3 border border-gray-300 border-t-transparent rounded-full animate-spin" />
                               <span>{t("reactivating")}</span>
