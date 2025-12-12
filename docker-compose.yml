@@ -1,0 +1,14 @@
+services:
+  next-app:
+    build: .
+    container_name: nextjs-app
+    ports:
+      - "11315:3000"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    restart: always
+    env_file:
+      - .env
