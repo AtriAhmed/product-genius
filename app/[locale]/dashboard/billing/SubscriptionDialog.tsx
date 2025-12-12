@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { mutate } from "swr";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useAppProvider } from "@/contexts/AppProvider";
 
 type Props = {
   plan: Plan | null;
@@ -33,6 +34,7 @@ export default function SubscriptionDialog({ plan, isOpen, onClose, selectedInte
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [loadingCards, setLoadingCards] = useState(false);
+  const { mutateUserSubscriptionInfo } = useAppProvider();
 
   // Reset state when dialog opens/closes
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function SubscriptionDialog({ plan, isOpen, onClose, selectedInte
       setTimeout(() => {
         router.refresh();
         mutate("current-user");
+        mutateUserSubscriptionInfo();
         onClose();
         toast.success(t("subscription created successfully"));
       }, 2000);

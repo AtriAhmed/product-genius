@@ -136,22 +136,59 @@ export default function CurrentSubscription({ scrollToPlansList }: Props) {
   if (isLoading) {
     return (
       <Card className="border-border/50 bg-gradient-to-r from-background to-muted/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <div className="p-1.5 rounded-md bg-primary/10">
-              <CreditCard className="w-4 h-4 text-primary" />
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="w-5 h-5" />
+                {t("current subscription")}
+              </CardTitle>
             </div>
-            {t("current subscription")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-2">
-            <div className="w-32 h-6 rounded bg-muted animate-pulse" />
-            <div className="w-24 h-4 rounded bg-muted animate-pulse" />
+            <div className="w-6 h-6 rounded-full bg-muted animate-pulse" />
           </div>
-          <div className="space-y-1.5">
-            <div className="w-40 h-3 rounded bg-muted animate-pulse" />
-            <div className="w-36 h-3 rounded bg-muted animate-pulse" />
+        </CardHeader>
+        <CardContent className="px-3 pt-0 pb-3">
+          <div className="space-y-3">
+            <div className="gap-3 grid grid-cols-1 md:grid-cols-2">
+              {/* Plan Info Skeleton */}
+              <div className="relative p-3 border border-border/50 rounded-lg bg-background/80 backdrop-blur-sm">
+                <div className="flex flex-col items-center space-y-2 text-center">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="flex justify-center items-center gap-2">
+                      <div className="w-8 h-8 rounded bg-muted animate-pulse" />
+                      <div className="w-20 h-5 rounded bg-muted animate-pulse" />
+                    </div>
+                    <div className="w-16 h-5 rounded-full bg-muted animate-pulse" />
+                  </div>
+                  <div className="flex justify-center items-baseline gap-2">
+                    <div className="w-12 h-8 rounded bg-muted animate-pulse" />
+                    <div className="w-16 h-4 rounded-md bg-muted animate-pulse" />
+                  </div>
+                  <div className="w-32 h-6 rounded-md bg-muted animate-pulse" />
+                </div>
+              </div>
+
+              {/* Subscription Dates Skeleton */}
+              <div className="flex flex-col justify-center space-y-1.5">
+                <div className="flex items-center gap-2 p-1.5 border border-border/30 rounded-md bg-muted/30">
+                  <div className="w-5 h-5 rounded-md bg-muted animate-pulse" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-16 h-3 rounded bg-muted animate-pulse" />
+                    <div className="w-24 h-3 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-1.5 border border-border/30 rounded-md bg-muted/30">
+                  <div className="w-5 h-5 rounded-md bg-muted animate-pulse" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-14 h-3 rounded bg-muted animate-pulse" />
+                    <div className="w-24 h-3 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex gap-1.5 mt-2">
+                  <div className="w-32 h-7 rounded bg-muted animate-pulse" />
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

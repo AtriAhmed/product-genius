@@ -85,21 +85,26 @@ export default function SavedCards() {
     return (
       <Card className="bg-background">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              {t("saved cards")}
-            </CardTitle>
-            <Button disabled>
+          <div className="flex flex-wrap justify-between items-center gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                {t("saved cards")}
+              </CardTitle>
+            </div>
+            <Button className="ms-auto" disabled>
               <Plus className="w-4 h-4 mr-2" />
               {t("add new card")}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="gap-4 sm:gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="flex flex-wrap gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 aspect-[1.6/1] rounded-lg bg-muted animate-pulse" />
+              <div
+                key={i}
+                className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.67rem)] h-48 rounded-lg bg-muted animate-pulse"
+              />
             ))}
           </div>
         </CardContent>
