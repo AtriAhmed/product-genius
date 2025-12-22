@@ -77,11 +77,11 @@
     "tsx": "^4.19.2",
     "use-debounce": "^10.0.6",
     "uuid": "^13.0.0",
-    "zod": "^4.1.8"
+    "zod": "^4.1.8",
+    "@svgr/webpack": "^8.1.0",
+    "@tailwindcss/postcss": "^4"
   },
   "devDependencies": {
-    "@svgr/webpack": "^8.1.0",
-    "@tailwindcss/postcss": "^4",
     "@types/aos": "^3.0.7",
     "@types/bcrypt": "^6.0.0",
     "@types/deep-equal": "^1.0.4",
