@@ -331,10 +331,12 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               // Update the key in the media map
               const mediaObject = mediaMap.get(index)!;
               mediaObject.key = uploadResult.key;
+              mediaObject.url = `${process.env.CDN_URL}/${uploadResult.key}`;
               mediaObject.type = getMediaType(file);
               // Save preview key if available (for video previews)
               if (uploadResult.preview?.key) {
                 mediaObject.previewKey = uploadResult.preview.key;
+                mediaObject.preview = `${process.env.CDN_URL}/${uploadResult.preview.key}`;
               }
             }
           } else if (key.startsWith("poster_") && value instanceof File) {
@@ -366,6 +368,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<"/api/produc
               // Update the posterKey in the media map
               const mediaObject = mediaMap.get(index)!;
               mediaObject.posterKey = posterUploadResult.key;
+              mediaObject.poster = `${process.env.CDN_URL}/${posterUploadResult.key}`;
             }
           }
         })
