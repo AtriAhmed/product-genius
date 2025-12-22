@@ -3,40 +3,47 @@
 # -----------------------------
 FROM node:22.20.0 AS builder
 
+# create reproducible build env
 WORKDIR /app
 
-# Copy package files and install dependencies
+# copy lock/package files
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN npm install
 
-# Copy all project files
+# install — no dev deps in production build
+RUN npm ci --omit=dev
+
+# copy full project
 COPY . .
 
-# Generate Prisma client (important for Linux container)
+# generate prisma client
 RUN npx prisma generate
 
-# Build Next.js
+# next build
 RUN npm run build
+
 
 # -----------------------------
 # 2) Runner
 # -----------------------------
-FROM node:22.20.0 AS runner
-
-WORKDIR /app
+FROM node:22.20.0-slim AS runner
 
 ENV NODE_ENV=production
+ENV PORT=3000
 
-# Copy built files + node_modules
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
+# create non-root user & home
+RUN useradd -m -d /home/appuser appuser
 
-# Persistent uploads folder
-RUN mkdir -p /app/uploads
+WORKDIR /home/appuser/app
+USER appuser
+
+# copy built app contents
+COPY --from=builder --chown=appuser:appuser /app ./
+
+# secure uploads
+RUN mkdir -p /home/appuser/app/uploads \
+    && chmod 700 /home/appuser/app/uploads
 
 EXPOSE 3000
 
+# 🔥 keep your start command intact
 CMD ["npm", "start"]

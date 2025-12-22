@@ -5,10 +5,22 @@ services:
     ports:
       - "11315:3000"
     volumes:
-      - ./uploads:/app/uploads
-    environment:
-      - PORT=3000
-      - NODE_ENV=production
-    restart: always
+      - ./uploads:/home/appuser/app/uploads:rw,noexec,nosuid,nodev
     env_file:
       - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+    restart: unless-stopped
+
+    user: "appuser"
+    read_only: true
+
+    tmpfs:
+      - /tmp
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

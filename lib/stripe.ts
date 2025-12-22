@@ -12,7 +12,7 @@ export async function createCustomer(id: number, email: string, name: string) {
     const customer = await stripe.customers.create({
       email,
       name,
-      test_clock: "clock_1Sa1OZFhBHFFVJcKPZghh8Op",
+      test_clock: "clock_1Sdb1eFhBHFFVJcKL59o7f02",
       metadata: {
         userId: id.toString(),
       },
@@ -29,6 +29,18 @@ export async function createCustomer(id: number, email: string, name: string) {
   } catch {
     return null;
   }
+}
+
+// function for creating a customer if the user has no stripeCustomerId
+export async function ensureCustomerForUser(id: number) {
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    throw new Error("User not found");
+  }
+  if (!user.stripeCustomerId) {
+    return await createCustomer(id, user.email, user.name || "Unknown");
+  }
+  return null;
 }
 
 export async function cancelSubscription(subscriptionId: string) {

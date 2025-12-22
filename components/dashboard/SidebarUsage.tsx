@@ -10,9 +10,6 @@ export default function SidebarUsage() {
   const { currentPlan, userSubscriptionInfo } = useAppProvider();
   const t = useTranslations("sidebar");
 
-  console.log("-------------------- userSubscriptionInfo, currentPlan --------------------");
-  console.log(userSubscriptionInfo, currentPlan);
-
   if (!currentPlan || !userSubscriptionInfo) {
     return <Skeleton className="w-full h-16" />;
   }

@@ -71,7 +71,16 @@ export default function CurrentSubscription({ scrollToPlansList }: Props) {
   };
 
   const getStatusLabel = (status: string) => {
-    return t(status?.toLowerCase() || "");
+    switch (status?.toLowerCase()) {
+      case "active":
+        return t("active");
+      case "trialing":
+        return t("trial");
+      case "past_due":
+        return t("payment required");
+      case "canceled":
+        return t("canceled");
+    }
   };
 
   const getStatusIcon = (status: string) => {

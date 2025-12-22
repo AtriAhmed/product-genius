@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ensureCustomerForUser } from "@/lib/stripe";
 import { Plan, User, UserSubscriptionInfo } from "@/types";
 
 export async function getUserSubscriptionInfo(userId: number) {
@@ -12,6 +13,8 @@ export async function getUserSubscriptionInfo(userId: number) {
       },
     },
   })) as User;
+
+  await ensureCustomerForUser(userId);
 
   const response: UserSubscriptionInfo = {
     hasActiveSubscription: !!user?.currentSubscription,

@@ -50,5 +50,6 @@
   "reactivating": "Reactivating...",
   "auto renewal reactivated": "Auto-renewal reactivated",
   "subscription will cancel at period end": "Subcription will cancel at period end",
-  "upgrade now": "Upgrade Now"
+  "upgrade now": "Upgrade Now",
+  "payment required": "Payment Required"
 }

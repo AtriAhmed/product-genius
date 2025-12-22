@@ -188,6 +188,7 @@ model Invoice {
   periodEnd            DateTime     @map("period_end")
   createdAt            DateTime     @default(now()) @map("created_at")
   Order                Order[]
+  lastEventCreatedAt   DateTime     @default(now()) @map("last_event_created_at")
 
   @@map("invoice")
 }
