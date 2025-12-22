@@ -32,7 +32,6 @@ type ProductFormProps = {
 export default function ProductForm({ product, mode }: ProductFormProps) {
   const router = useRouter();
   const t = useTranslations("products");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -91,8 +90,11 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
     watch,
     setValue,
     reset,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isValid, isDirty, dirtyFields, isSubmitting },
   } = form;
+
+  console.log("-------------------- isDirty, dirtyFields --------------------");
+  console.log(isDirty, dirtyFields);
 
   const options = watch("options");
 
@@ -160,8 +162,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   console.log(product);
 
   const onSubmit = async (data: ProductFormData) => {
-    setIsSubmitting(true);
-
     try {
       // Prepare form data for multipart upload
       const formData = new FormData();
@@ -177,7 +177,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
         productData = {};
 
         // Only include dirty fields
-        productData.price = data.price;
+        productData.price = data.price || null;
         productData.compareAtPrice = data.compareAtPrice || null;
         productData.sellingPrice = data.sellingPrice || null;
         if (dirtyFields.currency) productData.currency = data.currency;
@@ -259,7 +259,6 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
           : t(isEditMode ? "failed to update product" : "failed to create product")
       );
     } finally {
-      setIsSubmitting(false);
       setSaveProgress(0);
     }
   };
@@ -296,7 +295,7 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   };
 
   const data = watch();
-  console.log("-------------------- data --------------------");
+  console.log("-------------------- watched --------------------");
   console.log(data);
 
   return (

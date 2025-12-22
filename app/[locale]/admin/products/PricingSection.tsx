@@ -78,7 +78,7 @@ export default function PricingSection({ register, setValue, errors, currency = 
                 step="0.5"
                 placeholder="0.00"
                 {...register("price", {
-                  setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  setValueAs: (v) => (v === "" || v === null || v == undefined ? null : Number(v)),
                 })}
               />
               <span className="top-1/2 right-3 absolute text-muted-foreground text-sm -translate-y-1/2 transform">
@@ -99,7 +99,7 @@ export default function PricingSection({ register, setValue, errors, currency = 
                 step="0.5"
                 placeholder="0.00"
                 {...register("compareAtPrice", {
-                  setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  setValueAs: (v) => (v === "" || v === null || v == undefined ? null : Number(v)),
                 })}
               />
               <span className="top-1/2 right-3 absolute text-muted-foreground text-sm -translate-y-1/2 transform">
@@ -122,7 +122,7 @@ export default function PricingSection({ register, setValue, errors, currency = 
                 step="0.5"
                 placeholder="0.00"
                 {...register("sellingPrice", {
-                  setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  setValueAs: (v) => (v === "" || v === null || v == undefined ? null : Number(v)),
                 })}
               />
               <span className="top-1/2 right-3 absolute text-muted-foreground text-sm -translate-y-1/2 transform">
