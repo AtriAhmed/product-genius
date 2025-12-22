@@ -3,47 +3,52 @@
 # -----------------------------
 FROM node:22.20.0 AS builder
 
-# create reproducible build env
 WORKDIR /app
 
-# copy lock/package files
+# Copy package files
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
 
-# install — no dev deps in production build
-RUN npm ci --omit=dev
+# Install all dependencies (dev + prod) for build
+RUN npm install
 
-# copy full project
+# Copy application source
 COPY . .
 
-# generate prisma client
+# Generate Prisma client
 RUN npx prisma generate
 
-# next build
+# Build Next.js app
 RUN npm run build
 
 
 # -----------------------------
 # 2) Runner
 # -----------------------------
-FROM node:22.20.0-slim AS runner
+FROM node:22.20.0 AS runner
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# create non-root user & home
-RUN useradd -m -d /home/appuser appuser
+# Create a non-root user with a home directory
+RUN useradd -m -u 1001 appuser
 
+# Set working directory inside the user's home
 WORKDIR /home/appuser/app
-USER appuser
 
-# copy built app contents
-COPY --from=builder --chown=appuser:appuser /app ./
+# Copy build artifacts & package.json
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
 
-# secure uploads
-RUN mkdir -p /home/appuser/app/uploads \
-    && chmod 700 /home/appuser/app/uploads
+# Install only production dependencies
+RUN npm install --omit=dev --ignore-scripts
+
+# Prepare uploads directory with proper permissions
+RUN mkdir -p uploads && chown -R appuser:appuser uploads
+
+# Drop privileges: run as non-root user
+USER 1001:1001
 
 EXPOSE 3000
-
-# 🔥 keep your start command intact
 CMD ["npm", "start"]
