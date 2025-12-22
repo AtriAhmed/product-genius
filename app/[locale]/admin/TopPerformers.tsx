@@ -50,7 +50,7 @@ export default function TopPerformers({ categories, products }: TopPerformersPro
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "6px",
                   }}
-                  formatter={(value: number) => [`${value} products`, "Product Count"]}
+                  formatter={(value: number | undefined) => [`${value} products`, "Product Count"]}
                 />
                 <Bar dataKey="productCount" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
               </BarChart>
