@@ -71,7 +71,7 @@ export default function GrowthCharts({ data }: GrowthChartsProps) {
                     borderRadius: "6px",
                   }}
                   labelFormatter={(label) => `Date: ${label}`}
-                  formatter={(value: number, name: string) => [
+                  formatter={(value: number | undefined, name: string | undefined) => [
                     name === "users" ? `${value} new` : `${value} total`,
                     name === "users" ? "New Users" : "Total Users",
                   ]}
@@ -120,8 +120,8 @@ export default function GrowthCharts({ data }: GrowthChartsProps) {
                     borderRadius: "6px",
                   }}
                   labelFormatter={(label) => `Date: ${label}`}
-                  formatter={(value: number, name: string) => [
-                    formatCurrency(value),
+                  formatter={(value: number | undefined, name: string | undefined) => [
+                    formatCurrency(value ?? 0),
                     name === "revenue" ? "Daily Revenue" : "Total Revenue",
                   ]}
                 />

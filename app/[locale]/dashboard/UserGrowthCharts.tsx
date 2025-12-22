@@ -100,7 +100,7 @@ export default function UserGrowthCharts({ data }: UserGrowthChartsProps) {
                       borderRadius: "6px",
                     }}
                     labelFormatter={(label) => `Date: ${label}`}
-                    formatter={(value: number, name: string) => [
+                    formatter={(value: number | undefined, name: string | undefined) => [
                       name === "orders" ? `${value} new` : `${value} total`,
                       name === "orders" ? "New Orders" : "Total Orders",
                     ]}
@@ -155,8 +155,8 @@ export default function UserGrowthCharts({ data }: UserGrowthChartsProps) {
                       borderRadius: "6px",
                     }}
                     labelFormatter={(label) => `Date: ${label}`}
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(value),
+                    formatter={(value: number | undefined, name: string | undefined) => [
+                      formatCurrency(value ?? 0),
                       name === "spending" ? "Daily Spending" : "Total Spending",
                     ]}
                   />
