@@ -20,6 +20,9 @@ export function generateVideoPoster(
   return new Promise((resolve, reject) => {
     // If it's already a video element, capture directly from it
     if (videoSource instanceof HTMLVideoElement) {
+      videoSource.crossOrigin = "anonymous";
+      videoSource.muted = true;
+
       return captureFromVideoElement(videoSource, resolve, reject);
     }
 

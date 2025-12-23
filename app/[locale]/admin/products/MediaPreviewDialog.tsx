@@ -85,8 +85,8 @@ export default function MediaPreviewDialog({ open, onOpenChange, mediaItem, onUp
         const currentTime = videoRef.current.currentTime;
         result = await generateVideoPoster(mediaItem.file, currentTime);
       } else {
-        // Use the video element directly to capture current frame
-        result = await generateVideoPoster(videoRef.current);
+        const currentTime = videoRef.current.currentTime;
+        result = await generateVideoPoster(mediaItem.url!, currentTime);
       }
 
       // Clean up previous poster if exists
@@ -108,7 +108,7 @@ export default function MediaPreviewDialog({ open, onOpenChange, mediaItem, onUp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col !max-w-5xl h-[90vh] p-1">
+      <DialogContent className="flex flex-col max-w-5xl! h-[90vh] p-1">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
             {mediaItem.type === "VIDEO" ? <Video className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
