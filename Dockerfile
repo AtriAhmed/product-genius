@@ -2,53 +2,47 @@
 # 1) Builder
 # -----------------------------
 FROM node:22.20.0 AS builder
-
+RUN corepack enable
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies (dev + prod) for build
-RUN npm install
+# Install all dependencies for build
+RUN pnpm install --frozen-lockfile
 
-# Copy application source
+# Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build Next.js app
-RUN npm run build
-
+# Prisma client + build
+RUN pnpm prisma generate
+RUN pnpm build
 
 # -----------------------------
 # 2) Runner
 # -----------------------------
 FROM node:22.20.0 AS runner
-
+RUN corepack enable
+WORKDIR /home/appuser/app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Create a non-root user with a home directory
+# Create non-root user
 RUN useradd -m -u 1001 appuser
 
-# Set working directory inside the user's home
-WORKDIR /home/appuser/app
-
-# Copy build artifacts & package.json
+# Copy only necessary files
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./package.json
 
 # Install only production dependencies
-RUN npm install --omit=dev --ignore-scripts
+RUN pnpm install --frozen-lockfile --prod
 
-# Prepare uploads directory with proper permissions
+# Prepare uploads directory
 RUN mkdir -p uploads && chown -R appuser:appuser uploads
 
-# Drop privileges: run as non-root user
 USER 1001:1001
-
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
