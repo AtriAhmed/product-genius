@@ -37,8 +37,8 @@ RUN corepack enable
 # Create a non-root user
 RUN useradd -m -u 1001 appuser
 
-# Pre-create Corepack cache folder and fix permissions
-RUN mkdir -p /home/appuser/.cache/node/corepack/v1 \
+# Create .cache folder and give ownership to non-root user
+RUN mkdir -p /home/appuser/.cache \
     && chown -R 1001:1001 /home/appuser/.cache
 
 # Set working directory
