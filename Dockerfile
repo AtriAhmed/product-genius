@@ -1,64 +1,55 @@
-# -----------------------------
-# 1) Builder
-# -----------------------------
-FROM node:22.20.0 AS builder
+# syntax=docker.io/docker/dockerfile:1
 
-# Enable Corepack (provides pnpm)
-RUN corepack enable
+FROM node:22-alpine AS base
 
+####################
+# Builder
+####################
+FROM base AS builder
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Install deps
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 
-# Install all dependencies (dev + prod) for build
-RUN pnpm install --frozen-lockfile
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm install --frozen-lockfile; \
+  else npm install; \
+  fi
 
-# Copy source code
+  
+# Copy source
 COPY . .
 
-# Generate Prisma client
+# Prisma generate
 RUN pnpm prisma generate
 
-# Build Next.js app
-RUN pnpm build
+# Build Next.js
+RUN \
+  if [ -f yarn.lock ]; then yarn build; \
+  elif [ -f package-lock.json ]; then npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then pnpm build; \
+  else npm run build; \
+  fi
 
-# -----------------------------
-# 2) Runner
-# -----------------------------
-FROM node:22.20.0 AS runner
+####################
+# Runner
+####################
+FROM base AS runner
+WORKDIR /app
 
-ENV NODE_ENV=production
-ENV PORT=3000
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
 
-# Enable Corepack in runtime
-RUN corepack enable
+RUN mkdir -p .next/cache/images \
+&& chown -R nextjs:nodejs .next
 
-# Create a non-root user
-RUN useradd -m -u 1001 appuser
+USER nextjs
 
-# Create .cache folder and give ownership to non-root user
-RUN mkdir -p /home/appuser/.cache \
-    && chown -R 1001:1001 /home/appuser/.cache
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Set working directory
-WORKDIR /home/appuser/app
 
-# Copy necessary files from builder
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/prisma ./prisma
-
-# Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
-
-# Prepare uploads directory
-RUN mkdir -p uploads && chown -R appuser:appuser uploads
-
-# Drop privileges: run as non-root user
-USER 1001:1001
-
-EXPOSE 3000
-CMD ["pnpm", "start"]
+CMD ["node", "server.js"]

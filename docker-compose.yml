@@ -1,32 +1,24 @@
 services:
   next-app:
+    container_name: next-app
     build: .
-    container_name: nextjs-app
-    ports:
-      - "11315:3000"
-
-    # Uploads directory mounted inside user's home
-    volumes:
-      - ./uploads:/home/appuser/app/uploads:rw,noexec,nosuid,nodev
-
-    # Environment variables
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
     env_file:
       - .env
+    restart: always
+    ports:
+      - "11315:3000"
+    volumes:
+      - ./uploads:/app/uploads:rw,noexec,nosuid,nodev
 
-    # Run as non-root user
-    user: "1001:1001"
-
-    # Security hardening
     read_only: true
     tmpfs:
-      - /tmp
-    security_opt:
-      - no-new-privileges:true
+      - /tmp:uid=1001,gid=1001,mode=1777
+      - /app/.next/cache:uid=1001,gid=1001,mode=1777
+    
     cap_drop:
       - ALL
 
-    # Restart policy
-    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+
