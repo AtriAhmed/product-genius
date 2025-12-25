@@ -4,17 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/navigation";
-import {
-  ArrowRight,
-  Sparkles,
-  Star,
-  TrendingUp,
-  Zap,
-  Crown,
-  Target,
-  Gem,
-  Award,
-} from "lucide-react";
+import { ArrowRight, Sparkles, Star, TrendingUp, Zap, Crown, Target, Gem, Award } from "lucide-react";
 
 interface CategoryTranslation {
   locale: string;
@@ -69,14 +59,18 @@ export default function PopularCategories() {
   return (
     <section
       id="niches"
-      className="py-12 bg-gradient-to-br from-slate-50 dark:from-gray-900 via-blue-50 dark:via-gray-800 to-indigo-100 dark:to-gray-900"
+      className="py-12 bg-linear-to-br from-slate-50 dark:from-gray-900 via-blue-50 dark:via-gray-800 to-indigo-100 dark:to-gray-900"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h3 className="mb-3 font-bold text-gray-900 dark:text-white text-2xl md:text-3xl">
+          <h3 className="mb-3 font-bold text-gray-900 dark:text-white text-2xl md:text-3xl" data-aos="fade-up">
             {t("find products in categories")}
           </h3>
-          <p className="max-w-2xl mx-auto text-gray-600 dark:text-gray-300 text-base">
+          <p
+            className="max-w-2xl mx-auto text-gray-600 dark:text-gray-300 text-base"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
             {t("categories description")}
           </p>
         </div>
@@ -93,14 +87,14 @@ export default function PopularCategories() {
                 data-aos-delay={index * 100}
               >
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 dark:from-primary-400/10 to-purple-500/5 dark:to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-linear-to-br from-primary-500/5 dark:from-primary-400/10 to-purple-500/5 dark:to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                 {/* Glowing border effect */}
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
+                <div className="absolute inset-0 rounded-xl bg-linear-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
 
                 <div className="relative p-6">
                   {/* Icon with enhanced styling */}
-                  <div className="inline-flex justify-center items-center w-12 h-12 mb-4 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg group-hover:shadow-xl text-white group-hover:scale-110 transition-all duration-300">
+                  <div className="inline-flex justify-center items-center w-12 h-12 mb-4 rounded-lg bg-linear-to-br from-primary-500 to-primary-600 shadow-lg group-hover:shadow-xl text-white group-hover:scale-110 transition-all duration-300">
                     <IconComponent className="w-6 h-6" />
                   </div>
 
@@ -110,9 +104,7 @@ export default function PopularCategories() {
                       {category.title}
                     </h3>
 
-                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                      {category.description}
-                    </p>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{category.description}</p>
 
                     {/* Action area */}
                   </div>

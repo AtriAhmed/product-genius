@@ -54,7 +54,7 @@ export default function FAQSection() {
     <section className="py-16 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-12 text-center">
+        <div className="mb-12 text-center" data-aos="fade-up">
           <h2 className="font-bold text-primary-500 text-base uppercase tracking-widest">{t("faqs")}</h2>
           <p className="mt-3 font-bold text-foreground text-3xl sm:text-4xl tracking-tight">
             {t("frequently asked questions")}
@@ -70,6 +70,8 @@ export default function FAQSection() {
               <div
                 key={idx}
                 className="group relative flex flex-col items-start p-6 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow"
+                data-aos="fade-up"
+                data-aos-delay={idx * 100}
               >
                 {/* Visual Accent */}
                 <div className="top-0 left-0 absolute w-1 h-full rounded-l-lg bg-primary-500" />
