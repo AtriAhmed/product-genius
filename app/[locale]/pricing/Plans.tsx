@@ -45,11 +45,17 @@ export default function PricingSection() {
       <div className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="font-semibold text-primary-500 text-base uppercase tracking-wide">{t("pricing")}</h2>
-            <p className="mt-2 font-extrabold text-foreground text-3xl sm:text-4xl leading-8 tracking-tight">
+            <h2 className="font-semibold text-primary-500 text-base uppercase tracking-wide" data-aos="fade-up">
+              {t("pricing")}
+            </h2>
+            <p
+              className="mt-2 font-extrabold text-foreground text-3xl sm:text-4xl leading-8 tracking-tight"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
               {t("simple transparent pricing")}
             </p>
-            <p className="max-w-2xl mx-auto mt-4 text-muted-foreground text-xl">
+            <p className="max-w-2xl mx-auto mt-4 text-muted-foreground text-xl" data-aos="fade-up" data-aos-delay="200">
               {t("choose the plan that fits your business needs")}
             </p>
           </div>
