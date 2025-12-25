@@ -23,6 +23,9 @@ const routeLabels: Record<string, string> = {
   "/dashboard/orders": "Orders",
   "/dashboard/users": "Users",
   "/dashboard/billing": "Billing",
+  "/dashboard/imported-products": "Imported Products",
+  "/dashboard/invoices": "Invoices",
+  "/dashboard/shopify": "Shopify",
   // Admin routes
   "/admin": "Dashboard",
   "/admin/products": "Products",
@@ -36,6 +39,8 @@ const routeLabels: Record<string, string> = {
   "/admin/settings": "Settings",
   "/admin/profile": "Profile",
   "/admin/notifications": "Notifications",
+  "/admin/shipping-zones": "Shipping Zones",
+  "/admin/faqs": "FAQs",
 };
 
 export function DashboardBreadcrumb() {

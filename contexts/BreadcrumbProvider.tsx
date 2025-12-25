@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
@@ -22,11 +16,7 @@ interface BreadcrumbContextType {
   setItems: (items: BreadcrumbItem[]) => void;
   appendItem: (item: BreadcrumbItem) => void;
   reset: () => void;
-  createBreadcrumbItem: (
-    label: string,
-    path: string,
-    isLast?: boolean
-  ) => BreadcrumbItem;
+  createBreadcrumbItem: (label: string, path: string, isLast?: boolean) => BreadcrumbItem;
   createProductBreadcrumbs: (
     productTitle: string,
     categoryTitle?: string,
@@ -44,9 +34,7 @@ interface BreadcrumbContextType {
   locale: string;
 }
 
-const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(
-  undefined
-);
+const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(undefined);
 
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<BreadcrumbItem[]>([]);
@@ -60,11 +48,7 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  const createBreadcrumbItem = (
-    label: string,
-    path: string,
-    isLast: boolean = false
-  ): BreadcrumbItem => ({
+  const createBreadcrumbItem = (label: string, path: string, isLast: boolean = false): BreadcrumbItem => ({
     label,
     href: `/${locale}${path}`,
     isLast,
@@ -82,22 +66,11 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     ];
 
     if (categoryTitle && categoryId) {
-      breadcrumbs.push(
-        createBreadcrumbItem(
-          categoryTitle,
-          `/dashboard/products?category=${categoryId}`
-        )
-      );
+      breadcrumbs.push(createBreadcrumbItem(categoryTitle, `/dashboard/products?category=${categoryId}`));
     }
 
     if (productTitle && productId) {
-      breadcrumbs.push(
-        createBreadcrumbItem(
-          productTitle,
-          `/dashboard/products/${productId}`,
-          true
-        )
-      );
+      breadcrumbs.push(createBreadcrumbItem(productTitle, `/dashboard/products/${productId}`, true));
     }
 
     return breadcrumbs;
@@ -110,27 +83,16 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     categoryId?: number
   ) => {
     const breadcrumbs: BreadcrumbItem[] = [
-      createBreadcrumbItem("Dashboard", "/dashboard"),
-      createBreadcrumbItem("Products", "/dashboard/products"),
+      createBreadcrumbItem("Dashboard", "/admin"),
+      createBreadcrumbItem("Products", "/admin/products"),
     ];
 
     if (categoryTitle && categoryId) {
-      breadcrumbs.push(
-        createBreadcrumbItem(
-          categoryTitle,
-          `/dashboard/products?category=${categoryId}`
-        )
-      );
+      breadcrumbs.push(createBreadcrumbItem(categoryTitle, `/admin/products?category=${categoryId}`));
     }
 
     if (productTitle && productId) {
-      breadcrumbs.push(
-        createBreadcrumbItem(
-          productTitle,
-          `/dashboard/products/${productId}`,
-          true
-        )
-      );
+      breadcrumbs.push(createBreadcrumbItem(productTitle, `/admin/products/${productId}`, true));
     }
 
     return breadcrumbs;

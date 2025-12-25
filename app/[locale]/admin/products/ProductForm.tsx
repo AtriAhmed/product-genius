@@ -13,7 +13,9 @@ import { ProductFormData, productFormSchema } from "@/app/[locale]/admin/product
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FloatingSaveBar from "@/components/FloatingSaveBar";
 import { Button } from "@/components/ui/button";
+import { useBreadcrumb } from "@/contexts/BreadcrumbProvider";
 import { Link } from "@/i18n/navigation";
+import { getCurrentTranslation } from "@/lib/products";
 import { Marketplace, Plan, Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosProgressEvent } from "axios";
@@ -36,9 +38,35 @@ export default function ProductForm({ product, mode }: ProductFormProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [saveProgress, setSaveProgress] = useState<number>(0);
+  const { createAdminProductBreadcrumbs, setBreadcrumbs, resetBreadcrumbs } = useBreadcrumb();
 
   const isEditMode = mode === "edit";
   const isCreateMode = mode === "create";
+
+  function updateBreadcrumbs() {
+    if (product) {
+      const translation = getCurrentTranslation(product.translations || []);
+      const categoryTranslation = getCurrentTranslation(product.category?.translations || []);
+      const breadcrumbs = createAdminProductBreadcrumbs(
+        translation?.title || "Product",
+        categoryTranslation?.title,
+        product.id,
+        product.category?.id
+      );
+      setBreadcrumbs(breadcrumbs);
+    }
+  }
+
+  useEffect(() => {
+    if (product?.id) {
+      updateBreadcrumbs();
+    }
+
+    // Clean up breadcrumbs when component unmounts
+    return () => {
+      resetBreadcrumbs();
+    };
+  }, [product]);
 
   // Fetch categories on component mount
   useEffect(() => {
