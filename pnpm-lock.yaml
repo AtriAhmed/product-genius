@@ -33,7 +33,7 @@ importers:
         specifier: ^7.0.0
         version: 7.2.0
       '@prisma/client':
-        specifier: ^7.0.0
+        specifier: ^7.2.0
         version: 7.2.0(prisma@7.2.0(@types/react@19.2.7)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
@@ -235,7 +235,7 @@ importers:
         specifier: ^17.2.3
         version: 17.2.3
       prisma:
-        specifier: ^7.0.0
+        specifier: ^7.2.0
         version: 7.2.0(@types/react@19.2.7)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
