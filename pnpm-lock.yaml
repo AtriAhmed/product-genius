@@ -141,7 +141,7 @@ importers:
         specifier: 15.5.9
         version: 15.5.9(@babel/core@7.28.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-auth:
-        specifier: ^4.24.11
+        specifier: ^4.24.13
         version: 4.24.13(next@15.5.9(@babel/core@7.28.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-intl:
         specifier: ^4.3.9
@@ -3901,8 +3901,8 @@ packages:
     peerDependencies:
       preact: '>=10'
 
-  preact@10.28.0:
-    resolution: {integrity: sha512-rytDAoiXr3+t6OIP3WGlDd0ouCUG1iCWzkcY3++Nreuoi17y6T5i/zRhe6uYfoVcxq6YU+sBtJouuRDsq8vvqA==}
+  preact@10.28.1:
+    resolution: {integrity: sha512-u1/ixq/lVQI0CakKNvLDEcW5zfCjUQfZdK9qqWuIJtsezuyG6pk9TWj75GMuI/EzRSZB/VAE43sNWWZfiy8psw==}
 
   pretty-format@3.8.0:
     resolution: {integrity: sha512-WuxUnVtlWL1OfZFQFuqvnvs6MiAGk9UNsBostyBOB0Is9wb5uRESevA6rnl/rkksXaGX3GzZhPup5d6Vp1nFew==}
@@ -8455,8 +8455,8 @@ snapshots:
       next: 15.5.9(@babel/core@7.28.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       oauth: 0.9.15
       openid-client: 5.7.1
-      preact: 10.28.0
-      preact-render-to-string: 5.2.6(preact@10.28.0)
+      preact: 10.28.1
+      preact-render-to-string: 5.2.6(preact@10.28.1)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       uuid: 8.3.2
@@ -8626,12 +8626,12 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  preact-render-to-string@5.2.6(preact@10.28.0):
+  preact-render-to-string@5.2.6(preact@10.28.1):
     dependencies:
-      preact: 10.28.0
+      preact: 10.28.1
       pretty-format: 3.8.0
 
-  preact@10.28.0: {}
+  preact@10.28.1: {}
 
   pretty-format@3.8.0: {}
 
