@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
         hostname: "cdn.bratvaa.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn1.bratvaa.com",
+        pathname: "/**",
+      },
     ],
     // If you prefer the simpler form, you could use:
     // domains: ["www.molinel.com"],
