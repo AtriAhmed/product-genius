@@ -7,30 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import type { ShopifyStore } from "@/types";
 import axios from "axios";
-import {
-  ExternalLink,
-  Unlink,
-  Store,
-  Upload,
-  CreditCard,
-  Truck,
-  CheckCircle,
-  ArrowRight,
-} from "lucide-react";
+import { ExternalLink, Unlink, Store, Upload, CreditCard, Truck, CheckCircle, ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 type ConnectedShopifyStoreProps = {
   shopifyStore: ShopifyStore;
   onDisconnect: () => void;
 };
 
-export default function ConnectedShopifyStore({
-  shopifyStore,
-  onDisconnect,
-}: ConnectedShopifyStoreProps) {
+export default function ConnectedShopifyStore({ shopifyStore, onDisconnect }: ConnectedShopifyStoreProps) {
   const t = useTranslations("shopify");
   const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
@@ -70,9 +58,7 @@ export default function ConnectedShopifyStore({
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-lg">
-                      {shopifyStore.name}
-                    </h3>
+                    <h3 className="font-semibold text-lg">{shopifyStore.name}</h3>
                     <Badge
                       variant="secondary"
                       className="!bg-green-100 !dark:bg-green-900 text-green-800 dark:text-green-100"
@@ -90,9 +76,7 @@ export default function ConnectedShopifyStore({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    window.open(`https://${shopifyStore.shop}/admin`, "_blank")
-                  }
+                  onClick={() => window.open(`https://${shopifyStore.shop}/admin`, "_blank")}
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   {t("open admin")}
@@ -131,13 +115,9 @@ export default function ConnectedShopifyStore({
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Upload className="w-4 h-4 text-blue-600" />
-                        <h5 className="font-medium">
-                          {t("import products title")}
-                        </h5>
+                        <h5 className="font-medium">{t("import products title")}</h5>
                       </div>
-                      <p className="mb-3 text-muted-foreground text-sm">
-                        {t("import products description")}
-                      </p>
+                      <p className="mb-3 text-muted-foreground text-sm">{t("import products description")}</p>
                       <Button asChild variant="outline" size="sm">
                         <Link href="/dashboard/products">
                           {t("go to products")}
@@ -157,13 +137,9 @@ export default function ConnectedShopifyStore({
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="w-4 h-4 text-orange-600" />
-                        <h5 className="font-medium">
-                          {t("payment setup title")}
-                        </h5>
+                        <h5 className="font-medium">{t("payment setup title")}</h5>
                       </div>
-                      <p className="mb-3 text-muted-foreground text-sm">
-                        {t("payment setup description")}
-                      </p>
+                      <p className="mb-3 text-muted-foreground text-sm">{t("payment setup description")}</p>
                       <Button asChild variant="outline" size="sm">
                         <Link href="/dashboard/billing">
                           {t("manage payment methods")}
@@ -183,13 +159,9 @@ export default function ConnectedShopifyStore({
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Truck className="w-4 h-4 text-purple-600" />
-                        <h5 className="font-medium">
-                          {t("order processing title")}
-                        </h5>
+                        <h5 className="font-medium">{t("order processing title")}</h5>
                       </div>
-                      <p className="text-muted-foreground text-sm">
-                        {t("order processing description")}
-                      </p>
+                      <p className="text-muted-foreground text-sm">{t("order processing description")}</p>
                     </div>
                   </div>
                 </div>
@@ -207,9 +179,7 @@ export default function ConnectedShopifyStore({
                     <h5 className="mb-1 font-medium text-yellow-800 dark:text-yellow-200">
                       {t("important note title")}
                     </h5>
-                    <p className="text-yellow-700 dark:text-yellow-300 text-sm">
-                      {t("important note description")}
-                    </p>
+                    <p className="text-yellow-700 dark:text-yellow-300 text-sm">{t("important note description")}</p>
                   </div>
                 </div>
               </div>

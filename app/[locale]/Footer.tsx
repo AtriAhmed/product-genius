@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Facebook, Instagram, Twitter, Languages, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -10,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function Footer() {

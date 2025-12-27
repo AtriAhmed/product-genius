@@ -9,12 +9,12 @@ import { Product } from "@/types";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import ShopifyIcon from "@/assets/images/shopify.svg";
+import { Link } from "@/i18n/navigation";
 
 type ProductsResponse = {
   data: Product[];

@@ -11,7 +11,7 @@ import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 

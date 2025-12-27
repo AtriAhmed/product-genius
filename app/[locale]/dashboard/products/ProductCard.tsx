@@ -3,6 +3,7 @@
 import ShopifyIcon from "@/assets/images/shopify.svg";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 import { getCurrentTranslation } from "@/lib/products";
 import { formatPriceRange, getProductPrices } from "@/lib/productVariants";
 import { formatCurrency, getMediaUrl, htmlToText } from "@/lib/utils";
@@ -10,7 +11,6 @@ import { Product } from "@/types";
 import { Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 // Product Card Component

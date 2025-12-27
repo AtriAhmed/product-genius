@@ -1,23 +1,21 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 export default function NotFound() {
   const t = useTranslations("not-found");
 
   return (
-    <main className="grid place-items-center px-6 py-12 lg:px-8">
+    <main className="place-items-center grid px-6 lg:px-8 py-12">
       <div className="text-center">
-        <p className="text-3xl font-bold text-primary-500">{t("404")}</p>
-        <h1 className="mt-4 text-5xl font-semibold tracking-tight text-balance sm:text-7xl">
-          {t("page not found")}
-        </h1>
-        <p className="mt-6 text-lg font-medium text-pretty text-muted-foreground sm:text-xl/8">
+        <p className="font-bold text-primary-500 text-3xl">{t("404")}</p>
+        <h1 className="mt-4 font-semibold text-5xl sm:text-7xl text-balance tracking-tight">{t("page not found")}</h1>
+        <p className="mt-6 font-medium text-muted-foreground text-lg sm:text-xl/8 text-pretty">
           {t("sorry could not find")}
         </p>
-        <div className="mt-10 flex items-center justify-center gap-x-6">
+        <div className="flex justify-center items-center gap-x-6 mt-10">
           <Link
             href="/"
-            className="rounded-md bg-primary-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-primary-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            className="px-3.5 py-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 bg-primary-500 hover:bg-primary-600 shadow-xs font-semibold text-white text-sm"
           >
             {t("go back home")}
           </Link>

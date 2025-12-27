@@ -3,22 +3,17 @@
 import {
   BadgeCheck,
   BarChart3,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   FileText,
   Languages,
   LogOut,
   Package,
-  Settings,
   ShoppingCart,
-  Sparkles,
   Upload,
   X,
-  Zap,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import React from "react";
 
 import ShopifyIcon from "@/assets/images/shopify-outline.svg";
@@ -28,7 +23,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -53,10 +47,9 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAppProvider } from "@/contexts/AppProvider";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import Logo from "@/public/logo.svg";
+import { signOut, useSession } from "next-auth/react";
 
 type NavigationItem = {
   title: string;

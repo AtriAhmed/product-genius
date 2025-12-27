@@ -3,33 +3,26 @@
 import {
   BadgeCheck,
   BarChart3,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   FileQuestionMark,
   FolderTree,
-  Globe,
   Languages,
   LogOut,
   NotepadText,
   Package,
   Settings,
-  ShoppingCart,
-  Sparkles,
   Star,
   Truck,
   Users,
-  Zap,
 } from "lucide-react";
-import Link from "next/link";
-import React from "react";
 import { useTranslations } from "next-intl";
+import React from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -50,10 +43,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { signOut, useSession } from "next-auth/react";
-import { Role } from "@/types";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import Logo from "@/public/logo.svg";
+import { Role } from "@/types";
+import { signOut, useSession } from "next-auth/react";
 
 // Navigation item type
 type NavigationItem = {

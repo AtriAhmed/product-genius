@@ -7,8 +7,8 @@ import { Plan, PlanFeature } from "@/types";
 import { Check, Crown, Info, Sparkles, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatCurrency } from "@/lib/utils";
-import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Link } from "@/i18n/navigation";
 
 type Props = {
   plan: Plan;

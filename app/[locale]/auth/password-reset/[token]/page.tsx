@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,6 +10,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Check } from "lucide-react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 
 type ResetPasswordFormData = {
   password: string;

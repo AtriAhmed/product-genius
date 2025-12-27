@@ -12,7 +12,6 @@ import { LogOut, User } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function UserDropdown() {
   const t = useTranslations("navbar");
