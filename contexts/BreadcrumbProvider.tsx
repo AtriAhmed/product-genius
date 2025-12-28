@@ -50,7 +50,7 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
 
   const createBreadcrumbItem = (label: string, path: string, isLast: boolean = false): BreadcrumbItem => ({
     label,
-    href: `/${locale}${path}`,
+    href: path,
     isLast,
   });
 
