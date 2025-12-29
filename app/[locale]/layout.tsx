@@ -34,6 +34,14 @@ export const metadata: Metadata = {
   title: "WinWaterfall - Find Winning Products For Your Store",
   description:
     "Discover trending products and boost your e-commerce store's sales with WinWaterfall. Find winning products tailored for your niche today!",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  openGraph: {
+    title: "WinWaterfall - Find Winning Products For Your Store",
+    description:
+      "Discover trending products and boost your e-commerce store's sales with WinWaterfall. Find winning products tailored for your niche today!",
+    url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    siteName: "WinWaterfall",
+  },
 };
 
 export default async function RootLayout({
