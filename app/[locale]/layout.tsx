@@ -41,7 +41,6 @@ export const metadata: Metadata = {
       "Discover trending products and boost your e-commerce store's sales with WinWaterfall. Find winning products tailored for your niche today!",
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     siteName: "WinWaterfall",
-    images: "/opengraph-image.jpg",
   },
 };
 
