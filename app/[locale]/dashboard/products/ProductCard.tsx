@@ -86,6 +86,7 @@ export default function ProductCard({ product }: { product: Product }) {
                   muted
                   loop
                   playsInline
+                  preload="metadata"
                 />
                 {/* Video Poster Overlay */}
                 {mainMedia.poster && (
