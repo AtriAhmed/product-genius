@@ -48,7 +48,7 @@ export default function InvoicesDataTable({
       case "open":
         return "!bg-red-500 text-white !dark:bg-red-900 dark:text-red-300";
       default:
-        return "!bg-gray-100 text-gray-800 !dark:bg-gray-900 dark:text-gray-300";
+        return "!bg-gray-100 text-gray-800 !dark:bg-gray-900 dark:text-gray-800";
     }
   };
 
@@ -66,11 +66,11 @@ export default function InvoicesDataTable({
   const getTypeColor = (type?: string) => {
     switch (type) {
       case "PLAN":
-        return "!bg-purple-100 text-purple-800 !dark:bg-purple-900 dark:text-purple-300";
+        return "!bg-purple-100 text-purple-800 !dark:bg-purple-900 dark:text-purple-800";
       case "ORDER":
-        return "!bg-emerald-100 text-emerald-800 !dark:bg-emerald-900 dark:text-emerald-300";
+        return "!bg-emerald-100 text-emerald-800 !dark:bg-emerald-900 dark:text-emerald-800";
       default:
-        return "!bg-gray-100 text-gray-800 !dark:bg-gray-900 dark:text-gray-300";
+        return "!bg-gray-100 text-gray-800 !dark:bg-gray-900 dark:text-gray-800";
     }
   };
 
