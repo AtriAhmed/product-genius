@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 export default function ProductCard({ product }: { product: Product }) {
   const t = useTranslations("products");
   const [isVideoHovered, setIsVideoHovered] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const translation = getCurrentTranslation(product?.translations || []);
@@ -25,7 +26,7 @@ export default function ProductCard({ product }: { product: Product }) {
   // Handle video play/pause on hover
   useEffect(() => {
     const video = videoRef.current;
-    if (video && mainMedia?.type === "VIDEO") {
+    if (video && mainMedia?.type === "VIDEO" && videoLoaded) {
       if (isVideoHovered) {
         video.play().catch(() => {
           // Handle play error silently
@@ -35,7 +36,7 @@ export default function ProductCard({ product }: { product: Product }) {
         // video.currentTime = 0;
       }
     }
-  }, [isVideoHovered, mainMedia?.type]);
+  }, [isVideoHovered, mainMedia?.type, videoLoaded]);
   const categoryTranslation = getCurrentTranslation(product?.category?.translations || []);
 
   const isImported = (product.productMappings || []).length > 0;
@@ -71,12 +72,16 @@ export default function ProductCard({ product }: { product: Product }) {
             ) : (
               <div
                 className="relative w-full h-full"
-                onMouseEnter={() => setIsVideoHovered(true)}
+                onMouseEnter={() => {
+                  setIsVideoHovered(true);
+                  setVideoLoaded(true);
+                }}
                 onMouseLeave={() => setIsVideoHovered(false)}
               >
                 <video
                   ref={videoRef}
-                  src={getMediaUrl(mainMedia.preview || mainMedia.url)}
+                  src={videoLoaded ? getMediaUrl(mainMedia.preview || mainMedia.url) : undefined}
+                  poster={mainMedia.poster ? getMediaUrl(mainMedia.poster) : undefined}
                   className="w-full h-full object-cover"
                   muted
                   loop
