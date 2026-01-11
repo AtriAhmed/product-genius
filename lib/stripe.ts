@@ -12,7 +12,6 @@ export async function createCustomer(id: number, email: string, name: string) {
     const customer = await stripe.customers.create({
       email,
       name,
-      test_clock: "clock_1Sdb1eFhBHFFVJcKL59o7f02",
       metadata: {
         userId: id.toString(),
       },
