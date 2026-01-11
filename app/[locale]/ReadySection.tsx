@@ -10,7 +10,7 @@ export default function ReadySection() {
   const user = session?.user;
 
   return (
-    <div className="bg-primary-500 dark:bg-slate-950">
+    <div className="bg-primary-500 dark:bg-muted-background">
       <div className="lg:flex lg:justify-between lg:items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         {/* Heading */}
         <h2

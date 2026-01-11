@@ -29,8 +29,6 @@ interface FallbackCategory {
 
 export default function PopularCategories() {
   const t = useTranslations("home");
-  const { data: session, status } = useSession();
-  const router = useRouter();
 
   const getFallbackCategories = (): FallbackCategory[] => [
     {
@@ -59,7 +57,7 @@ export default function PopularCategories() {
   return (
     <section
       id="niches"
-      className="py-12 bg-linear-to-br from-slate-50 dark:from-gray-900 via-blue-50 dark:via-gray-800 to-indigo-100 dark:to-gray-900"
+      className="py-12 bg-linear-to-br from-slate-50 dark:from-gray-950 via-blue-50 dark:via-gray-900 to-indigo-100 dark:to-gray-950"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -80,38 +78,35 @@ export default function PopularCategories() {
             const IconComponent = category.icon;
 
             return (
-              <div
-                key={category.id}
-                className="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-500 cursor-pointer transform"
-                data-aos="fade-up"
-                data-aos-delay={index * 100}
-              >
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-linear-to-br from-primary-500/5 dark:from-primary-400/10 to-purple-500/5 dark:to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div data-aos="fade-up" data-aos-delay={index * 100} key={category.id}>
+                <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-500 cursor-pointer transform">
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-linear-to-br from-primary-500/5 dark:from-primary-400/10 to-purple-500/5 dark:to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                {/* Glowing border effect */}
-                <div className="absolute inset-0 rounded-xl bg-linear-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
+                  {/* Glowing border effect */}
+                  <div className="absolute inset-0 rounded-xl bg-linear-to-r from-primary-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
 
-                <div className="relative p-6">
-                  {/* Icon with enhanced styling */}
-                  <div className="inline-flex justify-center items-center w-12 h-12 mb-4 rounded-lg bg-linear-to-br from-primary-500 to-primary-600 shadow-lg group-hover:shadow-xl text-white group-hover:scale-110 transition-all duration-300">
-                    <IconComponent className="w-6 h-6" />
-                  </div>
+                  <div className="relative p-6">
+                    {/* Icon with enhanced styling */}
+                    <div className="inline-flex justify-center items-center w-12 h-12 mb-4 rounded-lg bg-linear-to-br from-primary-500 to-primary-600 shadow-lg group-hover:shadow-xl text-white group-hover:scale-110 transition-all duration-300">
+                      <IconComponent className="w-6 h-6" />
+                    </div>
 
-                  {/* Content section */}
-                  <div className="space-y-3">
-                    <h3 className="font-bold text-gray-900 dark:group-hover:text-primary-400 dark:text-white group-hover:text-primary-600 text-lg transition-colors duration-300">
-                      {category.title}
-                    </h3>
+                    {/* Content section */}
+                    <div className="space-y-3">
+                      <h3 className="font-bold text-gray-900 dark:group-hover:text-primary-400 dark:text-white group-hover:text-primary-600 text-lg transition-colors duration-300">
+                        {category.title}
+                      </h3>
 
-                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{category.description}</p>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{category.description}</p>
 
-                    {/* Action area */}
-                  </div>
+                      {/* Action area */}
+                    </div>
 
-                  {/* Floating elements */}
-                  <div className="top-3 right-3 absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></div>
+                    {/* Floating elements */}
+                    <div className="top-3 right-3 absolute opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
               </div>

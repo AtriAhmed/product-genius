@@ -24,7 +24,7 @@ async function fetcher() {
 // Static Skeleton Component
 function FAQSkeleton() {
   return (
-    <div className="gap-6 grid md:grid-cols-2 lg:grid-cols-3">
+    <div className="gap-6 grid md:grid-cols-2 lg:grid-cols-3" data-aos="fade-up" data-aos-delay="300">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="h-40 p-6 border rounded-lg bg-background">
           <div className="w-3/4 h-6 mb-4 rounded bg-muted" />
@@ -54,9 +54,15 @@ export default function FAQSection() {
     <section className="py-16 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-12 text-center" data-aos="fade-up">
-          <h2 className="font-bold text-primary-500 text-base uppercase tracking-widest">{t("faqs")}</h2>
-          <p className="mt-3 font-bold text-foreground text-3xl sm:text-4xl tracking-tight">
+        <div className="mb-12 text-center">
+          <h2 className="font-bold text-primary-500 text-base uppercase tracking-widest" data-aos="fade-up">
+            {t("faqs")}
+          </h2>
+          <p
+            className="mt-3 font-bold text-foreground text-3xl sm:text-4xl tracking-tight"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
             {t("frequently asked questions")}
           </p>
         </div>
