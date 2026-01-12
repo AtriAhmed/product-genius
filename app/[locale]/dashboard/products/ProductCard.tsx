@@ -80,7 +80,8 @@ export default function ProductCard({ product }: { product: Product }) {
               >
                 <video
                   ref={videoRef}
-                  src={videoLoaded ? getMediaUrl(mainMedia.preview || mainMedia.url) : undefined}
+                  // src={videoLoaded ? getMediaUrl(mainMedia.preview || mainMedia.url) : undefined}
+                  src={getMediaUrl(mainMedia.preview || mainMedia.url)}
                   poster={mainMedia.poster ? getMediaUrl(mainMedia.poster) : undefined}
                   className="w-full h-full object-cover"
                   muted
